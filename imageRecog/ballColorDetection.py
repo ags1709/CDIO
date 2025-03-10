@@ -16,34 +16,34 @@ while True:
         break
 
 
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    # hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-    # Define color ranges (tune these based on lighting)
-    lower_orange = np.array([7, 255, 217])
-    upper_orange = np.array([21, 255, 254])
+    # # Define color ranges (tune these based on lighting)
+    # lower_orange = np.array([7, 255, 217])
+    # upper_orange = np.array([21, 255, 254])
 
-    lower_white = np.array([0, 0, 200])
-    upper_white = np.array([180, 50, 255])
+    # lower_white = np.array([0, 0, 200])
+    # upper_white = np.array([180, 50, 255])
 
-    # Create masks
-    maskOrange = cv2.inRange(hsv, lower_orange, upper_orange)
-    maskWhite = cv2.inRange(hsv, lower_white, upper_white)
+    # # Create masks
+    # maskOrange = cv2.inRange(hsv, lower_orange, upper_orange)
+    # maskWhite = cv2.inRange(hsv, lower_white, upper_white)
 
-    # Find contours
-    contoursOrange, _ = cv2.findContours(maskOrange, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    contoursWhite, _ = cv2.findContours(maskWhite, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # # Find contours
+    # contoursOrange, _ = cv2.findContours(maskOrange, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # contoursWhite, _ = cv2.findContours(maskWhite, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    for cnt in contoursOrange:
-        if cv2.contourArea(cnt) > 500:  # Filter small noise
-            x, y, w, h = cv2.boundingRect(cnt)
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 165, 255), 2)
-            cv2.putText(frame, "Orange Ball", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 165, 255), 2)
+    # for cnt in contoursOrange:
+    #     if cv2.contourArea(cnt) > 500:  # Filter small noise
+    #         x, y, w, h = cv2.boundingRect(cnt)
+    #         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 165, 255), 2)
+    #         cv2.putText(frame, "Orange Ball", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 165, 255), 2)
 
-    for cnt in contoursWhite:
-        if cv2.contourArea(cnt) > 500:
-            x, y, w, h = cv2.boundingRect(cnt)
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 255, 255), 2)
-            cv2.putText(frame, "White Ball", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+    # for cnt in contoursWhite:
+    #     if cv2.contourArea(cnt) > 500:
+    #         x, y, w, h = cv2.boundingRect(cnt)
+    #         cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 255, 255), 2)
+    #         cv2.putText(frame, "White Ball", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
 
     # Display the resulting frame
     cv2.imshow('Webcam Feed', frame)
