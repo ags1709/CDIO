@@ -41,10 +41,7 @@ while True:
     maskWhite = cv2.dilate(maskWhite, None, iterations=2)
 
     mask = cv2.bitwise_or(maskOrange, maskWhite)
-    # mask = maskOrange
-    # cv2.imshow("test", frame)
-    # cv2.imshow("test", blurred)
-    # cv2.imshow("test", hsv)
+
 
     cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     cnts = imutils.grab_contours(cnts)
@@ -69,23 +66,6 @@ while True:
                         cv2.circle(frame, (int(x), int(y)), int(radius), (0, 255, 255), 2)
                         cv2.circle(frame, center, 5, (0, 0, 255), -1)
                         # print(listOfBalls)
-    
-    # cv2.imshow("Test", maskOrange)
-
-    # for cnt in contours:
-    #     perimeter = cv2.arcLength(cnt, True)
-    #     approx = cv2.approxPolyDP(cnt, 0.04 * perimeter, True)
-    #     area = cv2.contourArea(cnt)
-    
-    # cv2.drawContours(frame, [cnts], -1, (0, 0, 255), 2)
-
-    # if len(approx) > 1 and area > 100:
-    #     (x,y), radius = cv2.minEnclosingCircle(cnt)
-    #     radius = int(radius)
-
-    #     if 1 < radius < 100:
-    #         cv2.circle(frame, (int(x), int(y)), radius, (0, 255, 0), 2)
-    #         cv2.putText(frame, "Ball", (int(x) - 10, int(y) - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
 
     # Display the resulting frame
     cv2.imshow('Webcam Feed', frame)
