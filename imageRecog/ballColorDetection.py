@@ -1,12 +1,15 @@
 import cv2
 import numpy as np
+import imutils
 
 cap = cv2.VideoCapture(2)
-
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
 if not cap.isOpened():
     print("Error: Could not open webcam.")
     exit()
 imgCounter = 0
+listOfBalls = []
 while True:
     # Capture frame-by-frame
     ret, frame = cap.read()
@@ -16,34 +19,73 @@ while True:
         break
 
 
-    # hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    # Orange color for the walls/bounds are around 5-10 for lower and upper
+    lowerOrange = (15, 150, 150)
+    upperOrange = (25, 255, 255)
 
-    # # Define color ranges (tune these based on lighting)
-    # lower_orange = np.array([7, 255, 217])
-    # upper_orange = np.array([21, 255, 254])
+    lowerWhite = (0, 0, 180)
+    upperWhite = (180, 30, 255)
 
-    # lower_white = np.array([0, 0, 200])
-    # upper_white = np.array([180, 50, 255])
+    
+    frame = cv2.resize(frame, (1280, 720))
+    blurred = cv2.GaussianBlur(frame, (9,9),0)
+    hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
 
-    # # Create masks
-    # maskOrange = cv2.inRange(hsv, lower_orange, upper_orange)
-    # maskWhite = cv2.inRange(hsv, lower_white, upper_white)
+    maskOrange = cv2.inRange(hsv, lowerOrange, upperOrange)
+    maskWhite = cv2.inRange(hsv, lowerWhite, upperWhite)
+    
+    maskOrange = cv2.erode(maskOrange, None, iterations=2)
+    maskOrange = cv2.dilate(maskOrange, None, iterations=2)
 
-    # # Find contours
-    # contoursOrange, _ = cv2.findContours(maskOrange, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    # contoursWhite, _ = cv2.findContours(maskWhite, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    maskWhite = cv2.erode(maskWhite, None, iterations=2)
+    maskWhite = cv2.dilate(maskWhite, None, iterations=2)
 
-    # for cnt in contoursOrange:
-    #     if cv2.contourArea(cnt) > 500:  # Filter small noise
-    #         x, y, w, h = cv2.boundingRect(cnt)
-    #         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 165, 255), 2)
-    #         cv2.putText(frame, "Orange Ball", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 165, 255), 2)
+    mask = cv2.bitwise_or(maskOrange, maskWhite)
+    # mask = maskOrange
+    # cv2.imshow("test", frame)
+    # cv2.imshow("test", blurred)
+    # cv2.imshow("test", hsv)
 
-    # for cnt in contoursWhite:
-    #     if cv2.contourArea(cnt) > 500:
-    #         x, y, w, h = cv2.boundingRect(cnt)
-    #         cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 255, 255), 2)
-    #         cv2.putText(frame, "White Ball", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+    cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = imutils.grab_contours(cnts)
+    center = None
+
+    if len(cnts)> 0:
+        minRadius = 1
+        validContours = [c for c in cnts if cv2.minEnclosingCircle(c)[1] > minRadius]
+        for c in validContours:
+            ((x,y), radius) = cv2.minEnclosingCircle(c)
+            M = cv2.moments(c)
+            center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+            listOfBalls.append(center)
+
+            if radius > minRadius:
+                approx = cv2.approxPolyDP(c, 0.02 * cv2.arcLength(c, True), True)
+                circularity = 4 * np.pi * (cv2.contourArea(c) / (cv2.arcLength(c, True) ** 2))
+
+                if 0.82 < circularity < 1.5:
+                    if M["m00"] > 0:
+                        
+                        cv2.circle(frame, (int(x), int(y)), int(radius), (0, 255, 255), 2)
+                        cv2.circle(frame, center, 5, (0, 0, 255), -1)
+                        # print(listOfBalls)
+    
+    # cv2.imshow("Test", maskOrange)
+
+    # for cnt in contours:
+    #     perimeter = cv2.arcLength(cnt, True)
+    #     approx = cv2.approxPolyDP(cnt, 0.04 * perimeter, True)
+    #     area = cv2.contourArea(cnt)
+    
+    # cv2.drawContours(frame, [cnts], -1, (0, 0, 255), 2)
+
+    # if len(approx) > 1 and area > 100:
+    #     (x,y), radius = cv2.minEnclosingCircle(cnt)
+    #     radius = int(radius)
+
+    #     if 1 < radius < 100:
+    #         cv2.circle(frame, (int(x), int(y)), radius, (0, 255, 0), 2)
+    #         cv2.putText(frame, "Ball", (int(x) - 10, int(y) - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
 
     # Display the resulting frame
     cv2.imshow('Webcam Feed', frame)
@@ -64,64 +106,3 @@ while True:
 cap.release()
 cv2.destroyAllWindows()
 
-
-# Convert rgb values to hsv. Must be manually printed and changed 
-# rgbLightOrange = np.uint8([[[254, 179, 0]]])
-# rgbShadowOrange = np.uint8([[[217, 51, 0]]])
-# hsvLightOrange = cv2.cvtColor(rgbLightOrange, cv2.COLOR_RGB2HSV)
-# hsvShadowOrange = cv2.cvtColor(rgbShadowOrange, cv2.COLOR_RGB2HSV)
-# print(f"hsv light orange: {hsvLightOrange}")
-# print(f"hsv shadow orange: {hsvShadowOrange}")
-# --------------------------------------------------
-
-
-# while True:
-#     ret,frame  = cap.read()
-
-#     if not ret:
-#         print("Failed to grep frame")
-#         break
-
-#     cv2.imshow("test", frame)
-
-#     k = cv2.waitKey(1)
-
-#     if k%256 == 27:
-#         print("Escape hit, closing app")
-#         break
-    
-#     elif k%256 == 32:
-#         img_name = "opencv_frame_{}.png".format(imgCounter)
-#         cv2.imwrite(imgName, frame)
-#         print("Screenshot taken")
-#         imgCounter += 1
-
-# cap.release()
-
-# cap.destroyAllWindows()
-
-
-
-
-
-
-
-
-
-
-#  ------------------------------------------------------------------
-
-
-# def list_available_captures(max_tested=10):
-#     available_captures = []
-    
-#     for i in range(max_tested):
-#         cap = cv2.VideoCapture(i)
-#         if cap.isOpened():
-#             available_captures.append(i)
-#             cap.release()  # Release the camera after checking
-
-#     return available_captures
-
-# available_cameras = list_available_captures()
-# print("Available camera indices:", available_cameras)
