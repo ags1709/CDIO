@@ -20,16 +20,16 @@ while True:
 
 
     # Orange color for the walls/bounds are around 5-10 for lower and upper
-    lowerOrange = (15, 150, 150)
-    upperOrange = (25, 255, 255)
+    # lowerOrange = (15, 150, 150)
+    # upperOrange = (25, 255, 255)
 
     lowerWhite = (0, 0, 180)
     upperWhite = (180, 30, 255)
 
 
     # Updated ranges to that might handle differing light conditions better?
-    # lowerOrange = (10, 70, 80) 
-    # upperOrange = (65, 255, 255)
+    lowerOrange = (10, 70, 80) 
+    upperOrange = (65, 255, 255)
 
     # lowerWhite = (0, 0, 150) 
     # upperWhite = (120, 40, 255)
@@ -50,13 +50,20 @@ while True:
 
     mask = cv2.bitwise_or(maskOrange, maskWhite)
 
-    cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    cnts = imutils.grab_contours(cnts)
+    cntsOrange, _ = cv2.findContours(maskOrange.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cntsWhite, _ = cv2.findContours(maskWhite.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # cnts = cv2.findContours(maskWhite, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # cnts = imutils.grab_contours(cnts)
     center = None
 
-    if len(cnts)> 0:
+    # if len(cntsOrange) > 0:
+    #     for front in cntsOrange:  # front is a single contour now
+    #         x, y, w, h = cv2.boundingRect(front)
+    #         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+    if len(cntsOrange)> 0:
         minRadius = 1
-        validContours = [c for c in cnts if cv2.minEnclosingCircle(c)[1] > minRadius]
+        validContours = [c for c in cntsOrange if cv2.minEnclosingCircle(c)[1] > minRadius]
         for c in validContours:
             ((x,y), radius) = cv2.minEnclosingCircle(c)
             M = cv2.moments(c)
@@ -70,9 +77,27 @@ while True:
                 if 0.82 < circularity < 1.5:
                     if M["m00"] > 0:
                         
-                        cv2.circle(frame, (int(x), int(y)), int(radius), (0, 255, 255), 2)
-                        cv2.circle(frame, center, 5, (0, 0, 255), -1)
+                        cv2.circle(frame, (int(x), int(y)), int(radius), (20, 255, 255), 2)
+                        cv2.circle(frame, center, 5, (20, 255, 255), -1)
 
+    if len(cntsWhite)> 0:
+        minRadius = 1
+        validContours = [c for c in cntsWhite if cv2.minEnclosingCircle(c)[1] > minRadius]
+        for c in validContours:
+            ((x,y), radius) = cv2.minEnclosingCircle(c)
+            M = cv2.moments(c)
+            center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+            listOfBalls.append(center)
+
+            if radius > minRadius:
+                approx = cv2.approxPolyDP(c, 0.02 * cv2.arcLength(c, True), True)
+                circularity = 4 * np.pi * (cv2.contourArea(c) / (cv2.arcLength(c, True) ** 2))
+
+                if 0.82 < circularity < 1.5:
+                    if M["m00"] > 0:
+                        
+                        cv2.circle(frame, (int(x), int(y)), int(radius), (0, 0, 0), 2)
+                        cv2.circle(frame, center, 5, (0, 0, 0), -1)
 
     # Display the resulting frame
     cv2.imshow('Webcam Feed', frame)

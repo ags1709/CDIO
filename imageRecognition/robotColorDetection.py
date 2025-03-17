@@ -50,24 +50,22 @@ while True:
     maskBlue = cv2.erode(maskBlue, None, iterations=2)
     maskBlue = cv2.dilate(maskBlue, None, iterations=2)
 
-    mask = cv2.bitwise_or(maskGreen, maskBlue)
+    cntsFront, _ = cv2.findContours(maskGreen.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cntsBack, _ = cv2.findContours(maskBlue.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    cnts = imutils.grab_contours(cnts)
-    center = None
+    if len(cntsFront) > 0:
+        for front in cntsFront:  # front is a single contour now
+            x, y, w, h = cv2.boundingRect(front)
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-
-    if len(cnts) > 0:
-        for c in cnts:
-            # Get bounding box around detected colored region
-            x, y, w, h = cv2.boundingRect(c)
-
-            # Draw bounding box (blue)
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
 
             # Display text label above the bounding box
             # cv2.putText(frame, "Detected Color", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
-
+    if len(cntsBack) > 0:
+        for back in cntsBack:
+            c, v, b, l = cv2.boundingRect(back)
+            
+            cv2.rectangle(frame, (c, v), (c + b, v + l), (255, 0, 0), 2)
     # if len(cnts)> 0:
     #     minRadius = 1
     #     validContours = [c for c in cnts if cv2.minEnclosingCircle(c)[1] > minRadius]
