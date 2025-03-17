@@ -26,6 +26,14 @@ while True:
     lowerWhite = (0, 0, 180)
     upperWhite = (180, 30, 255)
 
+
+    # Updated ranges to that might handle differing light conditions better?
+    # lowerOrange = (10, 70, 80) 
+    # upperOrange = (65, 255, 255)
+
+    # lowerWhite = (0, 0, 150) 
+    # upperWhite = (120, 40, 255)
+
     
     frame = cv2.resize(frame, (1280, 720))
     blurred = cv2.GaussianBlur(frame, (9,9),0)
