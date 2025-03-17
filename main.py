@@ -28,7 +28,23 @@ def main():
         backrobots = robot_detector.BackRobotDetection(frame) 
 
         for ball in orangeballs:
-            cv2.circle(frame, ball, 10, (0, 165, 255), -1)  # Draw for each orange ball 
+            cv2.circle(frame, ball, 2, (0, 165, 255), 2)  # Draw for each orange ball
+        for white in whiteballs: 
+            cv2.circle(frame, white, 2, (0, 0, 0), 2)  # Draw for each orange ball 
+
+        for robot in frontrobots:
+            if isinstance(robot, tuple) and len(robot) == 2:  # Ensure it's a tuple with two elements
+                x, y = robot
+                cv2.rectangle(frame, (x - 15, y - 15), (x + 15, y + 15), (0, 255, 0), 2)  
+            else:
+                print("Unexpected format in frontrobots:", robot)
+
+        for robot in backrobots:
+            if isinstance(robot, tuple) and len(robot) == 2:  # Ensure it's a tuple with two elements
+                x, y = robot
+                cv2.rectangle(frame, (x - 15, y - 15), (x + 15, y + 15), (255, 0, 0), 2)  
+            else:
+                print("Unexpected format in backrobots:", robot)
 
         print("Orange Balls detected:", orangeballs)
         print("White Balls detected:", whiteballs)
