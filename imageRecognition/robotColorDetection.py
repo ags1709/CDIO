@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import imutils
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(2)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
 if not cap.isOpened():
@@ -66,24 +66,12 @@ while True:
             cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
 
             # Display text label above the bounding box
-            cv2.putText(frame, "Detected Color", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+            # cv2.putText(frame, "Detected Color", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
 
     # if len(cnts)> 0:
     #     minRadius = 1
     #     validContours = [c for c in cnts if cv2.minEnclosingCircle(c)[1] > minRadius]
     #     for c in validContours:
-    #         ((x,y), radius) = cv2.minEnclosingCircle(c)
-    #         M = cv2.moments(c)
-    #         center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-    #         listOfBalls.append(center)
-
-    #         if radius > minRadius:
-    #             approx = cv2.approxPolyDP(c, 0.02 * cv2.arcLength(c, True), True)
-    #             circularity = 4 * np.pi * (cv2.contourArea(c) / (cv2.arcLength(c, True) ** 2))
-
-    #             if 0.82 < circularity < 1.5:
-    #                 if M["m00"] > 0:
-                        
     #                     cv2.circle(frame, (int(x), int(y)), int(radius), (0, 255, 255), 2)
     #                     cv2.circle(frame, center, 5, (0, 0, 255), -1)
 
