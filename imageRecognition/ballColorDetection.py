@@ -5,8 +5,8 @@ class BallDetection:
     def __init__(self):
         self.lowerWhite = (0, 0, 180)
         self.upperWhite = (180, 30, 255)
-        self.lowerOrange = (10, 70, 80) 
-        self.upperOrange = (65, 255, 255)
+        self.lowerOrange = (15, 150, 150) 
+        self.upperOrange = (25, 255, 255)
 
     def DetectOrange(self, frame):        
         listOfOrangeBalls = []
@@ -16,19 +16,12 @@ class BallDetection:
         # Updated ranges to that might handle differing light conditions better?
         # lowerWhite = (0, 0, 150) 
         # upperWhite = (120, 40, 255)
-
-            
-        frame = cv2.resize(frame, (1280, 720))
         blurred = cv2.GaussianBlur(frame, (9,9),0)
         hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
-
         maskOrange = cv2.inRange(hsv, self.lowerOrange, self.upperOrange)
         
         maskOrange = cv2.erode(maskOrange, None, iterations=2)
         maskOrange = cv2.dilate(maskOrange, None, iterations=2)
-
-
-
         cntsOrange, _ = cv2.findContours(maskOrange.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             # cnts = cv2.findContours(maskWhite, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             # cnts = imutils.grab_contours(cnts)
@@ -64,7 +57,6 @@ class BallDetection:
     def DetectWhite(self, frame):
         listofWhiteBalls = []
 
-        frame = cv2.resize(frame, (1280, 720))
         blurred = cv2.GaussianBlur(frame, (9,9),0)
         hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
 

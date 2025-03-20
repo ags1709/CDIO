@@ -1,6 +1,5 @@
 import cv2
-import numpy as np
-import imutils
+
 class RobotDetection:
     def __init__(self):
         # Adjusted Green color range
@@ -13,7 +12,6 @@ class RobotDetection:
 
     def RobotFrontDetection(self, frame):
         frontRobotList = []
-        frame = cv2.resize(frame, (1280, 720))
         blurred = cv2.GaussianBlur(frame, (9,9),0)
         hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
 
@@ -35,7 +33,6 @@ class RobotDetection:
 
     def BackRobotDetection(self, frame):
         backRobotList = []
-        frame = cv2.resize(frame, (1280, 720))
         blurred = cv2.GaussianBlur(frame, (9,9),0)
         hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
 

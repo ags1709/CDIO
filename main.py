@@ -1,9 +1,10 @@
 import cv2
+import socket
 from imageRecognition.ballColorDetection import BallDetection
 from imageRecognition.robotColorDetection import RobotDetection
 
 def main():
-    cap = cv2.VideoCapture(2)
+    cap = cv2.VideoCapture(02)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
     
@@ -27,20 +28,20 @@ def main():
         frontrobots = robot_detector.RobotFrontDetection(frame) 
         backrobots = robot_detector.BackRobotDetection(frame) 
 
-        for ball in orangeballs:
-            cv2.circle(frame, ball, 2, (0, 165, 255), 2)  # Draw for each orange ball
-        for white in whiteballs: 
-            cv2.circle(frame, white, 2, (0, 0, 0), 2)  # Draw for each orange ball 
+        # for ball in orangeballs:
+        #     cv2.circle(frame, ball, 2, (0, 165, 255), 2)
+        # for white in whiteballs: 
+        #     cv2.circle(frame, white, 2, (0, 0, 0), 2)
 
         for robot in frontrobots:
-            if isinstance(robot, tuple) and len(robot) == 2:  # Ensure it's a tuple with two elements
+            if isinstance(robot, tuple) and len(robot) == 2:
                 x, y = robot
                 cv2.rectangle(frame, (x - 15, y - 15), (x + 15, y + 15), (0, 255, 0), 2)  
             else:
                 print("Unexpected format in frontrobots:", robot)
 
         for robot in backrobots:
-            if isinstance(robot, tuple) and len(robot) == 2:  # Ensure it's a tuple with two elements
+            if isinstance(robot, tuple) and len(robot) == 2:
                 x, y = robot
                 cv2.rectangle(frame, (x - 15, y - 15), (x + 15, y + 15), (255, 0, 0), 2)  
             else:
