@@ -1,5 +1,7 @@
 import cv2
 import numpy as np
+from ultralytics import YOLO
+from colors import get_color_name
 
 class BallDetection:
     def __init__(self):
@@ -7,15 +9,36 @@ class BallDetection:
         self.upperWhite = (180, 30, 255)
         self.lowerOrange = (15, 150, 150) 
         self.upperOrange = (25, 255, 255)
+        self.model = YOLO("yolov8_multi_gpu.pt") # self trained Ball detection model
+    
+    
+    def detectBalls(self, frame):
+        listOfBalls = []
+        results = self.model(frame)
 
-    def DetectOrange(self, frame):        
+        for result in results:
+            for box in result.boxes:
+                x1, y1, x2, y2 = map(int, box.xyxy[0])  # Bounding box coordinates
+                confidence = box.conf[0].item()
+                if confidence > 0.15:  # Confidence threshold
+                    cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                    midx = int(x1 + (x2-x1)/2)
+                    midy = int(y1 + (y2-y1)/2)
+                    listOfBalls.append((midx, midy))
+                    color_ball = frame[midy][midx]
+                    cv2.putText(frame, f"Ball {confidence:.2f}, {get_color_name(color_ball)}/{color_ball}", (x1, y1 - 10),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        return listOfBalls
+    
+    def DetectOrange(self, frame):
         listOfOrangeBalls = []
-        # Orange color for the walls/bounds are around 5-10 for lower and upper
-        # lowerOrange = (15, 150, 150)
-        # upperOrange = (25, 255, 255)
-        # Updated ranges to that might handle differing light conditions better?
-        # lowerWhite = (0, 0, 150) 
-        # upperWhite = (120, 40, 255)
+        #  # Draw detections
+
+        # col = np.array(frame)
+        # print(col)
+
+        # print(type(results[0].boxes))
+       
         blurred = cv2.GaussianBlur(frame, (9,9),0)
         hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
         maskOrange = cv2.inRange(hsv, self.lowerOrange, self.upperOrange)
@@ -35,7 +58,7 @@ class BallDetection:
         if len(cntsOrange)> 0:
             minRadius = 1
             validContours = [c for c in cntsOrange if cv2.minEnclosingCircle(c)[1] > minRadius]
-            for c in validContours:
+            for c in validContours:                                               
                 ((x,y), radius) = cv2.minEnclosingCircle(c)
                 M = cv2.moments(c)
                 center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
@@ -50,7 +73,6 @@ class BallDetection:
                                 
                             cv2.circle(frame, (int(x), int(y)), int(radius), (20, 255, 255), 2)
                             cv2.circle(frame, center, 5, (20, 255, 255), -1)
-
 
         return listOfOrangeBalls
     
