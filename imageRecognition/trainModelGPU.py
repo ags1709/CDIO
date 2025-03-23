@@ -9,7 +9,7 @@ print(HOME)
 
 
 import ultralytics
-ultralytics.checks()
+# ultralytics.checks()
 
 import torch
 from ultralytics import YOLO
