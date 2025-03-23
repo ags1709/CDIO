@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 from ultralytics import YOLO
-from colors import get_color_name
+from imageRecognition.colors import get_color_name
 
 class BallDetection:
     def __init__(self):
@@ -9,7 +9,7 @@ class BallDetection:
         self.upperWhite = (180, 30, 255)
         self.lowerOrange = (15, 150, 150) 
         self.upperOrange = (25, 255, 255)
-        self.model = YOLO("yolov8_multi_gpu.pt") # self trained Ball detection model
+        self.model = YOLO("imageRecognition/yolov8_multi_gpu.pt") # self trained Ball detection model
     
     
     def detectBalls(self, frame):
@@ -26,7 +26,7 @@ class BallDetection:
                     midy = int(y1 + (y2-y1)/2)
                     listOfBalls.append((midx, midy))
                     color_ball = frame[midy][midx]
-                    cv2.putText(frame, f"Ball {confidence:.2f}, {get_color_name(color_ball)}/{color_ball}", (x1, y1 - 10),
+                    cv2.putText(frame, f"Ball {confidence:.2f}, {colors.get_color_name(color_ball)}/{color_ball}", (x1, y1 - 10),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
         return listOfBalls
     

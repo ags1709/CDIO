@@ -1,7 +1,7 @@
 import cv2
 import socket
-from ballColorDetection import BallDetection
-from robotColorDetection import RobotDetection
+from imageRecognition.ballColorDetection import BallDetection
+from imageRecognition.robotColorDetection import RobotDetection
 from ultralytics import YOLO
 # from col import get_color_name
 
