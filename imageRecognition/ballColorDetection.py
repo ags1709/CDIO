@@ -21,13 +21,13 @@ class BallDetection:
                 x1, y1, x2, y2 = map(int, box.xyxy[0])  # Bounding box coordinates
                 confidence = box.conf[0].item()
                 if confidence > 0.15:  # Confidence threshold
-                    cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                    # cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
                     midx = int(x1 + (x2-x1)/2)
                     midy = int(y1 + (y2-y1)/2)
-                    listOfBalls.append((midx, midy))
+                    listOfBalls.append([(x1, y1, x2, y2), (midx, midy)])
                     color_ball = frame[midy][midx]
-                    cv2.putText(frame, f"Ball {confidence:.2f}, {get_color_name(color_ball)}/{color_ball}", (x1, y1 - 10),
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                    # cv2.putText(frame, f"Ball {confidence:.2f}, {get_color_name(color_ball)}/{color_ball}", (x1, y1 - 10),
+                    #             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
         return listOfBalls
     
     def DetectOrange(self, frame):

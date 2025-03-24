@@ -30,8 +30,8 @@ class RobotDetection:
                 x, y, w, h = cv2.boundingRect(front)
                 M = cv2.moments(front)
                 center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-                frontRobotList.append(center)
-                cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2) 
+                frontRobotList.append([(x, y, x+w, y+h), center])
+                # cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2) 
                 
         return frontRobotList
 
@@ -54,7 +54,7 @@ class RobotDetection:
                 x, y, w, h = cv2.boundingRect(back)
                 M = cv2.moments(back)
                 center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-                backRobotList.append(center)
-                cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
+                backRobotList.append([(x, y, x+w, y+h), center])
+                # cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
 
         return backRobotList

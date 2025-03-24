@@ -2,13 +2,16 @@ import cv2
 import socket
 from imageRecognition.ballColorDetection import BallDetection
 from imageRecognition.robotColorDetection import RobotDetection
+from imageRecognition.drawBoundingBoxes import drawBoxes
 from ultralytics import YOLO
 # from col import get_color_name
 
 def main():
     cap = cv2.VideoCapture(2)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+    # cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+    # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 960)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 540)
     
     # model = YOLO("yolov8_multi_gpu.pt")  # Use 'yolov8n.pt' for the smallest, fastest model
     # modelResults = model(frame)
@@ -33,10 +36,23 @@ def main():
         # orangeballs = ball_detector.DetectOrange(frame) 
         # whiteballs = ball_detector.DetectWhite(frame) 
         
-        # balls = ball_detector.detectBalls(frame)
+        balls = ball_detector.detectBalls(frame.copy())
         # print(balls)
-        frontrobots = robot_detector.RobotFrontDetection(frame) 
-        backrobots = robot_detector.BackRobotDetection(frame)
+        frontrobots = robot_detector.RobotFrontDetection(frame.copy()) 
+        backrobots = robot_detector.BackRobotDetection(frame.copy())
+        boxesToDraw = []
+        # for ball in balls:
+        #     boxesToDraw.append(ball[0])
+        for front in frontrobots:
+            boxesToDraw.append(front[0])
+        for back in backrobots:
+            boxesToDraw.append(back[0])
+        for ball in balls:
+            boxesToDraw.append(ball[0])
+
+        drawBoxes(frame, boxesToDraw)
+        
+        
         # print(frontrobots)
 
         # for ball in orangeballs:
