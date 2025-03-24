@@ -26,7 +26,7 @@ class BallDetection:
                     midy = int(y1 + (y2-y1)/2)
                     listOfBalls.append((midx, midy))
                     color_ball = frame[midy][midx]
-                    cv2.putText(frame, f"Ball {confidence:.2f}, {colors.get_color_name(color_ball)}/{color_ball}", (x1, y1 - 10),
+                    cv2.putText(frame, f"Ball {confidence:.2f}, {get_color_name(color_ball)}/{color_ball}", (x1, y1 - 10),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
         return listOfBalls
     

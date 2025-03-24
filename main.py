@@ -6,7 +6,7 @@ from ultralytics import YOLO
 # from col import get_color_name
 
 def main():
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(2)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
     
@@ -33,10 +33,11 @@ def main():
         # orangeballs = ball_detector.DetectOrange(frame) 
         # whiteballs = ball_detector.DetectWhite(frame) 
         
-        balls = ball_detector.detectBalls(frame)
-        print(balls)
-        # frontrobots = robot_detector.RobotFrontDetection(frame) 
+        # balls = ball_detector.detectBalls(frame)
+        # print(balls)
+        frontrobots = robot_detector.RobotFrontDetection(frame) 
         # backrobots = robot_detector.BackRobotDetection(frame)
+        print(frontrobots)
 
         # for ball in orangeballs:
         #     cv2.circle(frame, ball, 2, (0, 165, 255), 2)
