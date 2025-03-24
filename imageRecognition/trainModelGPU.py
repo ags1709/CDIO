@@ -13,7 +13,7 @@ ultralytics.checks()
 
 import torch
 from ultralytics import YOLO
-model = YOLO('yolov8m.pt')
+model = YOLO('yolov8m.yaml')
 
 # if torch.cuda.is_available() and torch.cuda.device_count() > 1:
 #     print(f"Training on {torch.cuda.device_count()} GPUs.")
