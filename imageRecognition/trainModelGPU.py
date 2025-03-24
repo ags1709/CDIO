@@ -9,16 +9,16 @@ print(HOME)
 
 
 import ultralytics
-# ultralytics.checks()
+ultralytics.checks()
 
 import torch
 from ultralytics import YOLO
 model = YOLO('yolov8m.pt')
 
-if torch.cuda.is_available() and torch.cuda.device_count() > 1:
-    print(f"Training on {torch.cuda.device_count()} GPUs.")
-    # Wrap the model with DataParallel
-    model = torch.nn.DataParallel(model)  # Automatically uses all available GPUs
+# if torch.cuda.is_available() and torch.cuda.device_count() > 1:
+#     print(f"Training on {torch.cuda.device_count()} GPUs.")
+#     # Wrap the model with DataParallel
+#     model = torch.nn.DataParallel(model)  # Automatically uses all available GPUs
 
 # Move model to GPUs
 model = model.cuda()
@@ -31,10 +31,10 @@ print("Training")
 
 train_config = {
     'epochs': 25,  # Number of training epochs
-    'batch': 8,  # Batch size
+    'batch': 32,  # Batch size
     'imgsz': 800,  # Input image size for training
-    'device': 'cuda' if torch.cuda.is_available() else 'cpu',  # Use GPU if available
-    'device': '0',
+    #'device': 'cuda' if torch.cuda.is_available() else 'cpu',  # Use GPU if available
+    'device': '0,1',
     'data': f"{dloc}data.yaml",  # Path to dataset YAML file
     'project': 'runs/train',  # Path to save training results
     'name': 'experiment',  # Name of the experiment
