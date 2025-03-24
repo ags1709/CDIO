@@ -36,8 +36,8 @@ def main():
         # balls = ball_detector.detectBalls(frame)
         # print(balls)
         frontrobots = robot_detector.RobotFrontDetection(frame) 
-        # backrobots = robot_detector.BackRobotDetection(frame)
-        print(frontrobots)
+        backrobots = robot_detector.BackRobotDetection(frame)
+        # print(frontrobots)
 
         # for ball in orangeballs:
         #     cv2.circle(frame, ball, 2, (0, 165, 255), 2)

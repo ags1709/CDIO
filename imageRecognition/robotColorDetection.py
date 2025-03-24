@@ -3,12 +3,16 @@ import cv2
 class RobotDetection:
     def __init__(self):
         # Adjusted Green color range
-        self.lowerGreen = (30, 40, 40)  
-        self.upperGreen = (90, 255, 255)
+        # self.lowerGreen = (30, 40, 40)  
+        # self.upperGreen = (90, 255, 255)
+        self.lowerGreen = (40, 100, 100)  
+        self.upperGreen = (80, 255, 255)
 
         # Adjusted Blue color range
-        self.lowerBlue = (85, 40, 40)  
-        self.upperBlue = (135, 255, 255)
+        # self.lowerBlue = (85, 40, 40)  
+        # self.upperBlue = (135, 255, 255)
+        self.lowerBlue = (100, 150, 100)  
+        self.upperBlue = (130, 255, 255)
 
     def RobotFrontDetection(self, frame):
         frontRobotList = []
@@ -29,7 +33,7 @@ class RobotDetection:
                 frontRobotList.append(center)
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2) 
                 
-        return frontRobotList, 
+        return frontRobotList
 
     def BackRobotDetection(self, frame):
         backRobotList = []
@@ -53,14 +57,4 @@ class RobotDetection:
                 backRobotList.append(center)
                 cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
 
-
-                # Display text label above the bounding box
-                # cv2.putText(frame, "Detected Color", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
-
-        # if len(cnts)> 0:
-        #     minRadius = 1
-        #     validContours = [c for c in cnts if cv2.minEnclosingCircle(c)[1] > minRadius]
-        #     for c in validContours:
-        #                     cv2.circle(frame, (int(x), int(y)), int(radius), (0, 255, 255), 2)
-        #                     cv2.circle(frame, center, 5, (0, 0, 255), -1)
         return backRobotList
