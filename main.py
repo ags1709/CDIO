@@ -33,10 +33,10 @@ def main():
             break
 
         
-        # orangeballs = ball_detector.DetectOrange(frame) 
-        # whiteballs = ball_detector.DetectWhite(frame) 
+        orangeballs = ball_detector.DetectOrange(frame.copy()) 
+        # whiteballs = ball_detector.DetectWhite(frame.copy()) 
         
-        balls = ball_detector.detectBalls(frame.copy())
+        # balls = ball_detector.detectBalls(frame.copy())
         # print(balls)
         frontrobots = robot_detector.RobotFrontDetection(frame.copy()) 
         backrobots = robot_detector.BackRobotDetection(frame.copy())
@@ -47,11 +47,16 @@ def main():
             boxesToDraw.append(front[0])
         for back in backrobots:
             boxesToDraw.append(back[0])
-        for ball in balls:
+        for ball in orangeballs:
             boxesToDraw.append(ball[0])
 
         drawBoxes(frame, boxesToDraw)
+
         
+
+
+        
+
         
         # print(frontrobots)
 

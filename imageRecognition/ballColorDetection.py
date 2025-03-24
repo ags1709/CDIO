@@ -56,23 +56,25 @@ class BallDetection:
             #         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
         if len(cntsOrange)> 0:
-            minRadius = 1
-            validContours = [c for c in cntsOrange if cv2.minEnclosingCircle(c)[1] > minRadius]
-            for c in validContours:                                               
-                ((x,y), radius) = cv2.minEnclosingCircle(c)
+            # minRadius = 1
+            # validContours = [c for c in cntsOrange if cv2.minEnclosingCircle(c)[1] > minRadius]
+            # for c in validContours:
+            for c in cntsOrange:                                               
+                x, y, w, h = cv2.boundingRect(c)
+                # ((x,y), radius) = cv2.minEnclosingCircle(c)
                 M = cv2.moments(c)
                 center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-                listOfOrangeBalls.append(center)
+                listOfOrangeBalls.append([(x,y,x+w,y+h),center])
+                
+                # if radius > minRadius:
+                #     approx = cv2.approxPolyDP(c, 0.02 * cv2.arcLength(c, True), True)
+                #     circularity = 4 * np.pi * (cv2.contourArea(c) / (cv2.arcLength(c, True) ** 2))
 
-                if radius > minRadius:
-                    approx = cv2.approxPolyDP(c, 0.02 * cv2.arcLength(c, True), True)
-                    circularity = 4 * np.pi * (cv2.contourArea(c) / (cv2.arcLength(c, True) ** 2))
-
-                    if 0.82 < circularity < 1.5:
-                        if M["m00"] > 0:
+                #     if 0.82 < circularity < 1.5:
+                #         if M["m00"] > 0:
                                 
-                            cv2.circle(frame, (int(x), int(y)), int(radius), (20, 255, 255), 2)
-                            cv2.circle(frame, center, 5, (20, 255, 255), -1)
+                #             cv2.circle(frame, (int(x), int(y)), int(radius), (20, 255, 255), 2)
+                #             cv2.circle(frame, center, 5, (20, 255, 255), -1)
 
         return listOfOrangeBalls
     
@@ -89,23 +91,25 @@ class BallDetection:
         cntsWhite, _ = cv2.findContours(maskWhite.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
 
-        if len(cntsWhite)> 0:
-            minRadius = 1
-            validContours = [c for c in cntsWhite if cv2.minEnclosingCircle(c)[1] > minRadius]
-            for c in validContours:
-                ((x,y), radius) = cv2.minEnclosingCircle(c)
+        if len(cntsWhite) > 0:
+            # minRadius = 1
+            # validContours = [c for c in cntsWhite if cv2.minEnclosingCircle(c)[1] > minRadius]
+            for c in cntsWhite:
+                # ((x,y), radius) = cv2.minEnclosingCircle(c)
+                x, y, w, h = cv2.boundingRect(c)
                 M = cv2.moments(c)
                 if(M["m10"] != 0 or M["m00"] != 0 or M["m01"] != 0):
                     center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
-                    listofWhiteBalls.append(center)
+                    listofWhiteBalls.append([(x,y,x+w,y+h), center])
 
-                    if radius > minRadius:
-                        approx = cv2.approxPolyDP(c, 0.02 * cv2.arcLength(c, True), True)
-                        circularity = 4 * np.pi * (cv2.contourArea(c) / (cv2.arcLength(c, True) ** 2))
 
-                        if 0.82 < circularity < 1.5:
-                            if M["m00"] > 0:
+                    # if radius > minRadius:
+                    #     approx = cv2.approxPolyDP(c, 0.02 * cv2.arcLength(c, True), True)
+                    #     circularity = 4 * np.pi * (cv2.contourArea(c) / (cv2.arcLength(c, True) ** 2))
+
+                    #     if 0.82 < circularity < 1.5:
+                    #         if M["m00"] > 0:
                                     
-                                cv2.circle(frame, (int(x), int(y)), int(radius), (0, 0, 0), 2)
-                                cv2.circle(frame, center, 5, (0, 0, 0), -1)
+                    #             cv2.circle(frame, (int(x), int(y)), int(radius), (0, 0, 0), 2)
+                    #             cv2.circle(frame, center, 5, (0, 0, 0), -1)
         return listofWhiteBalls
