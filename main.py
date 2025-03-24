@@ -3,6 +3,9 @@ import socket
 from imageRecognition.ballColorDetection import BallDetection
 from imageRecognition.robotColorDetection import RobotDetection
 from imageRecognition.drawBoundingBoxes import drawBoxes
+from distanceBetweenObjects import calculateDistance
+from angleOfRotationCalculator import calculateAngleOfRotation
+from movementController import calculateSpeedAndRotation
 from ultralytics import YOLO
 # from col import get_color_name
 
@@ -23,15 +26,19 @@ def main():
     ball_detector = BallDetection()
     robot_detector = RobotDetection()  
     # robot_detector = RobotColorDetection
+    import socket
 
-
+    # client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # client_socket.connect(("192.168.138.130", 12358))  # Connect to server
+    counter=0
     while True:
         ret, frame = cap.read()
         
         if not ret:
             print("Failed to grab frame")
             break
-
+        
+        
         
         orangeballs = ball_detector.DetectOrange(frame.copy()) 
         # whiteballs = ball_detector.DetectWhite(frame.copy()) 
@@ -52,12 +59,23 @@ def main():
 
         drawBoxes(frame, boxesToDraw)
 
-        
+        robotToBallDistance = None
+        robotToBallAngle = None
+        if frontrobots and orangeballs:
+            robotToBallDistance = calculateDistance(frontrobots[0][1], orangeballs[0][1])
+        if frontrobots and backrobots and orangeballs:
+            robotToBallAngle = calculateAngleOfRotation(frontrobots[0][1], backrobots[0][1], orangeballs[0][1])
 
+        robotMovement = calculateSpeedAndRotation(robotToBallDistance, robotToBallAngle)
 
+        # print(f"Distance to ball: {robotToBallDistance}")
+        print(f"Robot angle to ball: {robotToBallAngle}")
+        # print(f"Steering and speed: {robotMovement}")
         
+        
+        # client_socket.sendall(f"{round(robotMovement[0])}#{round(robotMovement[1])}\n".encode())
 
-        
+        counter+=1
         # print(frontrobots)
 
         # for ball in orangeballs:

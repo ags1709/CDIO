@@ -7,3 +7,9 @@ def calculateAngleOfRotation(forwardsPoint, backwardsPoint, goalPoint):
 
     return angleOfRotation
 
+point1 = (2,2)
+point2 = (1,1)
+goalPoint = (1, 1.1)
+
+angle = calculateAngleOfRotation(point1, point2, goalPoint)
+print(angle)
