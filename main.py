@@ -6,6 +6,7 @@ from imageRecognition.drawBoundingBoxes import drawBoxes
 from distanceBetweenObjects import calculateDistance
 from angleOfRotationCalculator import calculateAngleOfRotation
 from movementController import calculateSpeedAndRotation
+from imageRecognition.obstacleDetection import ObstacleDetection
 from ultralytics import YOLO
 # from col import get_color_name
 
@@ -25,6 +26,7 @@ def main():
     
     ball_detector = BallDetection()
     robot_detector = RobotDetection()  
+    obstacle_detector = ObstacleDetection()
     # robot_detector = RobotColorDetection
     import socket
 
@@ -47,6 +49,7 @@ def main():
         # print(balls)
         frontrobots = robot_detector.RobotFrontDetection(frame.copy()) 
         backrobots = robot_detector.BackRobotDetection(frame.copy())
+        obstacles = obstacle_detector.detectObstacle(frame.copy())
         boxesToDraw = []
         # for ball in balls:
         #     boxesToDraw.append(ball[0])
@@ -56,6 +59,8 @@ def main():
             boxesToDraw.append(back[0])
         for ball in orangeballs:
             boxesToDraw.append(ball[0])
+        for obstacle in obstacles:
+            boxesToDraw.append(obstacle[0])
 
         drawBoxes(frame, boxesToDraw)
 
