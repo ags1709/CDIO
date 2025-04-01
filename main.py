@@ -1,7 +1,7 @@
 import cv2
 import socket
-from imageRecognition.ballColorDetection import BallDetection
-from imageRecognition.robotColorDetection import RobotDetection
+from imageRecognition.ballDetection import BallDetection
+from imageRecognition.robotDetection import RobotDetection
 from imageRecognition.drawBoundingBoxes import drawBoxes
 from distanceBetweenObjects import calculateDistance
 from angleOfRotationCalculator import calculateAngleOfRotation
@@ -25,7 +25,7 @@ def main():
         return
     
     ball_detector = BallDetection()
-    robot_detector = RobotDetection()  
+    robot_detector = RobotDetection()
     obstacle_detector = ObstacleDetection()
     # robot_detector = RobotColorDetection
     import socket
