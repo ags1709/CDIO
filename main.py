@@ -50,6 +50,27 @@ def main():
         frontrobots = robot_detector.RobotFrontDetection(frame.copy()) 
         backrobots = robot_detector.BackRobotDetection(frame.copy())
         obstacles = obstacle_detector.detectObstacle(frame.copy())
+
+        # -------------------------------
+        # Calculate goal position
+
+        # Find the obstacle with the biggest x value which will almost certainly be the boundary
+        largestObstacle = max(obstacles, key=lambda obstacle: obstacle[0][2])
+        # get the bounding box of obstacle
+        x1, y1, x2, y2 = largestObstacle[0]
+        # figure out which side the goals are on, x or y
+        if abs(x1 - x2) > abs(y1 - y2):
+            # goals are along y axis
+            yGoal = abs(y1-y2)/2 + y1
+            xGoal = x1
+        else:
+            # goals are along x axis
+            yGoal = y1
+            xGoal = abs(x1-x2)/2 + x1
+        goalPosition = (xGoal, yGoal)
+
+        # --------------------------------
+        
         boxesToDraw = []
         # for ball in balls:
         #     boxesToDraw.append(ball[0])
