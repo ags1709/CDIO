@@ -3,4 +3,6 @@ Obstacle Avoidance
 Ball Selection
 Sensor to detect when ball is collected
 Goal calculation from image detection of boundaries
+Navigate to goal
+
 
