@@ -8,6 +8,7 @@ from angleOfRotationCalculator import calculateAngleOfRotation
 from movementController import calculateSpeedAndRotation
 from imageRecognition.obstacleDetection import ObstacleDetection
 from ultralytics import YOLO
+import math
 # from col import get_color_name
 
 # Test main for testing different things
@@ -32,8 +33,8 @@ def main():
     # robot_detector = RobotColorDetection
     import socket
 
-    # client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # client_socket.connect(("192.168.138.130", 12358))  # Connect to server
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client_socket.connect(("192.168.137.139", 12359))  # Connect to server
     counter=0
     while True:
         ret, frame = cap.read()
@@ -72,15 +73,15 @@ def main():
             robotToBallDistance = calculateDistance(frontrobots[0][1], orangeballs[0][1])
         if frontrobots and backrobots and orangeballs:
             robotToBallAngle = calculateAngleOfRotation(frontrobots[0][1], backrobots[0][1], orangeballs[0][1])
+            print(f"Robot angle to ball: {robotToBallAngle*180/math.pi}")
 
         robotMovement = calculateSpeedAndRotation(robotToBallDistance, robotToBallAngle)
 
         # print(f"Distance to ball: {robotToBallDistance}")
-        print(f"Robot angle to ball: {robotToBallAngle}")
         # print(f"Steering and speed: {robotMovement}")
         
         
-        # client_socket.sendall(f"{round(robotMovement[0])}#{round(robotMovement[1])}\n".encode())
+        client_socket.sendall(f"{round(robotMovement[0])}#{round(robotMovement[1])}\n".encode())
 
         counter+=1
         # print(frontrobots)

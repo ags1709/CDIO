@@ -4,7 +4,7 @@ import numpy as np
 def calculateSpeedAndRotation(distanceFromBall, angleToBall):
     # Proportionality constants. Tune to change how fast speed changes
     kp_speed = 0.2
-    kp_turn = 50
+    kp_turn = 100
 
     targetDistanceFromBall = 20
     targetAngleToBall = 0
