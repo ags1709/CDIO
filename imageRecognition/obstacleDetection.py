@@ -5,17 +5,23 @@ import cv2
 class ObstacleDetection:
 
     def __init__(self):
-        self.lowerOrange = (0, 150, 150)
-        self.upperOrange = (10, 255, 255)
+        self.lowerRed1 = (0, 120, 100)
+        self.upperRed1 = (10, 255, 255)
 
+        self.lowerRed2 = (170, 120, 100)
+        self.upperRed2 = (180, 255, 255)
     
     def detectObstacle(self, frame):
         listOfObstacles = []
 
         blurred = cv2.GaussianBlur(frame, (9,9),0)
         hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
-        maskRed = cv2.inRange(hsv, self.lowerOrange, self.upperOrange)
+        # maskRed = cv2.inRange(hsv, self.lowerRed, self.upperRed)
 
+        mask1 = cv2.inRange(hsv, self.lowerRed1, self.upperRed1)
+        mask2 = cv2.inRange(hsv, self.lowerRed2, self.upperRed2)
+
+        maskRed = cv2.bitwise_or(mask1, mask2)
         maskRed = cv2.erode(maskRed, None, iterations=2)
         maskRed = cv2.dilate(maskRed, None, iterations=2)
         cntsRed, _ = cv2.findContours(maskRed.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
