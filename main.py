@@ -83,24 +83,6 @@ def main():
         counter+=1
         # print(frontrobots)
 
-        # for ball in orangeballs:
-        #     cv2.circle(frame, ball, 2, (0, 165, 255), 2)
-        # for white in whiteballs: 
-        #     cv2.circle(frame, white, 2, (0, 0, 0), 2)
-
-        # for robot in frontrobots:
-        #     if isinstance(robot, tuple) and len(robot) == 2:
-        #         x, y = robot
-        #         cv2.rectangle(frame, (x - 15, y - 15), (x + 15, y + 15), (0, 255, 0), 2)
-        #     else:
-        #         print("Unexpected format in frontrobots:", robot)
-
-        # for robot in backrobots:
-        #     if isinstance(robot, tuple) and len(robot) == 2:
-        #         x, y = robot
-        #         cv2.rectangle(frame, (x - 15, y - 15), (x + 15, y + 15), (255, 0, 0), 2)  
-        #     else:
-        #         print("Unexpected format in backrobots:", robot)
 
         # print("Orange Balls detected:", orangeballs)
         # print("White Balls detected:", whiteballs)
