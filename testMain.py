@@ -10,7 +10,7 @@ from imageRecognition.obstacleDetection import ObstacleDetection
 from ultralytics import YOLO
 # from col import get_color_name
 
-# Real main for running competition program
+# Test main for testing different things
 
 def main():
     cap = cv2.VideoCapture(2)
@@ -52,19 +52,19 @@ def main():
         frontrobots = robot_detector.RobotFrontDetection(frame.copy()) 
         backrobots = robot_detector.BackRobotDetection(frame.copy())
         obstacles = obstacle_detector.detectObstacle(frame.copy())
-        # boxesToDraw = []
+        boxesToDraw = []
         # for ball in balls:
         #     boxesToDraw.append(ball[0])
-        # for front in frontrobots:
-        #     boxesToDraw.append(front[0])
-        # for back in backrobots:
-        #     boxesToDraw.append(back[0])
-        # for ball in orangeballs:
-        #     boxesToDraw.append(ball[0])
-        # for obstacle in obstacles:
-        #     boxesToDraw.append(obstacle[0])
+        for front in frontrobots:
+            boxesToDraw.append(front[0])
+        for back in backrobots:
+            boxesToDraw.append(back[0])
+        for ball in orangeballs:
+            boxesToDraw.append(ball[0])
+        for obstacle in obstacles:
+            boxesToDraw.append(obstacle[0])
 
-        # drawBoxes(frame, boxesToDraw)
+        drawBoxes(frame, boxesToDraw)
 
         robotToBallDistance = None
         robotToBallAngle = None
