@@ -1,6 +1,15 @@
-TODO: 
+TODO software-wise: 
 Obstacle Avoidance
-Ball Selection
-Sensor to detect when ball is collected
+Ball Selection (Smartly select what ball the robot should currently pursue. Probably just closest ball?)
 Goal calculation from image detection of boundaries
+Navigate to goal
+When and how to switch from ball collection to ball hand-in
+When and how to switch from normal ball pursuing behavior to "ball close to corner" behavior (Using grabber helper etc.)
+Sensor to detect when ball is collected? (Maybe)
 
+
+TODO Imagerecognition-wise:
+Decide on what should be used to recognize robot (colored squares? Maybe one should be different shape? 3d printed stuff?)
+Put together dataset for custom model training (Include ALL relevant things (boundaries, obstacles, eggs, robot, etc. all except balls))
+Train custom model
+make proper color recognition for balls with ball custom model
