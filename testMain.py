@@ -35,8 +35,8 @@ def main():
     # robot_detector = RobotColorDetection
     import socket
 
-    # client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # client_socket.connect(("192.168.137.140", 12359))  # Connect to server
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client_socket.connect(("192.168.137.205", 12358))  # Connect to server
     counter=0
     while True:
         ret, frame = cap.read()
@@ -118,7 +118,7 @@ def main():
         # print(f"Steering and speed: {robotMovement}")
         
         
-        # client_socket.sendall(f"{round(robotMovement[0])}#{round(robotMovement[1])}\n".encode())
+        client_socket.sendall(f"{round(robotMovement[0])}#{round(robotMovement[1])}\n".encode())
 
         counter+=1
         # print(frontrobots)

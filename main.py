@@ -32,7 +32,7 @@ def main():
     # robot_detector = RobotColorDetection
 
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect(("192.168.138.130", 12358))  # Connect to server
+    client_socket.connect(("192.168.137.205", 12358))  # Connect to server
     
     counter=0
     while True:
