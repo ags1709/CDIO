@@ -31,7 +31,7 @@ while True:
         break
 
     elif key & 0xFF == ord('s'):
-        imgName = f"data/{today}_picture_{imgCounter}.png"
+        imgName = f"customData/{today}_picture_{imgCounter}.png"
         cv2.imwrite(imgName, frame)
         print("Screenshot taken")
         imgCounter += 1
