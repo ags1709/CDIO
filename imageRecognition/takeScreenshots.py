@@ -4,8 +4,8 @@ import imutils
 from datetime import date
 
 cap = cv2.VideoCapture(2)
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 960)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 540)
 if not cap.isOpened():
     print("Error: Could not open webcam.")
     exit()
@@ -31,7 +31,7 @@ while True:
         break
 
     elif key & 0xFF == ord('s'):
-        imgName = f"data/{today}_picture_{imgCounter}.png"
+        imgName = f"customData/{today}_picture_{imgCounter}.png"
         cv2.imwrite(imgName, frame)
         print("Screenshot taken")
         imgCounter += 1
