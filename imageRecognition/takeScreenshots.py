@@ -13,7 +13,7 @@ if not cap.isOpened():
 # today = date.today()
 imgCounter = 0
 frameCounter = 0
-batch = 1
+batch = 5
 while True:
 # Capture frame-by-frame
     ret, frame = cap.read()
