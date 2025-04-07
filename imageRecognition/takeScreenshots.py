@@ -10,8 +10,10 @@ if not cap.isOpened():
     print("Error: Could not open webcam.")
     exit()
 
-today = date.today()
+# today = date.today()
 imgCounter = 0
+frameCounter = 0
+batch = 1
 while True:
 # Capture frame-by-frame
     ret, frame = cap.read()
@@ -24,6 +26,12 @@ while True:
     # Display the resulting frame
     cv2.imshow('Webcam Feed', frame)
 
+    if frameCounter % 10 == 0:
+        imgName = f"customData/batch{batch}_picture_{imgCounter}.png"
+        cv2.imwrite(imgName, frame)
+        print("Screenshot taken")
+        imgCounter += 1
+
     key = cv2.waitKey(1)
 
     # Press 'q' to exit
@@ -35,6 +43,7 @@ while True:
         cv2.imwrite(imgName, frame)
         print("Screenshot taken")
         imgCounter += 1
+    frameCounter += 1
 
 # Release the webcam and close the window
 cap.release()
