@@ -105,7 +105,7 @@ def main():
         # print(f"Steering and speed: {robotMovement}")
         
         
-        client_socket.sendall(f"{round(robotMovement[0])}#{round(robotMovement[1])}\n".encode())
+        client_socket.sendall(f"{round(robotMovement[0])}#{round(robotMovement[1])}#False\n".encode())
 
         counter+=1
         # print(frontrobots)
