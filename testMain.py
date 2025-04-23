@@ -95,7 +95,7 @@ def main():
             goalPosition = (xGoal, yGoal)
 
         # --------------------------------
-
+        
         robotToBallDistance = None
         robotToBallAngle = None
         if frontrobots and orangeballs:
@@ -106,8 +106,11 @@ def main():
         for ballorder in balls:
             if ballorder[1] == 'orange':
                 robotToBallDistance = calculateDistance(frontrobots[0][1], ballorder[1])
+                robotToBallAngle = calculateAngleOfRotation(frontrobots[0][1], backrobots[0][1], ballorder[1])
                 break
-            # print(f"Robot angle to ball: {robotToBallAngle*180/math.pi}")
+        
+        
+        # print(f"Robot angle to ball: {robotToBallAngle*180/math.pi}")
         # if goalPosition:
 
         print(ball_order)
