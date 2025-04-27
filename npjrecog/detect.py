@@ -27,38 +27,75 @@ class ObjectDetection():
             raise Exception("Failed to grab grame.")
 
         # Run YOLO detection on the frame
-        results = self.model(frame, conf=0.5)
+        # results = self.model(frame, conf=0.5)
+        result = self.model(frame, conf=0.5)[0]
 
         # Draw detections
-        for result in results:
-            boxes = result.boxes
-            names = self.model.names
+        boxes = result.boxes
+        names = self.model.names
+        
+        # ALL OF OUR CUSTOM DETECTION GOES HERE:
+        whiteBalls = []
+        orangeBalls = []
+        egg = []
+        playfield = []
+        cross = []
+        backRightCorner = []
+        frontRightCorner = []
+        frontLeftCorner = []
+        backLeftCorner = []
+        goals = positionEstimator.estimateGoals(result, frame)
+        
+        for box in boxes:
+            cls_id = int(box.cls[0])
+            conf = float(box.conf[0])
+            label = f"{names[cls_id]} {conf:.2f}"
 
-            for box in boxes:
-                cls_id = int(box.cls[0])
-                conf = float(box.conf[0])
-                label = f"{names[cls_id]} {conf:.2f}"
+            xyxy = box.xyxy[0].cpu().numpy().astype(int)
+            x1, y1, x2, y2 = xyxy
 
-                xyxy = box.xyxy[0].cpu().numpy().astype(int)
-                x1, y1, x2, y2 = xyxy
+            # Draw box
+            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+            # Draw label
+            cv2.putText(frame, label, (x1, y1 - 10),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+            
+            # Add box to its corresponding list
+            if cls_id == 0:
+                whiteBalls.append(((x1, y1), (x2, y2)))
+            elif cls_id == 1:
+                orangeBalls.append(((x1, y1), (x2, y2)))
+            elif cls_id == 2:
+                egg.append(((x1, y1), (x2, y2)))
+            elif cls_id == 3:
+                playfield.append(((x1, y1), (x2, y2)))
+            elif cls_id == 4:
+                cross.append(((x1, y1), (x2, y2)))
+            elif cls_id == 5:
+                backRightCorner.append(((x1, y1), (x2, y2)))
+            elif cls_id == 6:
+                frontRightCorner.append(((x1, y1), (x2, y2)))
+            elif cls_id == 7:
+                frontLeftCorner.append(((x1, y1), (x2, y2)))
+            elif cls_id == 8:
+                backLeftCorner.append(((x1, y1), (x2, y2)))
 
-                # Draw box
-                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                # Draw label
-                cv2.putText(frame, label, (x1, y1 - 10),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
-                
-                # ALL OF OUR CUSTOM DETECTION GOES HERE:
-                goals = positionEstimator.estimateGoals(result, frame)
-                
 
+        # A dictionary mapping names of objects we want to a list of their positions, each position being a tuple with 2 points
+        # The points being respectively the upperleft and bottomright corner of their bounding box. Each point is itself a tuple of 2 integers.
+        # NOTE: goals are stored differently to everything else. goals are stored as a tuple with its x coordinate, and the y coordinate being the middle of the goal.
+        positions = {"whiteBalls": whiteBalls, "orangeBalls": orangeBalls, "playfield": playfield, "cross": cross, "egg": egg, "frontLeftCorner": frontLeftCorner, \
+                     "frontRightCorner": frontRightCorner, "backLeftCorner": backLeftCorner, "backRightCorner": backRightCorner, "goals": goals}
+        
         # Show live output
         cv2.imshow("YOLOv8 Live Detection", frame)
+        return positions
 
 
 if __name__ == "__main__":
-    od = ObjectDetection("npjrecog/yolov8_20250424.pt", 2)
+    od = ObjectDetection("npjrecog/yolov8_20250424.pt", 0)
     while True:
-        od.detectAll()
+        detectedObjects = od.detectAll()
+        print(f"Detected objects: {detectedObjects}")
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
