@@ -11,8 +11,8 @@ class ObjectDetection():
         if not self.cap.isOpened():
             print("Error: Could not open camera with index 2.")
             exit()
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
         
     def close(self):
             # Cleanup
