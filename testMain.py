@@ -143,22 +143,37 @@ def main():
  
         robotToBallDistance = None
         robotToBallAngle = None
+        targetBall = None
         if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
             robotToBallDistance = calculateDistance(robotPos[0], detectedObjects["orangeBalls"][0])
         if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
             robotToBallAngle = calculateAngleOfRotation(robotPos[0], robotPos[1], detectedObjects["orangeBalls"][0])
             print(f"Robot angle to ball: {robotToBallAngle*180/math.pi}")
 
-        for ballorder in detectedObjects:
-            if ballorder[2] == "orange":
-                robotToBallDistance = calculateDistance(robotPos[0], ballorder[1])
-                robotToBallAngle = calculateAngleOfRotation(robotPos[0], robotPos[1], ballorder[1])
-                break
+        if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
+            targetBall = None
+            if detectedObjects["orangeBalls"]:
+                targetBall = detectedObjects["orangeBalls"][0]
+            elif detectedObjects["whiteBalls"]:
+                targetBall = detectedObjects["whiteBalls"][0]
 
-            print(f"Ball order: {ballorder}")
-        # print(f"Robot position: {robotPos[0]}")
-        robotMovement = calculateSpeedAndRotation(robotToBallDistance, robotToBallAngle)
-        
+        if detectedObjects.get("whiteBalls") and len(detectedObjects["whiteBalls"]) > 0:
+            targetBall = detectedObjects["whiteBalls"][0] 
+            print("Targeting WHITE ball")
+        elif detectedObjects.get("orangeBalls") and len(detectedObjects["orangeBalls"]) > 0:
+            targetBall = detectedObjects["orangeBalls"][0]  
+            print("No white balls found. Targeting ORANGE ball.")
+
+
+        # Calculate distance and angle to the selected ball
+        if targetBall and robotPos[0] is not None and robotPos[1] is not None:
+            robotToBallDistance = calculateDistance(robotPos[0], targetBall)
+            robotToBallAngle = calculateAngleOfRotation(robotPos[0], robotPos[1], targetBall)
+
+            print(f"Robot distance to ball: {robotToBallDistance:.2f}")
+            print(f"Robot angle to ball (degrees): {robotToBallAngle * 180 / math.pi:.2f}")
+
+            robotMovement = calculateSpeedAndRotation(robotToBallDistance, robotToBallAngle)
 
         # Send data to robot
         # print(f"{round(robotMovement[0])}#{round(robotMovement[1])}#False#False\n")

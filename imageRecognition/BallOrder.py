@@ -27,7 +27,7 @@ class BallOrder:
             if not found:
                 updateballs.append(current)
 
-            return updateballs # Return the updated list of balls
+        return updateballs # Return the updated list of balls
         
     def addToBallOrder(self, frame):
         orangeBalls = self.detector.DetectOrange(frame)
@@ -36,12 +36,12 @@ class BallOrder:
         ballOrder = []
 
         for box, center in whiteBalls:
-            ballOrder.append((center[0], center[1], 'white')) # Add white balls to the list
+            ballOrder.append((center[0], center[1], 'white'))
 
         for box, center in orangeBalls:
-            ballOrder.append((center[0], center[1], 'orange')) # Add orange balls to the list
-            
-            ballOrder = sorted(ballOrder, key=lambda b: b[0])
+            ballOrder.append((center[0], center[1], 'orange'))
+
+        ballOrder = sorted(ballOrder, key=lambda b: b[0])  # Move outside loops
 
         ballOrder = self.updatePickupBalls(ballOrder)
 
