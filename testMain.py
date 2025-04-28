@@ -158,11 +158,11 @@ def main():
         #         targetBall = detectedObjects["whiteBalls"][0]
 
         if detectedObjects.get("whiteBalls") and len(detectedObjects["whiteBalls"]) > 0:
-            targetBall = detectedObjects["whiteBalls"][0] 
-            print("Targeting WHITE ball")
+            targetBall = min(detectedObjects["whiteBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
+            print("Targeting NEAREST WHITE ball")
         elif detectedObjects.get("orangeBalls") and len(detectedObjects["orangeBalls"]) > 0:
-            targetBall = detectedObjects["orangeBalls"][0]  
-            print("No white balls found. Targeting ORANGE ball.")
+            targetBall = min(detectedObjects["orangeBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
+            print("No white balls found. Targeting NEAREST ORANGE ball.")
 
         # Calculate distance and angle to the selected ball
         if targetBall and robotPos[0] is not None and robotPos[1] is not None:
