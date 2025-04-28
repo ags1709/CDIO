@@ -4,17 +4,19 @@ import imutils
 from datetime import date
 
 cap = cv2.VideoCapture(2)
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, 960)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 540)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
 if not cap.isOpened():
     print("Error: Could not open webcam.")
     exit()
 
-today = date.today()
+# today = date.today()
 imgCounter = 0
+frameCounter = 0
+batch = 1
 while True:
-# Capture frame-by-frame
     ret, frame = cap.read()
+    # Capture frame-by-frame
     
     if not ret:
         print("Failed to grab frame")
@@ -24,6 +26,13 @@ while True:
     # Display the resulting frame
     cv2.imshow('Webcam Feed', frame)
 
+    # Take screen shots every tenth frame automatically
+    # if frameCounter % 10 == 0:
+    #     imgName = f"customData/dataset1/Screenshots/_picture_{imgCounter}.png"
+    #     cv2.imwrite(imgName, frame)
+    #     print("Screenshot taken")
+    #     imgCounter += 1
+
     key = cv2.waitKey(1)
 
     # Press 'q' to exit
@@ -31,10 +40,13 @@ while True:
         break
 
     elif key & 0xFF == ord('s'):
-        imgName = f"customData/{today}_picture_{imgCounter}.png"
+        # imgName = f"customData/{date.today}_picture_{imgCounter}.png"
+        imgName = f"customData/dataset1/ScreenShoots2/batch{batch}_picture{imgCounter}.png"
+
         cv2.imwrite(imgName, frame)
         print("Screenshot taken")
         imgCounter += 1
+    frameCounter += 1
 
 # Release the webcam and close the window
 cap.release()
