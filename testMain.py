@@ -149,6 +149,14 @@ def main():
             robotToBallAngle = calculateAngleOfRotation(robotPos[0], robotPos[1], detectedObjects["orangeBalls"][0])
             print(f"Robot angle to ball: {robotToBallAngle*180/math.pi}")
 
+        for ballorder in detectedObjects:
+            if ballorder[2] == "orange":
+                robotToBallDistance = calculateDistance(robotPos[0], ballorder[1])
+                robotToBallAngle = calculateAngleOfRotation(robotPos[0], robotPos[1], ballorder[1])
+                break
+
+            print(f"Ball order: {ballorder}")
+        # print(f"Robot position: {robotPos[0]}")
         robotMovement = calculateSpeedAndRotation(robotToBallDistance, robotToBallAngle)
 
 
