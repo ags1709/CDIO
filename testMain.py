@@ -123,11 +123,24 @@ from imageRecognition.detect import ObjectDetection
 #     cv2.destroyAllWindows()
 
 def main():
-    od = ObjectDetection("npjrecog/yolov8_20250424.pt", 0)
+    # Set connection to robot
+    # client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # client_socket.connect(("192.168.137.140", 12359))
+
+    od = ObjectDetection("imageRecognition/yolov8_20250424.pt", 0)
+
+    # Main loop. Runs entire competition program.
     while True:
+        # use model to detect objects
         detectedObjects = od.detectAll()
         print(f"Detected objects: {detectedObjects}")
+
+
+        # Send data to robot
+        # client_socket.sendall(f"{round(robotMovement[0])}#{round(robotMovement[1])}#False\n".encode())
+
         if cv2.waitKey(1) & 0xFF == ord('q'):
+            od.close()
             break
 
 
