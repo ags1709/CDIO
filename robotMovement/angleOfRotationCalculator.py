@@ -20,7 +20,7 @@ def rotatePointsAroundMidPoint(p1, p2):
 def calculateAngleOfRotation(forwardsPoint, backwardsPoint, goalPoint):
     # Rotate points 90 degrees so they properly point forwards and backwards (This is to the color paper being sideways into account)
     # NOTE: In order for the rotation to work properly, green must be on the left side of the robot, and  blue to the right
-    forwardsPoint, backwardsPoint = rotatePointsAroundMidPoint(forwardsPoint, backwardsPoint)
+    # forwardsPoint, backwardsPoint = rotatePointsAroundMidPoint(forwardsPoint, backwardsPoint)
     
     middlePoint = ((forwardsPoint[0] + backwardsPoint[0]) / 2, (forwardsPoint[1] + backwardsPoint[1]) / 2)    
     angleOfRotation = math.atan2(goalPoint[1]-middlePoint[1], goalPoint[0]-middlePoint[0]) - math.atan2(forwardsPoint[1]-middlePoint[1], forwardsPoint[0] - middlePoint[0])

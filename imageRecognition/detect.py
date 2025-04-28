@@ -1,6 +1,7 @@
 import cv2
 from ultralytics import YOLO
 from imageRecognition.positionEstimator import estimateGoals
+from imageRecognition.positionEstimator import estimatePositionFromSquare
 
 
 class ObjectDetection():
@@ -62,9 +63,9 @@ class ObjectDetection():
             
             # Add box to its corresponding list
             if cls_id == 0:
-                whiteBalls.append(((x1, y1), (x2, y2)))
+                whiteBalls.append(estimatePositionFromSquare(x1, y1, x2, y2))
             elif cls_id == 1:
-                orangeBalls.append(((x1, y1), (x2, y2)))
+                orangeBalls.append(estimatePositionFromSquare(x1, y1, x2, y2))
             elif cls_id == 2:
                 egg.append(((x1, y1), (x2, y2)))
             elif cls_id == 3:
@@ -72,13 +73,13 @@ class ObjectDetection():
             elif cls_id == 4:
                 cross.append(((x1, y1), (x2, y2)))
             elif cls_id == 5:
-                backRightCorner.append(((x1, y1), (x2, y2)))
+                backRightCorner.append(estimatePositionFromSquare(x1, y1, x2, y2))
             elif cls_id == 6:
-                frontRightCorner.append(((x1, y1), (x2, y2)))
+                frontRightCorner.append(estimatePositionFromSquare(x1, y1, x2, y2))
             elif cls_id == 7:
-                frontLeftCorner.append(((x1, y1), (x2, y2)))
+                frontLeftCorner.append(estimatePositionFromSquare(x1, y1, x2, y2))
             elif cls_id == 8:
-                backLeftCorner.append(((x1, y1), (x2, y2)))
+                backLeftCorner.append(estimatePositionFromSquare(x1, y1, x2, y2))
 
 
         # A dictionary mapping names of objects we want to a list of their positions, each position being a tuple with 2 points

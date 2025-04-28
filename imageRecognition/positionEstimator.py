@@ -20,3 +20,8 @@ def estimateGoals(result, cap):
     else:
         print("WARNING! No playfield detected, no goal estimation done")
     
+def estimatePositionFromSquare(x1,y1,x2,y2):
+    xCoordinate = (x1 + x2) / 2
+    yCoordinate = (y1 + y2) / 2
+
+    return (xCoordinate, yCoordinate)

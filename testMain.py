@@ -3,6 +3,7 @@ import socket
 from robotMovement.distanceBetweenObjects import calculateDistance
 from robotMovement.angleOfRotationCalculator import calculateAngleOfRotation
 from robotMovement.movementController import calculateSpeedAndRotation
+from robotMovement.calculateRobotPosition import calculateRobotPositionFlexible
 from ultralytics import YOLO
 import math
 from imageRecognition.detect import ObjectDetection
@@ -127,13 +128,25 @@ def main():
     # client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # client_socket.connect(("192.168.137.140", 12359))
 
-    od = ObjectDetection("imageRecognition/yolov8_20250424.pt", 0)
+    od = ObjectDetection("imageRecognition/yolov8_20250424.pt", 2)
 
     # Main loop. Runs entire competition program.
     while True:
         # use model to detect objects
         detectedObjects = od.detectAll()
+        robotPos = calculateRobotPositionFlexible(detectedObjects["frontLeftCorner"][0], detectedObjects["frontRightCorner"][0], detectedObjects["backLeftCorner"][0], detectedObjects["frontRightCorner"][0])
         print(f"Detected objects: {detectedObjects}")
+
+        # print(f"Egg position: {detectedObjects["whiteBalls"][0]}")
+
+        # robotToBallDistance = None
+        # robotToBallAngle = None
+        # if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
+        #     robotToBallDistance = calculateDistance(robotPos[0], detectedObjects["orangeBalls"])
+        # if frontrobots and backrobots and orangeballs:
+        #     robotToBallAngle = calculateAngleOfRotation(frontrobots[0][1], backrobots[0][1], orangeballs[0][1])
+            # print(f"Robot angle to ball: {robotToBallAngle*180/math.pi}")
+
 
 
         # Send data to robot
