@@ -158,8 +158,6 @@ def main():
             print(f"Ball order: {ballorder}")
         # print(f"Robot position: {robotPos[0]}")
         robotMovement = calculateSpeedAndRotation(robotToBallDistance, robotToBallAngle)
-
-
         
 
         # Send data to robot
