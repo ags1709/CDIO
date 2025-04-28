@@ -139,23 +139,10 @@ def main():
         robotPos = calculateRobotPositionFlexible(detectedObjects["frontLeftCorner"], detectedObjects["frontRightCorner"], detectedObjects["backLeftCorner"], detectedObjects["backRightCorner"])
         print(f"Detected objects: {detectedObjects}")
 
-        # print(f"Egg position: {detectedObjects["whiteBalls"][0]}")
  
         robotToBallDistance = None
         robotToBallAngle = None
         targetBall = None
-        # if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
-        #     robotToBallDistance = calculateDistance(robotPos[0], detectedObjects["orangeBalls"][0])
-        # if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
-        #     robotToBallAngle = calculateAngleOfRotation(robotPos[0], robotPos[1], detectedObjects["orangeBalls"][0])
-        #     print(f"Robot angle to ball: {robotToBallAngle*180/math.pi}")
-
-        # if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
-        #     targetBall = None
-        #     if detectedObjects["orangeBalls"]:
-        #         targetBall = detectedObjects["orangeBalls"][0]
-        #     elif detectedObjects["whiteBalls"]:
-        #         targetBall = detectedObjects["whiteBalls"][0]
 
         if detectedObjects.get("whiteBalls") and len(detectedObjects["whiteBalls"]) > 0:
             targetBall = min(detectedObjects["whiteBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
@@ -175,7 +162,6 @@ def main():
             robotMovement = calculateSpeedAndRotation(robotToBallDistance, robotToBallAngle)
 
         # Send data to robot
-        # print(f"{round(robotMovement[0])}#{round(robotMovement[1])}#False#False\n")
         # client_socket.sendall(f"{round(robotMovement[0])}#{round(robotMovement[1])}#False#False\n".encode())
 
 
