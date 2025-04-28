@@ -126,7 +126,7 @@ from imageRecognition.detect import ObjectDetection
 def main():
     # Set connection to robot
     # client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # client_socket.connect(("192.168.137.140", 12359))
+    # client_socket.connect(("192.168.137.205", 12358))
 
     od = ObjectDetection("imageRecognition/yolov8_20250424.pt", 2)
 
@@ -134,23 +134,30 @@ def main():
     while True:
         # use model to detect objects
         detectedObjects = od.detectAll()
-        robotPos = calculateRobotPositionFlexible(detectedObjects["frontLeftCorner"][0], detectedObjects["frontRightCorner"][0], detectedObjects["backLeftCorner"][0], detectedObjects["frontRightCorner"][0])
+        
+        # This is the two points used to identify the robots position. 
+        robotPos = calculateRobotPositionFlexible(detectedObjects["frontLeftCorner"], detectedObjects["frontRightCorner"], detectedObjects["backLeftCorner"], detectedObjects["frontRightCorner"])
         print(f"Detected objects: {detectedObjects}")
 
         # print(f"Egg position: {detectedObjects["whiteBalls"][0]}")
+ 
+        robotToBallDistance = None
+        robotToBallAngle = None
+        if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
+            robotToBallDistance = calculateDistance(robotPos[0], detectedObjects["orangeBalls"][0])
+        if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
+            robotToBallAngle = calculateAngleOfRotation(robotPos[0], robotPos[1], detectedObjects["orangeBalls"][0])
+            print(f"Robot angle to ball: {robotToBallAngle*180/math.pi}")
 
-        # robotToBallDistance = None
-        # robotToBallAngle = None
-        # if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
-        #     robotToBallDistance = calculateDistance(robotPos[0], detectedObjects["orangeBalls"])
-        # if frontrobots and backrobots and orangeballs:
-        #     robotToBallAngle = calculateAngleOfRotation(frontrobots[0][1], backrobots[0][1], orangeballs[0][1])
-            # print(f"Robot angle to ball: {robotToBallAngle*180/math.pi}")
+        robotMovement = calculateSpeedAndRotation(robotToBallDistance, robotToBallAngle)
 
 
+        
 
         # Send data to robot
-        # client_socket.sendall(f"{round(robotMovement[0])}#{round(robotMovement[1])}#False\n".encode())
+        # print(f"{round(robotMovement[0])}#{round(robotMovement[1])}#False#False\n")
+        # client_socket.sendall(f"{round(robotMovement[0])}#{round(robotMovement[1])}#False#False\n".encode())
+
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             od.close()

@@ -38,13 +38,13 @@ class ObjectDetection():
         # ALL OF OUR CUSTOM DETECTION GOES HERE:
         whiteBalls = []
         orangeBalls = []
-        egg = []
-        playfield = []
-        cross = []
-        backRightCorner = []
-        frontRightCorner = []
-        frontLeftCorner = []
-        backLeftCorner = []
+        egg = None
+        playfield = None
+        cross = None
+        backRightCorner = None
+        frontRightCorner = None
+        frontLeftCorner = None
+        backLeftCorner = None
         goals = estimateGoals(result, frame)
         
         for box in boxes:
@@ -61,25 +61,25 @@ class ObjectDetection():
             cv2.putText(frame, label, (x1, y1 - 10),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
             
-            # Add box to its corresponding list
+            # Save position or box (Depending on which is appropriate) of all detected things
             if cls_id == 0:
                 whiteBalls.append(estimatePositionFromSquare(x1, y1, x2, y2))
             elif cls_id == 1:
                 orangeBalls.append(estimatePositionFromSquare(x1, y1, x2, y2))
             elif cls_id == 2:
-                egg.append(((x1, y1), (x2, y2)))
+                egg = ((x1, y1), (x2, y2))
             elif cls_id == 3:
-                playfield.append(((x1, y1), (x2, y2)))
+                playfield = ((x1, y1), (x2, y2))
             elif cls_id == 4:
-                cross.append(((x1, y1), (x2, y2)))
+                cross = ((x1, y1), (x2, y2))
             elif cls_id == 5:
-                backRightCorner.append(estimatePositionFromSquare(x1, y1, x2, y2))
+                backRightCorner = estimatePositionFromSquare(x1, y1, x2, y2)
             elif cls_id == 6:
-                frontRightCorner.append(estimatePositionFromSquare(x1, y1, x2, y2))
+                frontRightCorner = estimatePositionFromSquare(x1, y1, x2, y2)
             elif cls_id == 7:
-                frontLeftCorner.append(estimatePositionFromSquare(x1, y1, x2, y2))
+                frontLeftCorner = estimatePositionFromSquare(x1, y1, x2, y2)
             elif cls_id == 8:
-                backLeftCorner.append(estimatePositionFromSquare(x1, y1, x2, y2))
+                backLeftCorner = estimatePositionFromSquare(x1, y1, x2, y2)
 
 
         # A dictionary mapping names of objects we want to a list of their positions, each position being a tuple with 2 points
