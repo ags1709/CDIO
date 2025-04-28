@@ -125,8 +125,8 @@ from imageRecognition.detect import ObjectDetection
 
 def main():
     # Set connection to robot
-    # client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # client_socket.connect(("192.168.137.205", 12358))
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client_socket.connect(("192.168.137.205", 12358))
 
     od = ObjectDetection("imageRecognition/yolov8_20250424.pt", 2)
 
@@ -137,24 +137,29 @@ def main():
         
         # This is the two points used to identify the robots position. 
         robotPos = calculateRobotPositionFlexible(detectedObjects["frontLeftCorner"], detectedObjects["frontRightCorner"], detectedObjects["backLeftCorner"], detectedObjects["frontRightCorner"])
-        print(f"Detected objects: {detectedObjects}")
-
-        # print(f"Egg position: {detectedObjects["whiteBalls"][0]}")
  
         robotToBallDistance = None
         robotToBallAngle = None
+        vomit = False
         if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
-            robotToBallDistance = calculateDistance(robotPos[0], detectedObjects["orangeBalls"][0])
+            robotDistanceToGoal = calculateDistance(robotPos[0], detectedObjects["orangeBalls"][0])
         if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
             robotToBallAngle = calculateAngleOfRotation(robotPos[0], robotPos[1], detectedObjects["orangeBalls"][0])
             print(f"Robot angle to ball: {robotToBallAngle*180/math.pi}")
 
-        robotMovement = calculateSpeedAndRotation(robotToBallDistance, robotToBallAngle)
+        if not detectedObjects["whiteBalls"] and not detectedObjects["orangeBalls"]:
+            robotDistanceToGoal = calculateDistance(robotPos[0], detectedObjects["goals"][1])
+            robotAngleToGoal = calculateAngleOfRotation(robotPos[0], robotPos[1], detectedObjects["goals"][1])
+            if robotDistanceToGoal <= 100 and robotAngleToGoal < 0.2 and robotAngleToGoal > -0.2:
+                vomit = True
+            else: 
+                vomit = False
+
+        robotMovement = calculateSpeedAndRotation(robotDistanceToGoal, robotAngleToGoal)
         
 
         # Send data to robot
-        # print(f"{round(robotMovement[0])}#{round(robotMovement[1])}#False#False\n")
-        # client_socket.sendall(f"{round(robotMovement[0])}#{round(robotMovement[1])}#False#False\n".encode())
+        client_socket.sendall(f"{round(robotMovement[0])}#{round(robotMovement[1])}#False#{vomit}\n".encode())
 
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
