@@ -150,8 +150,6 @@ def main():
             print(f"Robot angle to ball: {robotToBallAngle*180/math.pi}")
 
         robotMovement = calculateSpeedAndRotation(robotToBallDistance, robotToBallAngle)
-
-
         
 
         # Send data to robot

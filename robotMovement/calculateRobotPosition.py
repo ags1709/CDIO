@@ -6,10 +6,10 @@ def calculateRobotPosition(frontLeftCorner, frontRightCorner, backLeftCorner, ba
         backwardsPoint = ( (backLeftCorner[0] + backRightCorner[0]) / 2, (backLeftCorner[1] + backRightCorner[1]) / 2 )
         return (forwardsPoint, backwardsPoint)
 
-    
+
 # Done with chatGPT
 # NOTE: Insert default width and height. Should be the pixel distences between corners
-def calculateRobotPositionFlexible(frontLeftCorner, frontRightCorner, backLeftCorner, backRightCorner, width=None, height=None):
+def calculateRobotPositionFlexible(frontLeftCorner, frontRightCorner, backLeftCorner, backRightCorner, width=102, height=138):
     # Fill missing corners if possible
     if not frontLeftCorner:
         if frontRightCorner and backLeftCorner:
