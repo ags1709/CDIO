@@ -136,7 +136,7 @@ def main():
         detectedObjects = od.detectAll()
         
         # This is the two points used to identify the robots position. 
-        robotPos = calculateRobotPositionFlexible(detectedObjects["frontLeftCorner"], detectedObjects["frontRightCorner"], detectedObjects["backLeftCorner"], detectedObjects["frontRightCorner"])
+        robotPos = calculateRobotPositionFlexible(detectedObjects["frontLeftCorner"], detectedObjects["frontRightCorner"], detectedObjects["backLeftCorner"], detectedObjects["backRightCorner"])
         print(f"Detected objects: {detectedObjects}")
 
         # print(f"Egg position: {detectedObjects["whiteBalls"][0]}")
@@ -144,18 +144,18 @@ def main():
         robotToBallDistance = None
         robotToBallAngle = None
         targetBall = None
-        if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
-            robotToBallDistance = calculateDistance(robotPos[0], detectedObjects["orangeBalls"][0])
-        if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
-            robotToBallAngle = calculateAngleOfRotation(robotPos[0], robotPos[1], detectedObjects["orangeBalls"][0])
-            print(f"Robot angle to ball: {robotToBallAngle*180/math.pi}")
+        # if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
+        #     robotToBallDistance = calculateDistance(robotPos[0], detectedObjects["orangeBalls"][0])
+        # if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
+        #     robotToBallAngle = calculateAngleOfRotation(robotPos[0], robotPos[1], detectedObjects["orangeBalls"][0])
+        #     print(f"Robot angle to ball: {robotToBallAngle*180/math.pi}")
 
-        if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
-            targetBall = None
-            if detectedObjects["orangeBalls"]:
-                targetBall = detectedObjects["orangeBalls"][0]
-            elif detectedObjects["whiteBalls"]:
-                targetBall = detectedObjects["whiteBalls"][0]
+        # if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
+        #     targetBall = None
+        #     if detectedObjects["orangeBalls"]:
+        #         targetBall = detectedObjects["orangeBalls"][0]
+        #     elif detectedObjects["whiteBalls"]:
+        #         targetBall = detectedObjects["whiteBalls"][0]
 
         if detectedObjects.get("whiteBalls") and len(detectedObjects["whiteBalls"]) > 0:
             targetBall = detectedObjects["whiteBalls"][0] 
@@ -163,7 +163,6 @@ def main():
         elif detectedObjects.get("orangeBalls") and len(detectedObjects["orangeBalls"]) > 0:
             targetBall = detectedObjects["orangeBalls"][0]  
             print("No white balls found. Targeting ORANGE ball.")
-
 
         # Calculate distance and angle to the selected ball
         if targetBall and robotPos[0] is not None and robotPos[1] is not None:
