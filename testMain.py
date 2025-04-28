@@ -136,26 +136,25 @@ def main():
         detectedObjects = od.detectAll()
         
         # This is the two points used to identify the robots position. 
-        robotPos = calculateRobotPositionFlexible(detectedObjects["frontLeftCorner"], detectedObjects["frontRightCorner"], detectedObjects["backLeftCorner"], detectedObjects["frontRightCorner"])
+        robotPos = calculateRobotPositionFlexible(detectedObjects["frontLeftCorner"], detectedObjects["frontRightCorner"], detectedObjects["backLeftCorner"], detectedObjects["backRightCorner"])
  
-        robotToBallDistance = None
-        robotToBallAngle = None
+        robotDistance = None
+        robotAngle = None
         vomit = False
         if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
-            robotDistanceToGoal = calculateDistance(robotPos[0], detectedObjects["orangeBalls"][0])
+            robotDistance = calculateDistance(robotPos[0], detectedObjects["orangeBalls"][0])
         if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
-            robotToBallAngle = calculateAngleOfRotation(robotPos[0], robotPos[1], detectedObjects["orangeBalls"][0])
-            print(f"Robot angle to ball: {robotToBallAngle*180/math.pi}")
+            robotAngle = calculateAngleOfRotation(robotPos[0], robotPos[1], detectedObjects["orangeBalls"][0])
 
         if not detectedObjects["whiteBalls"] and not detectedObjects["orangeBalls"]:
-            robotDistanceToGoal = calculateDistance(robotPos[0], detectedObjects["goals"][1])
-            robotAngleToGoal = calculateAngleOfRotation(robotPos[0], robotPos[1], detectedObjects["goals"][1])
-            if robotDistanceToGoal <= 100 and robotAngleToGoal < 0.2 and robotAngleToGoal > -0.2:
+            robotDistance = calculateDistance(robotPos[0], detectedObjects["goals"][1])
+            robotAngle = calculateAngleOfRotation(robotPos[0], robotPos[1], detectedObjects["goals"][1])
+            if robotDistance <= 100 and robotAngle < 0.2 and robotAngle > -0.2:
                 vomit = True
             else: 
                 vomit = False
 
-        robotMovement = calculateSpeedAndRotation(robotDistanceToGoal, robotAngleToGoal)
+        robotMovement = calculateSpeedAndRotation(robotDistance, robotAngle)
         
 
         # Send data to robot
