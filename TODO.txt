@@ -5,6 +5,10 @@ When and how to switch from normal ball pursuing behavior to "ball close to corn
 Sensor to detect when ball is collected? (Maybe. If tube can't hold all balls)
 Interpolation (Simon working on this)
 Optimization of the basic robot movement that takes robot from A to B, aka the PID (Try optimizing how fast/slow it turns and drives etc.) 
+Testing of robot missing corner calculations (Possibly by visualization).
+Error handling(Prevent program from crashing). Program crashes in several different scenarios, known ones are:
+    1) robot corners blocked from camera
+    2) 
 
 
 TODO Imagerecognition-wise:
