@@ -1,8 +1,9 @@
 TODO software-wise: 
 Obstacle Avoidance (Anders working on this)
 Ball Selection Optimization(Smartly select what ball the robot should currently pursue)(Maybe?)
-When and how to switch from normal ball pursuing behavior to "ball close to corner" behavior (Using grabber helper etc.) (Christian working on this)
-Sensor to detect when ball is collected? (Maybe. If tube can't hold all balls)
+When and how to switch from normal ball pursuing behavior to "ball close to corner" behavior (Using grabber helper etc.) (Probably good to use the state machine
+to change into specific state altering robot behavior specifically to get ball from corner)(Christian working on this)
+Counter to count nr of balls collected? (Only if tube can't hold all balls)
 Interpolation (Simon working on this)
 Optimization of the basic robot movement that takes robot from A to B, aka the PID (Try optimizing how fast/slow it turns and drives etc.) 
 Testing of robot missing corner calculations (Possibly by visualization).
