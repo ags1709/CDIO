@@ -9,9 +9,11 @@ Optimization of the basic robot movement that takes robot from A to B, aka the P
 Testing of robot missing corner calculations (Possibly by visualization).
 Error handling(Prevent program from crashing). Program crashes in several different scenarios, known ones are:
     1) robot corners blocked from camera
-    2) 
+    2)
+Test whether robot can do hand-in of many balls (6-8+) or if it stops the grabber early. (If it does, it might be due to balls reappearing and the robot switching back to collection mode)
 
 
 TODO Imagerecognition-wise:
 Take more pictures to make model better. OBS: include pictures with balls very close to cross. Include pictures with balls partially covered.
+Test accuracy and speed of different models, f.eks. large vs medium model, or model trained on 200 epochs vs model trained on 100. 
 
