@@ -14,6 +14,9 @@ Error handling(Prevent program from crashing). Program crashes in several differ
 Test whether robot can do hand-in of many balls (6-8+) or if it stops the grabber early. (If it does, 
 it might be due to balls reappearing and the robot switching back to collection mode) fix by only considering balls for collection
 when inside play field
+Save ball positions such that if target ball dissapears for a second robot moves to its old location (Some type 
+of persistance of target when balls things dissapear)
+Figure out when it makes sense for robot to drive instead of just turning (180 degrees behind it). Calculate optimal point.
 
 
 TODO Imagerecognition-wise:
