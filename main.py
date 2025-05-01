@@ -13,10 +13,11 @@ from imageRecognition.detect import ObjectDetection
 def main():
     # Set connection to robot
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect(("192.168.137.73", 12358))
+    client_socket.connect(("192.168.137.205", 12358))
 
     # Set image detection model
-    od = ObjectDetection("imageRecognition/yolov8_20250424.pt", 2)
+    od = ObjectDetection("imageRecognition/yolov8_20250501_small.pt", 2)
+    # od = ObjectDetection("imageRecognition/20250501-small-epoch40.pt", 2)
     
     # Set initial robot state. State machine can be found in robotMovement/selectRobotTarget.py
     robotState = None
@@ -27,7 +28,10 @@ def main():
         detectedObjects = od.detectAll()
 
         # Calculate robots distance and angle to target, and set its state
-        distanceToTarget, angleToTarget, robotState = calcDistAndAngleToTarget(detectedObjects, robotState)
+        try:
+            distanceToTarget, angleToTarget, robotState = calcDistAndAngleToTarget(detectedObjects, robotState)
+        except Exception:
+            continue
 
         # Determine whether to hand balls in or not
         vomit = determineAuxiliaryActions(distanceToTarget, angleToTarget, robotState)

@@ -8,6 +8,7 @@ class ObjectDetection():
     
     def __init__(self, model, capture_index):
         self.model = YOLO(model)
+        self.model.to("cuda")
         self.cap = cv2.VideoCapture(capture_index)
         if not self.cap.isOpened():
             print("Error: Could not open camera with index 2.")
