@@ -2,30 +2,51 @@ import cv2
 from ultralytics import YOLO
 from imageRecognition.positionEstimator import estimateGoals
 from imageRecognition.positionEstimator import estimatePositionFromSquare
+import enum
 
+class DetectionMode(enum.Enum):
+    CAMERA=0
+    IMAGE=1
 
 class ObjectDetection():
     
-    def __init__(self, model, capture_index):
+    windowsize = (1280,720)
+    def __init__(self, model, capture_index: int):
         self.model = YOLO(model)
         self.cap = cv2.VideoCapture(capture_index)
+        self.mode = DetectionMode.CAMERA
         if not self.cap.isOpened():
-            print("Error: Could not open camera with index 2.")
+            print("Error: Could not open camera with index ", capture_index)
             exit()
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+    
+    def __init__(self, model, image: str):
+        self.model = YOLO(model)
+        self.frame = cv2.imread(image)
+        self.mode = DetectionMode.IMAGE
+        if self.frame is None:
+            print("Error: Could not open image @ ", image)
+            exit()
+        self.frame = cv2.resize(self.frame, (1920, 1080))
         
     def close(self):
             # Cleanup
-            self.cap.release()
+            if self.mode == DetectionMode.CAMERA:
+                self.cap.release()
             cv2.destroyAllWindows()
 
     # Detection loop
     def detectAll(self):
-        ret, frame = self.cap.read()
-        if not ret:
-            print("Failed to grab frame.")
-            raise Exception("Failed to grab grame.")
+        if self.mode == DetectionMode.CAMERA:
+            ret, frame = self.cap.read()
+            if not ret:
+                print("Failed to grab frame.")
+                raise Exception("Failed to grab grame.")
+        elif self.mode == DetectionMode.IMAGE:
+            frame = self.frame
+        else:
+            raise Exception("Detection mode not supported: ", self.mode)
 
         # Run YOLO detection on the frame
         # results = self.model(frame, conf=0.5)
@@ -89,6 +110,7 @@ class ObjectDetection():
                      "frontRightCorner": frontRightCorner, "backLeftCorner": backLeftCorner, "backRightCorner": backRightCorner, "goals": goals}
         
         # Show live output
+        frame = cv2.resize(frame, self.windowsize)
         cv2.imshow("YOLOv8 Live Detection", frame)
         return positions
 

@@ -6,14 +6,20 @@ from robotMovement.movementController import calculateSpeedAndRotation
 from robotMovement.calculateRobotPosition import calculateRobotPositionFlexible
 from ultralytics import YOLO
 import math
-from imageRecognition.detect import ObjectDetection
+from imageRecognition.detect import ObjectDetection, DetectionMode
 
 def main():
     # Set connection to robot
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect(("192.168.137.205", 12358))
+    try:
+        client_socket.settimeout(2.5)
+        client_socket.connect(("192.168.137.205", 12358))
+        client_socket.settimeout(None) # Set blocking mode
+    except Exception as e:
+        print("Error connecting to socket")
 
-    od = ObjectDetection("imageRecognition/yolov8_20250424.pt", 2)
+    #od = ObjectDetection(model="imageRecognition/yolov8_20250424.pt", capture_index=2)
+    od = ObjectDetection(model="imageRecognition/yolov8_20250424.pt", image="test/testimg.png")
 
     # Main loop. Runs entire competition program.
     while True:
@@ -52,13 +58,18 @@ def main():
         robotMovement = calculateSpeedAndRotation(robotDistance, robotAngle)
 
         # Send data to robot
-        client_socket.sendall(f"{round(robotMovement[0])}#{round(robotMovement[1])}#False#{vomit}\n".encode())
-
+        try:
+            client_socket.sendall(f"{round(robotMovement[0])}#{round(robotMovement[1])}#False#{vomit}\n".encode())
+        except Exception:
+            print("client not connected")
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             od.close()
             break
 
+        if (od.mode == DetectionMode.IMAGE): # Only run once with image
+            while True:
+                cv2.waitKey(100)
 
 if __name__ == "__main__":
     main()
