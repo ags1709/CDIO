@@ -12,8 +12,8 @@ from imageRecognition.detect import ObjectDetection
 
 def main():
     # Set connection to robot
-    # client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # client_socket.connect(("192.168.137.73", 12358))
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client_socket.connect(("192.168.137.73", 12358))
 
     # Set image detection model
     od = ObjectDetection("imageRecognition/yolov8_20250424.pt", 2)
@@ -36,7 +36,7 @@ def main():
         robotMovement = calculateSpeedAndRotation(distanceToTarget, angleToTarget, robotState)
 
         # Send data to robot
-        # client_socket.sendall(f"{round(robotMovement[0])}#{round(robotMovement[1])}#False#{vomit}\n".encode())
+        client_socket.sendall(f"{round(robotMovement[0])}#{round(robotMovement[1])}#False#{vomit}\n".encode())
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             od.close()

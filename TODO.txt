@@ -9,7 +9,8 @@ Optimization of the basic robot movement that takes robot from A to B, aka the P
 Testing of robot missing corner calculations (Possibly by visualization).
 Error handling(Prevent program from crashing). Program crashes in several different scenarios, known ones are:
     1) robot corners blocked from camera
-    2)
+    2) if field is not detected the calculation of intermediary point (in robotMovement/selectRobotTarget.py) crashes
+    3)
 Test whether robot can do hand-in of many balls (6-8+) or if it stops the grabber early. (If it does, it might be due to balls reappearing and the robot switching back to collection mode)
 
 
