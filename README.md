@@ -7,7 +7,7 @@ ball image recognition using colors is fairly vulnerable to changes in lighting 
 
 
 TODO software-wise: 
-- [ ] Obstacle Avoidance (Anders working on this)
+- [X] Obstacle Avoidance (Anders working on this)
 - [ ] Ball Selection Optimization(Smartly select what ball the robot should currently pursue)(Maybe?)
 - [ ] When and how to switch from normal ball pursuing behavior to "ball close to corner" behavior (Using grabber helper etc.) (Probably good to use the state machine
     to change into specific state altering robot behavior specifically to get ball from corner)(Christian working on this)
