@@ -29,9 +29,15 @@ def returnPath(startingPoint, endingPoint, fieldPixelSize, detectedObstacles):
 
     for obstacle in detectedObstacles:
         # for each obstacle figure out all grid points it overlaps and set them to 1.
+        xMin, yMin = obstacle[0]
+        xMax, yMax = obstacle[1]
+        colStart = int(xMin / GRID_WIDTH) 
+        colEnd = int(xMax / GRID_WIDTH)
+        rowStart = int(yMin / GRID_HEIGHT)
+        rowEnd = int(yMax / GRID_HEIGHT)
 
         # obstacleGridPos = toGridCoords(obstacle[0], obstacle[1])
-        grid[obstacleGridPos[1]][obstacleGridPos[0]] = 1
+        # grid[obstacleGridPos[1]][obstacleGridPos[0]] = 1
 
     
 
