@@ -27,7 +27,7 @@ def main():
         detectedObjects = od.detectAll()
 
         # Calculate robots distance and angle to target, and set its state
-        distanceToTarget, angleToTarget, robotState = calcDistAndAngleToTarget(od, robotState)
+        distanceToTarget, angleToTarget, robotState = calcDistAndAngleToTarget(detectedObjects, robotState)
 
         # Determine whether to hand balls in or not
         vomit = determineAuxiliaryActions(distanceToTarget, angleToTarget, robotState)
