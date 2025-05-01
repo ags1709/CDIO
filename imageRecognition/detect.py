@@ -1,6 +1,6 @@
 import cv2
 from ultralytics import YOLO
-from imageRecognition.positionEstimator import estimateGoals
+from imageRecognition.positionEstimator import estimateGoals, estimateCross
 from imageRecognition.positionEstimator import estimatePositionFromSquare
 import enum
 
@@ -13,6 +13,7 @@ class ObjectDetection():
     windowsize = (1280,720)
     def __init__(self, model, capture_index: int):
         self.model = YOLO(model)
+        self.model.to('cuda')
         self.cap = cv2.VideoCapture(capture_index)
         self.mode = DetectionMode.CAMERA
         if not self.cap.isOpened():
@@ -67,6 +68,7 @@ class ObjectDetection():
         frontLeftCorner = None
         backLeftCorner = None
         goals = estimateGoals(result, frame)
+        crosstest = estimateCross(result, frame)
         
         for box in boxes:
             cls_id = int(box.cls[0])
