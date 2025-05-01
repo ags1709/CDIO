@@ -11,11 +11,18 @@ Error handling(Prevent program from crashing). Program crashes in several differ
     1) robot corners blocked from camera. Calculation of robotPos (in robotMovement/selectRobotTarget.py) crashes
     2) if field is not detected the calculation of intermediary point (in robotMovement/selectRobotTarget.py) crashes
     3)
-Test whether robot can do hand-in of many balls (6-8+) or if it stops the grabber early. (If it does, it might be due to balls reappearing and the robot switching back to collection mode)
+Test whether robot can do hand-in of many balls (6-8+) or if it stops the grabber early. (If it does, 
+it might be due to balls reappearing and the robot switching back to collection mode) fix by only considering balls for collection
+when inside play field
 
 
 TODO Imagerecognition-wise:
 Take more pictures to make model better. OBS: include pictures with balls very close to cross.
 Include pictures with balls partially covered. Include pictures in different light(sunlight vs darkness)
 Test accuracy and speed of different models, f.eks. large vs medium model, or model trained on 200 epochs vs model trained on 100. 
+
+
+TODO Hardware-wise:
+Group discussion about whether we should try the overhead belt collection method - If yes, build it
+
 
