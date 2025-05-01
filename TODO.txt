@@ -14,6 +14,7 @@ Test whether robot can do hand-in of many balls (6-8+) or if it stops the grabbe
 
 
 TODO Imagerecognition-wise:
-Take more pictures to make model better. OBS: include pictures with balls very close to cross. Include pictures with balls partially covered.
+Take more pictures to make model better. OBS: include pictures with balls very close to cross.
+Include pictures with balls partially covered. Include pictures in different light(sunlight vs darkness)
 Test accuracy and speed of different models, f.eks. large vs medium model, or model trained on 200 epochs vs model trained on 100. 
 
