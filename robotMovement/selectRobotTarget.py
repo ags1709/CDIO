@@ -36,6 +36,10 @@ def calcDistAndAngleToTarget(detectedObjects, state):
             state = TO_INTERMEDIARY
 
     elif state == TO_INTERMEDIARY:
+
+        if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
+            state = SEARCH_BALLS
+
         intermediaryPoint = (detectedObjects["goals"][1][0] - 300, detectedObjects["goals"][1][1])
         # Have robots middle point reach the intermediary point as it makes for better arrival at goal.
         robotMiddle = ((robotPos[0][0] + robotPos[1][0]) / 2, (robotPos[0][1] + robotPos[1][1]) / 2)
@@ -47,6 +51,8 @@ def calcDistAndAngleToTarget(detectedObjects, state):
             state = TO_GOAL
     
     elif state == TO_GOAL:
+        if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
+            state = SEARCH_BALLS
         # NOTE: This turns in balls in the small goal. This assumes that the small goal is on the right side of the camera
         goalPos = detectedObjects["goals"][1]
 
