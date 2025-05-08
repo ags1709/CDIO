@@ -13,7 +13,7 @@ from imageRecognition.detect import ObjectDetection
 def main():
     # Set connection to robot
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect(("192.168.137.205", 12358))
+    client_socket.connect(("192.168.137.73", 12359))
 
     # Set image detection model
     od = ObjectDetection("imageRecognition/yolov8_20250501_small.pt", 2)
