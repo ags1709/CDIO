@@ -13,13 +13,13 @@ def main():
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         client_socket.settimeout(2.5)
-        client_socket.connect(("192.168.137.205", 12358))
+        #client_socket.connect(("192.168.137.205", 12358))
         client_socket.settimeout(None) # Set blocking mode
     except Exception as e:
         print("Error connecting to socket")
 
-    #od = ObjectDetection(model="imageRecognition/yolov8_20250424.pt", capture_index=2)
-    od = ObjectDetection(model="imageRecognition/yolov8_20250424.pt", image="test/testimg.png")
+    od = ObjectDetection(model="imageRecognition/yolov8_20250424.pt", detection_mode=DetectionMode.IMAGE, image="test/orange_interference.png")
+    #od = ObjectDetection(model="imageRecognition/yolov8_20250424.pt", detection_mode=DetectionMode.CAMERA, capture_index=2)
 
     # Main loop. Runs entire competition program.
     while True:
@@ -43,19 +43,19 @@ def main():
             print("No white balls found. Targeting NEAREST ORANGE ball.")
 
         # Calculate distance and angle to the selected ball
-        if targetBall and robotPos[0] is not None and robotPos[1] is not None:
-            robotDistance = calculateDistance(robotPos[0], targetBall)
-            robotAngle = calculateAngleOfRotation(robotPos[0], robotPos[1], targetBall)
+        # if targetBall and robotPos[0] is not None and robotPos[1] is not None:
+        #     robotDistance = calculateDistance(robotPos[0], targetBall)
+        #     robotAngle = calculateAngleOfRotation(robotPos[0], robotPos[1], targetBall)
 
-        if not detectedObjects["whiteBalls"] and not detectedObjects["orangeBalls"]:
-            robotDistance = calculateDistance(robotPos[0], detectedObjects["goals"][1])
-            robotAngle = calculateAngleOfRotation(robotPos[0], robotPos[1], detectedObjects["goals"][1])
-            if robotDistance <= 100 and robotAngle < 0.2 and robotAngle > -0.2:
-                vomit = True
-            else: 
-                vomit = False
+        # if not detectedObjects["whiteBalls"] and not detectedObjects["orangeBalls"]:
+        #     robotDistance = calculateDistance(robotPos[0], detectedObjects["goals"][1])
+        #     robotAngle = calculateAngleOfRotation(robotPos[0], robotPos[1], detectedObjects["goals"][1])
+        #     if robotDistance <= 100 and robotAngle < 0.2 and robotAngle > -0.2:
+        #         vomit = True
+        #     else: 
+        #         vomit = False
         
-        robotMovement = calculateSpeedAndRotation(robotDistance, robotAngle)
+        # robotMovement = calculateSpeedAndRotation(robotDistance, robotAngle)
 
         # Send data to robot
         try:

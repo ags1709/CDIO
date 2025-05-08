@@ -11,25 +11,34 @@ class DetectionMode(enum.Enum):
 class ObjectDetection():
     
     windowsize = (1280,720)
-    def __init__(self, model, capture_index: int):
-        self.model = YOLO(model)
-        self.model.to('cuda')
-        self.cap = cv2.VideoCapture(capture_index)
-        self.mode = DetectionMode.CAMERA
-        if not self.cap.isOpened():
-            print("Error: Could not open camera with index ", capture_index)
-            exit()
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+    # def __init__(self, model, capture_index: int):
+    #     self.model = YOLO(model)
+    #     self.model.to('cuda')
+    #     self.cap = cv2.VideoCapture(capture_index)
+    #     self.mode = DetectionMode.CAMERA
+    #     if not self.cap.isOpened():
+    #         print("Error: Could not open camera with index ", capture_index)
+    #         exit()
+    #     self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+    #     self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
     
-    def __init__(self, model, image: str):
+    def __init__(self, model, detection_mode: DetectionMode, image: str = "", capture_index: int = 0):
         self.model = YOLO(model)
-        self.frame = cv2.imread(image)
-        self.mode = DetectionMode.IMAGE
-        if self.frame is None:
-            print("Error: Could not open image @ ", image)
-            exit()
-        self.frame = cv2.resize(self.frame, (1920, 1080))
+        self.mode = detection_mode
+        if detection_mode == DetectionMode.IMAGE:
+            self.frame = cv2.imread(image)
+            if self.frame is None:
+                print("Error: Could not open image @ ", image)
+                exit()
+            self.frame = cv2.resize(self.frame, (1920, 1080))
+        elif detection_mode == DetectionMode.CAMERA:
+            self.cap = cv2.VideoCapture(capture_index)
+            if not self.cap.isOpened():
+                print("Error: Could not open camera with index ", capture_index)
+                exit()
+            self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+            self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+    
         
     def close(self):
             # Cleanup
