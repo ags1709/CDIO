@@ -44,6 +44,7 @@ def estimateCross(result, cap):
         xyxy = box.xyxy[0].cpu().numpy().astype(int)
         scalepct=1
         x1, y1, x2, y2 = xyxy
+        # TODO Scale the pct so it is a constant px upscale probably (rn scaled differently with bigger numbers as it is pct)
         x1 = int(x1/100*(100-scalepct))
         y1 = int(y1/100*(100-scalepct))
         x2 = int(x2/100*(100+scalepct))
@@ -54,14 +55,19 @@ def estimateCross(result, cap):
         #cv2.imshow("crop frame", crop_frame)
         
         #gray = cv2.cvtColor(crop_frame, cv2.COLOR_BGR2GRAY)
-        red_channel = crop_frame[:, :, 2]
-        threshold = 200 # Only keep red channel when R is over 200
-        _, mask = cv2.threshold(red_channel, threshold, 255, cv2.THRESH_BINARY)
-        red_thresh = cv2.bitwise_and(red_channel, red_channel, mask=mask)
+        b = crop_frame[:, :, 0].astype(np.float32)
+        g = crop_frame[:, :, 1].astype(np.float32)
+        r = crop_frame[:, :, 2].astype(np.float32)
+        # Create a mask where red is strong and green/blue are weak relative to red
+        condition = (r > 110) & (g < r / 1.6) & (b < r / 1.6)
+        red_thresh = condition.astype(np.uint8) * 255  # Convert to binary mask
+        # Apply the mask to keep only the red pixels
+        # red_thresh = cv2.bitwise_and(crop_frame, crop_frame, mask=mask)
+        # red_thresh = cv2.cvtColor(red_thresh, cv2.COLOR_BGR2GRAY)
         red_thresh = cv2.GaussianBlur(red_thresh, (5, 5), 0)
         
 
-        edges = cv2.Canny(red_thresh, 200, 255) # Note: this is a 2d array of either 0 or 255 as an int
+        edges = cv2.Canny(red_thresh, 60, 255) # Note: this is a 2d array of either 0 or 255 as an int
         scalepct=5
         for ball in orange_boxes:
             b_xyxy = ball.xyxy[0].cpu().numpy().astype(int)
@@ -79,24 +85,42 @@ def estimateCross(result, cap):
         contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
         all_points = np.vstack([cnt.reshape(-1, 2) for cnt in contours])
 
-        # Apply PCA to the contour points
-        mean, eigenvectors = cv2.PCACompute(all_points.astype(np.float32), mean=np.array([]))
+        # # Apply PCA to the contour points
+        # mean, eigenvectors = cv2.PCACompute(all_points.astype(np.float32), mean=np.array([]))
+        
+        # # The angle of the first principal component
+        # dx, dy = eigenvectors[0]
+        # angle_rad = math.atan2(dy, dx)
+        # angle_deg = math.degrees(angle_rad)
 
-        # The angle of the first principal component
-        dx, dy = eigenvectors[0]
-        angle_rad = math.atan2(dy, dx)
-        angle_deg = math.degrees(angle_rad)
-
-        # Normalize angle to [0, 180)
-        angle_deg = angle_deg % 180
+        # # Normalize angle to [0, 180)
+        # angle_deg = (angle_deg+45) % 90
+        
+        # # Optional: Draw PCA direction
+        # center = tuple(mean[0].astype(int))
+        # direction = (int(center[0] + dx*100), int(center[1] + dy*100))
+        # cv2.arrowedLine(crop_frame, center, direction, (0, 255, 0), 3)
+        
+        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        if contours == None:
+            print("No contours found for cross")
+            return
+        largest_contour = max(contours, key=cv2.contourArea)
+        rect = cv2.minAreaRect(largest_contour)
+        angle_deg = rect[2]+45 # Always 45 degrees rotatated?
 
         print(f"Angle of cross (in degrees): {angle_deg:.2f}")
 
-        # Optional: Draw PCA direction
-        center = tuple(mean[0].astype(int))
-        direction = (int(center[0] + dx*100), int(center[1] + dy*100))
-        cv2.arrowedLine(crop_frame, center, direction, (0, 255, 0), 3)
+        center = rect[0]
+        angle_rad = math.radians(angle_deg)
+        length = 75
+        x0, y0 = int(center[0]), int(center[1])
+        x1 = int(x0 + length * math.cos(angle_rad))
+        y1 = int(y0 + length * math.sin(angle_rad))
 
+        # Draw arrowed line
+        cv2.arrowedLine(crop_frame, (x0, y0), (x1, y1), (200, 150, 0), 2, tipLength=0.2)
+    
         # Show
         cv2.imshow("Edges", edges)
         cv2.imshow("Red channel", red_thresh)
