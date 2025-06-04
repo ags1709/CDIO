@@ -25,7 +25,7 @@ def calculateRobotPositionFlexible(frontLeftCorner, frontRightCorner, backLeftCo
             frontRightCorner = find_fourth_corner(frontLeftCorner, backLeftCorner, backRightCorner)
         elif frontLeftCorner and backRightCorner:
             print("Calculating frontRightCorner from frontLeftCorner and backRightCorner")
-            frontRightCorner = find_two_corner(frontLeftCorner, backRightCorner)
+            frontRightCorner = find_Top_Corner(frontLeftCorner, backRightCorner)
         elif frontLeftCorner and backLeftCorner:
             print("Calculating frontRightCorner from frontLeftCorner and backLeftCorner")
             frontRightCorner = (frontLeftCorner[0] + width, frontLeftCorner[1])
@@ -37,7 +37,7 @@ def calculateRobotPositionFlexible(frontLeftCorner, frontRightCorner, backLeftCo
 
     if not backLeftCorner:
         if backRightCorner and frontLeftCorner:
-            backLeftCorner = (frontLeftCorner[0], backRightCorner[1])
+            backLeftCorner = find_Bottom_Corner(frontLeftCorner, backRightCorner)
         elif frontLeftCorner and frontRightCorner:
             backLeftCorner = (frontLeftCorner[0], frontLeftCorner[1] - height)
         elif frontRightCorner and backRightCorner:
@@ -90,7 +90,7 @@ def MidPoint(p1, p2):
 def find_fourth_corner(A, B, C):
     return add(A, subtract(C, B))
 
-def find_two_corner(A,C):
+def find_Top_Corner(A,C):
     v = subtract(A,C)
     M = MidPoint(A,C)
     print(f"find_two_corner: A: {A}, C: {C}, v: {v}, M: {M}")
@@ -99,5 +99,15 @@ def find_two_corner(A,C):
     HalfPerpendicular = (Perpendicular[0] / 2, Perpendicular[1] / 2)
     print(f"Perpendicular: {Perpendicular}, HalfPerpendicular: {HalfPerpendicular}")
 
-    return (M[0] + HalfPerpendicular[0], M[1] - HalfPerpendicular[1])
+    return (M[0] + HalfPerpendicular[0], M[1] + HalfPerpendicular[1])
 
+def find_Bottom_Corner(A,C):
+    v = subtract(A,C)
+    M = MidPoint(A,C)
+    print(f"find_Bottom_Corner: A: {A}, C: {C}, v: {v}, M: {M}")
+
+    Perpendicular = (-v[1], v[0])  # Rotate 90 degrees
+    HalfPerpendicular = (Perpendicular[0] / 2, Perpendicular[1] / 2)
+    print(f"Perpendicular: {Perpendicular}, HalfPerpendicular: {HalfPerpendicular}")
+
+    return (M[0] - HalfPerpendicular[0], M[1] - HalfPerpendicular[1])
