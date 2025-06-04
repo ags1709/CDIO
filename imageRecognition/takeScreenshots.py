@@ -41,7 +41,7 @@ while True:
 
     elif key & 0xFF == ord('s'):
         # imgName = f"customData/{date.today}_picture_{imgCounter}.png"
-        imgName = f"customData/dataset1/ScreenShoots2/batch{batch}_picture{imgCounter}.png"
+        imgName = f"test/batch{batch}_picture{imgCounter}.png"
 
         cv2.imwrite(imgName, frame)
         print("Screenshot taken")

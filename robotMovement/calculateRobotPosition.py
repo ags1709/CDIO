@@ -49,4 +49,5 @@ def calculateRobotPositionFlexible(frontLeftCorner, frontRightCorner, backLeftCo
         backwardsPoint = ( (backLeftCorner[0] + backRightCorner[0]) / 2, (backLeftCorner[1] + backRightCorner[1]) / 2 )
         return (forwardsPoint, backwardsPoint)
     else:
-        raise ValueError("Not enough information to calculate corners.")
+        return((0,0),(0,0))
+        #raise ValueError("Not enough information to calculate corners.")
