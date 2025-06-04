@@ -8,7 +8,7 @@ from robotMovement.determineAuxiliaryActions import determineAuxiliaryActions
 from robotMovement.calculateRobotPosition import calculateRobotPositionFlexible
 from ultralytics import YOLO
 import math
-from imageRecognition.detect import ObjectDetection
+from imageRecognition.detect import ObjectDetection, DetectionMode
 
 def main():
     # Set connection to robot
@@ -16,8 +16,7 @@ def main():
     client_socket.connect(("192.168.137.73", 12359))
 
     # Set image detection model
-    od = ObjectDetection("imageRecognition/yolov8_20250501_small.pt", 2)
-    # od = ObjectDetection("imageRecognition/20250501-small-epoch40.pt", 2)
+    od = ObjectDetection(model="imageRecognition/yolov8_20250501_small.pt", detection_mode=DetectionMode.CAMERA, capture_index=2)
     
     # Set initial robot state. State machine can be found in robotMovement/selectRobotTarget.py
     robotState = None
