@@ -24,6 +24,7 @@ class ObjectDetection():
     
     def __init__(self, model, detection_mode: DetectionMode, image: str = "", capture_index: int = 0):
         self.model = YOLO(model)
+        self.model.to("cuda")
         self.mode = detection_mode
         if detection_mode == DetectionMode.IMAGE:
             self.frame = cv2.imread(image)

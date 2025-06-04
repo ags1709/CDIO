@@ -118,13 +118,12 @@ def estimateCross(result, cap):
         x1 = int(x0 + length * math.cos(angle_rad))
         y1 = int(y0 + length * math.sin(angle_rad))
 
-        # Draw arrowed line
         cv2.arrowedLine(crop_frame, (x0, y0), (x1, y1), (200, 150, 0), 2, tipLength=0.2)
     
         # Show
-        cv2.imshow("Edges", edges)
-        cv2.imshow("Red channel", red_thresh)
-        cv2.imshow("Orientation", crop_frame)
+        # cv2.imshow("Edges", edges)
+        # cv2.imshow("Red channel", red_thresh)
+        # cv2.imshow("Orientation", crop_frame)
         
         return
     else:
