@@ -8,13 +8,13 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
     if state == "SEARCH_BALLS":
         # Proportionality constants. Tune to change how fast speed changes
         kp_speed = 0.2
-        kp_turn = 200
+        #kp_turn = 200
 
         goalDistanceFromBall = 20
         goalAngleToBall = 0
         # Assuming that we use MoveSteering().on(steering, speed), the values range from -100 to 100, adjust below values accordingly
         forwardSpeed = max(5, min(100, kp_speed * (distanceFromTarget - goalDistanceFromBall)))
-        turnSpeed = max(-100, min(100, kp_turn * (angleToTarget - goalAngleToBall))) 
+        turnSpeed = max(-100, min(100, angleToTarget**3*40+angleToTarget*50)) # x^(3)*40+x*50
 
     elif state == "TO_INTERMEDIARY":
         kp_speed = 0.2
