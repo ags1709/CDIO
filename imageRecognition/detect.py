@@ -1,6 +1,6 @@
 import cv2
 from ultralytics import YOLO
-from imageRecognition.positionEstimator import estimateGoals, estimateCross
+from imageRecognition.positionEstimator import estimateGoals, estimateCross, CrossInfo
 from imageRecognition.positionEstimator import estimatePositionFromSquare
 import enum
 
@@ -10,7 +10,6 @@ class DetectionMode(enum.Enum):
 
 class ObjectDetection():
     
-    windowsize = (1280,720)
     # def __init__(self, model, capture_index: int):
     #     self.model = YOLO(model)
     #     self.model.to('cuda')
@@ -48,7 +47,7 @@ class ObjectDetection():
             cv2.destroyAllWindows()
 
     # Detection loop
-    def detectAll(self):
+    def detectAll(self) -> tuple[dict[str, any], CrossInfo]:
         if self.mode == DetectionMode.CAMERA:
             ret, frame = self.cap.read()
             if not ret:
@@ -78,7 +77,8 @@ class ObjectDetection():
         frontLeftCorner = None
         backLeftCorner = None
         goals = estimateGoals(result, frame)
-        crosstest = estimateCross(result, frame)
+        crossinfo = estimateCross(result, frame)
+        
         
         for box in boxes:
             cls_id = int(box.cls[0])
@@ -122,7 +122,6 @@ class ObjectDetection():
                      "frontRightCorner": frontRightCorner, "backLeftCorner": backLeftCorner, "backRightCorner": backRightCorner, "goals": goals}
         
         # Show live output
-        frame = cv2.resize(frame, self.windowsize)
-        cv2.imshow("YOLOv8 Live Detection", frame)
-        return positions
+        
+        return frame, positions, crossinfo
 

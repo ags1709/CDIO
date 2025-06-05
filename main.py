@@ -10,13 +10,18 @@ from ultralytics import YOLO
 import math
 from imageRecognition.detect import ObjectDetection, DetectionMode
 
+ENABLE_SOCKET = False
+windowsize = (1280,720)
+
 def main():
     # Set connection to robot
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_socket.connect(("192.168.137.73", 12359))
+    if ENABLE_SOCKET:
+        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        client_socket.connect(("192.168.137.73", 12359))
 
     # Set image detection model
-    od = ObjectDetection(model="imageRecognition/yolov8_20250501_small.pt", detection_mode=DetectionMode.CAMERA, capture_index=2)
+    #od = ObjectDetection(model="imageRecognition/yolov8_20250501_small.pt", detection_mode=DetectionMode.CAMERA, capture_index=2)
+    od = ObjectDetection(model="imageRecognition/yolov8_20250501_small.pt", detection_mode=DetectionMode.IMAGE, image="test/roct5.png")
     
     # Set initial robot state. State machine can be found in robotMovement/selectRobotTarget.py
     robotState = None
@@ -24,11 +29,11 @@ def main():
     # Main loop. Runs entire competition program.
     while True:
         # use model to detect objects
-        detectedObjects = od.detectAll()
+        frame, detectedObjects, crossInfo = od.detectAll()
 
         # Calculate robots distance and angle to target, and set its state
         try:
-            distanceToTarget, angleToTarget, robotState = calcDistAndAngleToTarget(detectedObjects, robotState)
+            distanceToTarget, angleToTarget, robotState = calcDistAndAngleToTarget(detectedObjects, robotState, crossInfo, frame)
         except Exception:
             continue
 
@@ -39,8 +44,17 @@ def main():
         robotMovement = calculateSpeedAndRotation(distanceToTarget, angleToTarget, robotState)
 
         # Send data to robot
-        client_socket.sendall(f"{round(robotMovement[0])}#{round(robotMovement[1])}#False#{vomit}\n".encode())
-
+        if ENABLE_SOCKET:
+            client_socket.sendall(f"{round(robotMovement[0])}#{round(robotMovement[1])}#False#{vomit}\n".encode())
+        
+        frame = cv2.resize(frame, windowsize)
+        cv2.imshow("YOLOv8 Live Detection", frame)
+        while od.mode == DetectionMode.IMAGE:
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                od.close()
+                exit(0)
+        
+        
         if cv2.waitKey(1) & 0xFF == ord('q'):
             od.close()
             break

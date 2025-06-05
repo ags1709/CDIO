@@ -2,6 +2,14 @@ import cv2
 from ultralytics import YOLO
 import numpy as np
 import math
+from robotMovement.tools import tuple_toint
+
+class CrossInfo:
+    robot_gap: int
+    middle_point: tuple
+    size: int
+    angle_rad: float
+    robot_intermediary_corners: list
 
 def estimateGoals(result, cap):
     boxes = result.boxes
@@ -29,7 +37,7 @@ def estimatePositionFromSquare(x1,y1,x2,y2):
     return (xCoordinate, yCoordinate)
 
 
-def estimateCross(result, cap):
+def estimateCross(result, cap) -> CrossInfo:
     boxes = result.boxes
     id_cross = 4
     cross_box = [x for x in boxes if x.cls == id_cross]
@@ -43,15 +51,15 @@ def estimateCross(result, cap):
         box = cross_box[0]
         xyxy = box.xyxy[0].cpu().numpy().astype(int)
         scalepct=1
-        x1, y1, x2, y2 = xyxy
+        x1_abs, y1_abs, x2_abs, y2_abs = xyxy
         # TODO Scale the pct so it is a constant px upscale probably (rn scaled differently with bigger numbers as it is pct)
-        x1 = int(x1/100*(100-scalepct))
-        y1 = int(y1/100*(100-scalepct))
-        x2 = int(x2/100*(100+scalepct))
-        y2 = int(y2/100*(100+scalepct))
+        x1_abs = int(x1_abs/100*(100-scalepct))
+        y1_abs = int(y1_abs/100*(100-scalepct))
+        y2_abs = int(y2_abs/100*(100+scalepct))
+        x2_abs = int(x2_abs/100*(100+scalepct))
         
         
-        crop_frame = cap[y1:y2,x1:x2]
+        crop_frame = cap[y1_abs:y2_abs,x1_abs:x2_abs]
         #cv2.imshow("crop frame", crop_frame)
         
         #gray = cv2.cvtColor(crop_frame, cv2.COLOR_BGR2GRAY)
@@ -72,10 +80,10 @@ def estimateCross(result, cap):
         for ball in orange_boxes:
             b_xyxy = ball.xyxy[0].cpu().numpy().astype(int)
             b_x1, b_y1, b_x2, b_y2 = b_xyxy
-            b_x1 = int(max(b_x1 - x1, 0)/100*(100-scalepct))
-            b_x2 = int(min( max(b_x2 - x1, 0) , edges.shape[0])/100*(100+scalepct))
-            b_y2 = int(min( max(b_y2 - y1, 0), edges.shape[1])/100*(100+scalepct))
-            b_y1 = int(max(b_y1 - y1, 0)/100*(100-scalepct))
+            b_x1 = int(max(b_x1 - x1_abs, 0)/100*(100-scalepct))
+            b_x2 = int(min( max(b_x2 - x1_abs, 0) , edges.shape[0])/100*(100+scalepct))
+            b_y2 = int(min( max(b_y2 - y1_abs, 0), edges.shape[1])/100*(100+scalepct))
+            b_y1 = int(max(b_y1 - y1_abs, 0)/100*(100-scalepct))
             
             mask = np.ones_like(edges, dtype=np.uint8) * 255
             mask[b_y1:b_y2, b_x1:b_x2] = 0
@@ -112,19 +120,55 @@ def estimateCross(result, cap):
         print(f"Angle of cross (in degrees): {angle_deg:.2f}")
 
         center = rect[0]
+        info: CrossInfo = CrossInfo()
         angle_rad = math.radians(angle_deg)
+        info.angle_rad = angle_rad
         length = 75
         x0, y0 = int(center[0]), int(center[1])
         x1 = int(x0 + length * math.cos(angle_rad))
         y1 = int(y0 + length * math.sin(angle_rad))
 
         cv2.arrowedLine(crop_frame, (x0, y0), (x1, y1), (200, 150, 0), 2, tipLength=0.2)
+        
+        mid_x = (x1_abs+x2_abs)/2
+        mid_y = (y1_abs+y2_abs)/2
+        info.robot_gap = 225
+        info.robot_intermediary_corners = [ # Calculate all four corners so that the car can travel to them as intermediary
+            # (Radians, gap position)
+            ( (math.pi/4+angle_rad)%(math.pi*2)-math.pi, (math.cos(math.pi/4+angle_rad)*info.robot_gap + mid_x, math.sin(math.pi/4+angle_rad)*info.robot_gap + mid_y) ),
+            ( (math.pi/4+angle_rad+math.pi/2)%(math.pi*2)-math.pi, (math.cos(math.pi/4+angle_rad+math.pi/2)*info.robot_gap + mid_x, math.sin(math.pi/4+angle_rad+math.pi/2)*info.robot_gap + mid_y)),
+            ( (math.pi/4+angle_rad+math.pi)%(math.pi*2)-math.pi, (math.cos(math.pi/4+angle_rad+math.pi)*info.robot_gap + mid_x, math.sin(math.pi/4+angle_rad+math.pi)*info.robot_gap + mid_y)),
+            ( (math.pi/4+angle_rad+math.pi/2*3)%(math.pi*2)-math.pi, (math.cos(math.pi/4+angle_rad+math.pi/2*3)*info.robot_gap + mid_x, math.sin(math.pi/4+angle_rad+math.pi/2*3)*info.robot_gap + mid_y))
+        ]
+        
+        
+        # Draw circle in cross
+        info.middle_point = ( int(mid_x), int(mid_y) )
+        info.size = int((x2_abs-x1_abs)/2)
+        cv2.circle(cap, info.middle_point, info.size, (100,100,100), 2)
+        cv2.circle(cap, info.middle_point, info.robot_gap, (130,130,130), 2)
+        for im in info.robot_intermediary_corners:
+            cv2.circle(cap, tuple_toint(im[1]), 2, (200,50,500), 2)
+        #cv2.putText(cap, "Obstacle", (x1_abs, y1_abs), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (100,100,100), 2, cv2.LINE_AA)
     
         # Show
         # cv2.imshow("Edges", edges)
         # cv2.imshow("Red channel", red_thresh)
         # cv2.imshow("Orientation", crop_frame)
         
-        return
+        return info
     else:
         print("WARNING! No cross detected, no angle detection done")
+        
+        
+def findIntermediatyCrossPoint(ball, cross_middle_point, robot_gap, cross_int_corners):
+    angle_ball = math.atan2(cross_middle_point[1]-ball[1], cross_middle_point[0]-ball[0]) # Adjust with plus pi, since that is how corners are stored
+    closest = (math.inf, None)
+    for corner in cross_int_corners:
+        if abs(corner[0] - angle_ball) < abs(closest[0] - angle_ball):
+            closest = corner
+    return closest[1]
+        
+    
+    
+    
