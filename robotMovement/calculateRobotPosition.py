@@ -39,51 +39,42 @@ def calculateRobotPositionFlexible(frontLeftCorner, frontRightCorner, backLeftCo
         if frontRightCorner and backLeftCorner and backRightCorner:
             frontLeftCorner = find_fourth_corner(frontRightCorner, backLeftCorner, backRightCorner)
         if frontRightCorner and backLeftCorner:
-            frontLeftCorner = (backLeftCorner[0], frontRightCorner[1])
+            frontLeftCorner = find_Top_Corner(frontRightCorner, backLeftCorner)
         elif frontRightCorner and backRightCorner:
-            frontLeftCorner = (frontRightCorner[0], frontRightCorner[1])
+            frontLeftCorner, backLeftCorner = find_opposite_side(frontRightCorner, backRightCorner, width, height)
         elif backLeftCorner and backRightCorner:
-            frontLeftCorner = (backLeftCorner[0], backLeftCorner[1] + height)
-        print(f"\nfrontLeft: {frontLeftCorner}\n")
+            frontLeftCorner, frontRightCorner = find_opposite_side(backLeftCorner, backRightCorner, width, height)
     
     if not frontRightCorner:
         if frontLeftCorner and backLeftCorner and backRightCorner:
             frontRightCorner = find_fourth_corner(frontLeftCorner, backLeftCorner, backRightCorner)
         elif frontLeftCorner and backRightCorner:
-            print("Calculating frontRightCorner from frontLeftCorner and backRightCorner")
             frontRightCorner = find_Top_Corner(frontLeftCorner, backRightCorner)
         elif frontLeftCorner and backLeftCorner:
-            print("Calculating frontRightCorner from frontLeftCorner and backLeftCorner")
-            frontRightCorner = (frontLeftCorner[0] + width, frontLeftCorner[1])
+            frontRightCorner, backRightCorner = find_opposite_side(frontLeftCorner, backLeftCorner, width, height)
         elif backLeftCorner and backRightCorner:
-            print("Calculating frontRightCorner from backLeftCorner and backRightCorner")
-            frontRightCorner = (backRightCorner[0], backRightCorner[1] + height)
-        print(f"\nfrontRightCorner: {frontRightCorner}\n")
+            frontRightCorner, frontLeftCorner = find_opposite_side(backLeftCorner, backRightCorner, width, height)
         
-
     if not backLeftCorner:
         if backRightCorner and frontRightCorner and frontLeftCorner:
             backLeftCorner = find_fourth_corner(frontRightCorner, frontLeftCorner, backRightCorner)
         if backRightCorner and frontLeftCorner:
             backLeftCorner = find_Bottom_Corner(frontLeftCorner, backRightCorner)
         elif frontLeftCorner and frontRightCorner:
-            backLeftCorner = (frontLeftCorner[0], frontLeftCorner[1] - height)
+            backLeftCorner, backRightCorner = find_opposite_side(frontLeftCorner, frontRightCorner, width, height)
         elif frontRightCorner and backRightCorner:
-            backLeftCorner = (backRightCorner[0] - width, backRightCorner[1])
-        print(f"\nbackLeftCorner: {backLeftCorner}\n")
+            backLeftCorner, frontLeftCorner = find_opposite_side(frontRightCorner, backRightCorner, width, height)
         
 
     if not backRightCorner:
         if backLeftCorner and frontLeftCorner and frontRightCorner:
             backRightCorner = find_fourth_corner(frontLeftCorner, frontRightCorner, backLeftCorner)
         if backLeftCorner and frontRightCorner:
-            backRightCorner = (frontRightCorner[0], backLeftCorner[1])
+            backRightCorner = find_Bottom_Corner(frontRightCorner, backLeftCorner)
         elif frontLeftCorner and frontRightCorner:
-            backRightCorner = (frontRightCorner[0], frontRightCorner[1] - height)
+            backRightCorner, backLeftCorner = find_opposite_side(frontLeftCorner, frontRightCorner, width, height)
         elif frontLeftCorner and backLeftCorner:
-            backRightCorner = (backLeftCorner[0] + width, backLeftCorner[1])
-        print(f"\nbackRight: {backRightCorner}\n")
-        
+            backRightCorner, frontRightCorner = find_opposite_side(frontLeftCorner, backLeftCorner, width, height)
 
     # Now calculate points
     if (frontLeftCorner and frontRightCorner and backLeftCorner and backRightCorner):
@@ -96,6 +87,9 @@ def calculateRobotPositionFlexible(frontLeftCorner, frontRightCorner, backLeftCo
         return((0,0),(0,0))
         #raise ValueError("Not enough information to calculate corners.")
 
+
+# Help from ChatGPT
+#--------------------------
 def VectorCalculation(frontLeftCorner=None, backLeftCorner=None, backRightCorner=None, frontRightCorner=None):
     if frontLeftCorner and backLeftCorner:
         dx = frontLeftCorner[0] - backLeftCorner[0]
@@ -146,8 +140,10 @@ def find_opposite_side(A, B, width, height):
 
     AB_unit = (AB[0]/length, AB[1]/length)
     perp = (-AB_unit[1], AB_unit[0])
-    perp_scaled = scale(perp, height)
+    perp_scaled = scale(perp, width)
 
     C = add(B, perp_scaled)
     D = add(A, perp_scaled)
     return C, D
+
+#--------------------------
