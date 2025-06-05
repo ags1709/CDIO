@@ -1,5 +1,29 @@
 import math
 
+def subtract(p1, p2):
+    return (p1[0] - p2[0], p1[1] - p2[1])
+
+def add(p1, p2):
+    return (p1[0] + p2[0], p1[1] + p2[1])
+
+def MidPoint(p1, p2):
+    return ((p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2)
+
+def find_fourth_corner(A, B, C):
+    return add(A, subtract(C, B))
+
+def find_perpendicular_corner(A, C, direction=1):
+    v = subtract(A, C)
+    M = MidPoint(A, C)
+    perp = (-v[1], v[0])
+    half_perp = (perp[0] / 2, perp[1] / 2)
+    return (M[0] + direction * half_perp[0], M[1] + direction * half_perp[1])
+
+def get_center_pair(frontLeft, frontRight, backLeft, backRight):
+    frontMid = MidPoint(frontLeft, frontRight)
+    backMid = MidPoint(backLeft, backRight)
+    return frontMid, backMid
+
 def calculateRobotPosition(frontLeftCorner, frontRightCorner, backLeftCorner, backRightCorner):
     if (frontLeftCorner and frontRightCorner and backLeftCorner and backRightCorner):
         forwardsPoint = ( (frontLeftCorner[0] + frontRightCorner[0]) / 2, (frontLeftCorner[1] + frontRightCorner[1]) / 2 )
@@ -12,6 +36,8 @@ def calculateRobotPosition(frontLeftCorner, frontRightCorner, backLeftCorner, ba
 def calculateRobotPositionFlexible(frontLeftCorner, frontRightCorner, backLeftCorner, backRightCorner, width=102, height=138):
     # Fill missing corners if possible
     if not frontLeftCorner:
+        if frontRightCorner and backLeftCorner and backRightCorner:
+            frontLeftCorner = find_fourth_corner(frontRightCorner, backLeftCorner, backRightCorner)
         if frontRightCorner and backLeftCorner:
             frontLeftCorner = (backLeftCorner[0], frontRightCorner[1])
         elif frontRightCorner and backRightCorner:
@@ -36,6 +62,8 @@ def calculateRobotPositionFlexible(frontLeftCorner, frontRightCorner, backLeftCo
         
 
     if not backLeftCorner:
+        if backRightCorner and frontRightCorner and frontLeftCorner:
+            backLeftCorner = find_fourth_corner(frontRightCorner, frontLeftCorner, backRightCorner)
         if backRightCorner and frontLeftCorner:
             backLeftCorner = find_Bottom_Corner(frontLeftCorner, backRightCorner)
         elif frontLeftCorner and frontRightCorner:
@@ -46,6 +74,8 @@ def calculateRobotPositionFlexible(frontLeftCorner, frontRightCorner, backLeftCo
         
 
     if not backRightCorner:
+        if backLeftCorner and frontLeftCorner and frontRightCorner:
+            backRightCorner = find_fourth_corner(frontLeftCorner, frontRightCorner, backLeftCorner)
         if backLeftCorner and frontRightCorner:
             backRightCorner = (frontRightCorner[0], backLeftCorner[1])
         elif frontLeftCorner and frontRightCorner:
@@ -93,21 +123,31 @@ def find_fourth_corner(A, B, C):
 def find_Top_Corner(A,C):
     v = subtract(A,C)
     M = MidPoint(A,C)
-    print(f"find_two_corner: A: {A}, C: {C}, v: {v}, M: {M}")
 
     Perpendicular = (-v[1], v[0])  # Rotate 90 degrees
     HalfPerpendicular = (Perpendicular[0] / 2, Perpendicular[1] / 2)
-    print(f"Perpendicular: {Perpendicular}, HalfPerpendicular: {HalfPerpendicular}")
 
     return (M[0] + HalfPerpendicular[0], M[1] + HalfPerpendicular[1])
 
 def find_Bottom_Corner(A,C):
     v = subtract(A,C)
     M = MidPoint(A,C)
-    print(f"find_Bottom_Corner: A: {A}, C: {C}, v: {v}, M: {M}")
-
     Perpendicular = (-v[1], v[0])  # Rotate 90 degrees
     HalfPerpendicular = (Perpendicular[0] / 2, Perpendicular[1] / 2)
-    print(f"Perpendicular: {Perpendicular}, HalfPerpendicular: {HalfPerpendicular}")
 
     return (M[0] - HalfPerpendicular[0], M[1] - HalfPerpendicular[1])
+
+def scale(v, s):
+    return (v[0]*s, v[1]*s)
+
+def find_opposite_side(A, B, width, height):
+    AB = subtract(B, A)
+    length = math.hypot(AB[0], AB[1])
+
+    AB_unit = (AB[0]/length, AB[1]/length)
+    perp = (-AB_unit[1], AB_unit[0])
+    perp_scaled = scale(perp, height)
+
+    C = add(B, perp_scaled)
+    D = add(A, perp_scaled)
+    return C, D
