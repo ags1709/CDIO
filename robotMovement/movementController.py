@@ -1,5 +1,8 @@
 import numpy as np
 
+def getTurnSpeed(angleToTarget: float):
+    return max(-100, min(100, angleToTarget**3*40+angleToTarget*50)) # x^(3)*40+x*50
+
 # PID controller
 def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
     if distanceFromTarget == None or angleToTarget == None:
@@ -8,37 +11,26 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
     if state == "SEARCH_BALLS":
         # Proportionality constants. Tune to change how fast speed changes
         kp_speed = 0.2
-        kp_turn = 200
 
         goalDistanceFromBall = 20
-        goalAngleToBall = 0
         # Assuming that we use MoveSteering().on(steering, speed), the values range from -100 to 100, adjust below values accordingly
         forwardSpeed = max(5, min(100, kp_speed * (distanceFromTarget - goalDistanceFromBall)))
-        turnSpeed = max(-100, min(100, kp_turn * (angleToTarget - goalAngleToBall))) 
+        turnSpeed = getTurnSpeed(angleToTarget) 
 
     elif state == "TO_INTERMEDIARY":
         kp_speed = 0.2
-        kp_turn = 200
 
         goalDistanceFromBall = 10
-        goalAngleToBall = 0
-
         forwardSpeed = max(40, min(100, kp_speed * (distanceFromTarget - goalDistanceFromBall)))
-        turnSpeed = max(-100, min(100, kp_turn * (angleToTarget - goalAngleToBall))) 
+        turnSpeed = getTurnSpeed(angleToTarget) 
 
     elif state == "TO_GOAL":
         kp_speed = 0.2
-        kp_turn = 200
 
         goalDistanceFromBall = 100
-        goalAngleToBall = 0
-
         forwardSpeed = max(0, min(100, kp_speed * (distanceFromTarget - goalDistanceFromBall)))
-        turnSpeed = max(-100, min(100, kp_turn * (angleToTarget - goalAngleToBall))) 
+        turnSpeed = getTurnSpeed(angleToTarget) 
     
-    
-
-
 
     return (turnSpeed, forwardSpeed)
     
