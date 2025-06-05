@@ -10,18 +10,21 @@ from ultralytics import YOLO
 import math
 from imageRecognition.detect import ObjectDetection, DetectionMode
 
-ENABLE_SOCKET = False
+import logging
+logging.getLogger('ultralytics').setLevel(logging.ERROR)
+
+ENABLE_SOCKET = True
 windowsize = (1280,720)
 
 def main():
     # Set connection to robot
     if ENABLE_SOCKET:
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_socket.connect(("192.168.137.73", 12359))
+        client_socket.connect(("192.168.137.91", 12359))
 
     # Set image detection model
-    #od = ObjectDetection(model="imageRecognition/yolov8_20250501_small.pt", detection_mode=DetectionMode.CAMERA, capture_index=2)
-    od = ObjectDetection(model="imageRecognition/yolov8_20250501_small.pt", detection_mode=DetectionMode.IMAGE, image="test/roct5.png")
+    od = ObjectDetection(model="imageRecognition/yolov8_20250501_small.pt", detection_mode=DetectionMode.CAMERA, capture_index=2)
+    #od = ObjectDetection(model="imageRecognition/yolov8_20250501_small.pt", detection_mode=DetectionMode.IMAGE, image="test/roct5.png")
     
     # Set initial robot state. State machine can be found in robotMovement/selectRobotTarget.py
     robotState = None
@@ -36,7 +39,9 @@ def main():
             distanceToTarget, angleToTarget, robotState = calcDistAndAngleToTarget(detectedObjects, robotState, crossInfo, frame)
         except Exception:
             continue
-
+            
+        cv2.putText(frame, f"State: {robotState}", (20, 60), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 0), 4)
+            
         # Determine whether to hand balls in or not
         vomit = determineAuxiliaryActions(distanceToTarget, angleToTarget, robotState)
 

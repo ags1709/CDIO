@@ -117,7 +117,7 @@ def estimateCross(result, cap) -> CrossInfo:
         rect = cv2.minAreaRect(largest_contour)
         angle_deg = rect[2]+45 # Always 45 degrees rotatated?
 
-        print(f"Angle of cross (in degrees): {angle_deg:.2f}")
+        #print(f"Angle of cross (in degrees): {angle_deg:.2f}")
 
         center = rect[0]
         info: CrossInfo = CrossInfo()

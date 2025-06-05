@@ -1,17 +1,20 @@
 from robotMovement.distanceBetweenObjects import calculateDistance
-from robotMovement.angleOfRotationCalculator import calculateAngleOfRotation
+from robotMovement.angleOfRotationCalculator import calculateAngleOfRotation, calculateAngleOfTwoPoints
 from robotMovement.calculateRobotPosition import calculateRobotPositionFlexible
 from imageRecognition.positionEstimator import CrossInfo, findIntermediatyCrossPoint
 import numpy as np
 import cv2
 from robotMovement.tools import tuple_toint
+import math
+import numpy as np
 
 # TO_INTERMEDIARY
 intermediaryPoint = None
 intermediaryFinishState = None
 
 # TO_EXACT_ROTATION
-exactRotationTarger = None
+exactRotationTarget = None
+exactRotationFinishState = None
 
 # SEARCH_BALLS
 targetBall = None
@@ -30,7 +33,7 @@ def calcDistAndAngleToTarget(detectedObjects, state, crossInfo: CrossInfo, frame
     TO_GOAL = "TO_GOAL"
     TO_EXACT_ROTATION = "TO_EXACT_ROTATION"
 
-    global intermediaryPoint; global exactRotationTarger; global intermediaryFinishState; global targetBall
+    global intermediaryPoint; global exactRotationTarger; global intermediaryFinishState; global targetBall; global exactRotationFinishState
         
     robotDistance = None
     robotAngle = None
@@ -57,10 +60,11 @@ def calcDistAndAngleToTarget(detectedObjects, state, crossInfo: CrossInfo, frame
                 targetBall = min(detectedObjects["orangeBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
                 if is_objectmiddle_in_circle(targetBall, crossInfo.middle_point, crossInfo.size):
                     print("ORANGE BALL IN CROSS!")
-                    intermediaryFinishState = SEARCH_BALLS
                     intermediaryPoint = findIntermediatyCrossPoint(targetBall, crossInfo.middle_point, crossInfo.robot_gap, crossInfo.robot_intermediary_corners)
-                    cv2.circle(frame, tuple_toint(intermediaryPoint), 11, (50,200,50), 6) # Mark closest
-                    #state = TO_INTERMEDIARY TODO: Temporarily disabled to test!
+                    state = TO_INTERMEDIARY
+                    intermediaryFinishState = TO_EXACT_ROTATION # When intermediary is finished, finish at rotation
+                    exactRotationTarget = np.angle(crossInfo.angle_rad + np.pi)
+                    exactRotationFinishState = SEARCH_BALLS
             elif not detectedObjects["whiteBalls"] and not detectedObjects["orangeBalls"]:
                 intermediaryFinishState = TO_GOAL
                 state = TO_INTERMEDIARY
@@ -68,13 +72,13 @@ def calcDistAndAngleToTarget(detectedObjects, state, crossInfo: CrossInfo, frame
         
 
         # Calculate distance and angle to the selected ball
-        if targetBall and robotPos[0] is not None and robotPos[1] is not None:
+        if state is SEARCH_BALLS and targetBall and robotPos[0] is not None and robotPos[1] is not None:
             robotDistance = calculateDistance(robotPos[0], targetBall)
             robotAngle = calculateAngleOfRotation(robotPos[0], robotPos[1], targetBall)
 
         # If no balls are present, move to intermediary point in preperation for turning in balls.
 
-    elif state == TO_INTERMEDIARY:
+    if state == TO_INTERMEDIARY: # 
 
         # if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
         #     state = SEARCH_BALLS
@@ -83,6 +87,7 @@ def calcDistAndAngleToTarget(detectedObjects, state, crossInfo: CrossInfo, frame
         # Have robots middle point reach the intermediary point as it makes for better arrival at goal.
         robotMiddle = ((robotPos[0][0] + robotPos[1][0]) / 2, (robotPos[0][1] + robotPos[1][1]) / 2)
 
+        cv2.circle(frame, tuple_toint(intermediaryPoint), 11, (50,200,50), 6) # Mark intermediary
         robotDistance = calculateDistance(robotMiddle, intermediaryPoint)
         robotAngle = calculateAngleOfRotation(robotPos[0], robotPos[1], intermediaryPoint)    
 
@@ -97,5 +102,12 @@ def calcDistAndAngleToTarget(detectedObjects, state, crossInfo: CrossInfo, frame
 
         robotDistance = calculateDistance(robotPos[0], goalPos)
         robotAngle = calculateAngleOfRotation(robotPos[0], robotPos[1], goalPos)
+        
+    elif state == TO_EXACT_ROTATION:
+        robotAngle = calculateAngleOfTwoPoints(robotPos[0], robotPos[1]) - exactRotationTarget
+
+        if -0.2 < robotAngle < 0.2:
+            state = intermediaryFinishState if intermediaryFinishState is not None else TO_GOAL
+        pass
 
     return robotDistance, robotAngle, state
