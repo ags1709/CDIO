@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-import imutils
+# import imutils
 from datetime import date
 
 cap = cv2.VideoCapture(2)
@@ -41,7 +41,7 @@ while True:
 
     elif key & 0xFF == ord('s'):
         # imgName = f"customData/{date.today}_picture_{imgCounter}.png"
-        imgName = f"test/batch{batch}_picture{imgCounter}.png"
+        imgName = f"customData/dataset2/batch{batch}_picture{imgCounter}.png"
 
         cv2.imwrite(imgName, frame)
         print("Screenshot taken")
