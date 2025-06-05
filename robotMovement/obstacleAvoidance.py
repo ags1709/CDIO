@@ -1,34 +1,38 @@
 import numpy as np
 import math
+from distanceBetweenObjects import calculateDistance
+import heapq
 # from robotMovement.distanceBetweenObjects import calculateDistance
 
-def toGridCoords(self, x, y, grid_resolution):
-        return (x // grid_resolution, y // grid_resolution)
+GRID_RESOLUTION = 10
+
+def toGridCoords(x, y, gridResolution):
+        return (x // gridResolution, y // gridResolution)
     
-def toPixelCoords(self, gridX, gridY, grid_resolution):
-    return (gridX * grid_resolution, gridY * grid_resolution)
+def toPixelCoords(gridX, gridY, gridResolution):
+    return (gridX * gridResolution, gridY * gridResolution)
     
-def heuristic(self, a, b):
+def heuristic(a, b):
     # probably euclidean or manhatten distance.
     # Takes grid points as input.
     
-    pixelA = toPixelCoords(a)
-    pixelB = toPixelCoords(b)
+    # pixelA = toPixelCoords(a)
+    # pixelB = toPixelCoords(b)
+    pixelA, pixelB = toPixelCoords(a, b, GRID_RESOLUTION)
 
-    # euclideanDistance = calculateDistance(pixelA, pixelB)
-    # return euclideanDistance
-    return
+    euclideanDistance = calculateDistance(pixelA, pixelB)
+    return euclideanDistance
 
 
 def calculateMarkedGrid(fieldPixelSize, detectedObstacles):
     # Calculates a grid path from starting point to ending point
     # Resolution of grid. The smaller this is the better the accuracy, but the more computation power required.
-    gridResolution = 10
+    # gridResolution = 10
     fieldWidthPx, fieldHeightPx = fieldPixelSize    
     # Width of grid in nr of cells
-    gridWidth = fieldWidthPx // gridResolution
+    gridWidth = fieldWidthPx // GRID_RESOLUTION
     # Height of grid in nr of cells
-    gridHeight = fieldHeightPx // gridResolution
+    gridHeight = fieldHeightPx // GRID_RESOLUTION
 
     grid = [[0 for _ in range(gridWidth)] for _ in range(gridHeight)]
 
@@ -56,27 +60,72 @@ def calculateMarkedGrid(fieldPixelSize, detectedObstacles):
 
     return np.array(grid)
 
-def astar(self, start, goal):
+
+def astar(grid, start, goal, heuristic):
     # path finding from start to goal on the grid
-    pass
+    n, m = grid.shape
+    openSet = []
+    heapq.heappush(openSet, (0 + heuristic(start, goal), 0, start))
+
+    cameFrom = {}
+
+    gScore = {start: 0}
+
+    directions = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1,1)]
+
+    while openSet:
+        _, currentG, current = heapq.heappop(openSet)
+
+        if current == goal:
+            # Reconstruct the path
+            path = [current]
+            while current in cameFrom:
+                 current = cameFrom[current]
+                 path.append(current)
+            path.reverse()
+            return path
+        
+        for dx, dy in directions:
+            neighbor = current[0] + dx, current[1] + dy
+            # Check bounds 
+            if 0 <= neighbor[0] < n and 0 <= neighbor[1] < m:
+                #  check if walkable
+                if grid[neighbor[0], neighbor[1]] == 0:
+                    tentativeG = currentG + 1
+
+                    if neighbor not in gScore or tentativeG < gScore[neighbor]:
+                        gScore[neighbor] = tentativeG
+                        fScore = tentativeG + heuristic(neighbor, goal)
+                        heapq.heappush(openSet, (fScore, tentativeG, neighbor))
+                        cameFrom[neighbor] = current
+
+    return None
+
+        
 
 
 
+# Testing of creating marked grid
 testFieldPixelSize = (200, 100)
 testGridResolution = 10
 testFieldWidthPx, testFieldHeightPx = testFieldPixelSize
 testGridWidth = testFieldWidthPx // testGridResolution
 testGridHeight = testFieldHeightPx // testGridResolution
 testGridBeforeObstacles = np.array([[0 for _ in range(testGridWidth)] for _ in range(testGridHeight)])
-testObstacles = [((20, 20), (30, 30)), ((140, 50), (180, 100))]
+testObstacles = [((20, 20), (30, 30)), ((70, 25), (120, 75)), ((140, 50), (180, 100))]
 testGridObstaclesMarked = calculateMarkedGrid(testFieldPixelSize, testObstacles)
-
 
 print(f"Grid before:\n {testGridBeforeObstacles}")
 print()
 print(f"Grid With Obstacles:\n {testGridObstaclesMarked}")
 
 
+# Testing of astar search on grid
+start = (0, 0)
+end = (9, 19)
+
+path = astar(testGridObstaclesMarked, start, end, heuristic)
+print("Path:", path)
     
 
 
