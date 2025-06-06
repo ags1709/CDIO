@@ -1,8 +1,22 @@
+# from robotMovement.distanceBetweenObjects import calculateDistance
+# from robotMovement.angleOfRotationCalculator import calculateAngleOfRotation
+# from robotMovement.calculateRobotPosition import calculateRobotPositionFlexible
+
 from robotMovement.distanceBetweenObjects import calculateDistance
 from robotMovement.angleOfRotationCalculator import calculateAngleOfRotation
 from robotMovement.calculateRobotPosition import calculateRobotPositionFlexible
+from robotMovement.obstacleAvoidance import (
+    calculateMarkedGrid, astar, toGridCoords, toPixelCoords, 
+    path_follower, getFieldOrigin, getFieldSize
+)
+
+grid = None
+lastObstacles = None
+fieldOrigin = None
+fieldSize = None
 
 def calcDistAndAngleToTarget(detectedObjects, state):
+    global grid, lastObstacles, fieldOrigin, fieldSize
     # States for state machine. Can be expanded later to handle situations calling for specific behaviour like getting ball from corner/cross.
     SEARCH_BALLS = "SEARCH_BALLS"
     TO_INTERMEDIARY = "TO_INTERMEDIARY"
@@ -16,8 +30,31 @@ def calcDistAndAngleToTarget(detectedObjects, state):
         state = SEARCH_BALLS
 
     # This is the two points used to identify the robots position. 
-    robotPos = calculateRobotPositionFlexible(detectedObjects["frontLeftCorner"], detectedObjects["frontRightCorner"], detectedObjects["backLeftCorner"], detectedObjects["backRightCorner"])
+    robotPos = calculateRobotPositionFlexible(
+        detectedObjects["frontLeftCorner"],
+        detectedObjects["frontRightCorner"],
+        detectedObjects["backLeftCorner"],
+        detectedObjects["backRightCorner"])
 
+    playfield = detectedObjects["playfield"]
+    currentFieldSize = getFieldSize(playfield)
+
+    # Create list of obstacle and add obstacles
+    obstacles = []
+    if detectedObjects.append(detectedObjects["cross"]) is not None:
+        obstacles.append(detectedObjects["cross"])
+    if detectedObjects.append(detectedObjects["egg"]) is not None:
+        obstacles.append(detectedObjects["egg"])
+
+    # Update grid only if needed
+    if (grid is None or 
+        lastObstacles != obstacles or 
+        fieldSize != currentFieldSize):
+        
+        grid = calculateMarkedGrid(currentFieldSize, obstacles)
+        lastObstacles = obstacles.copy()
+
+    
     # Use state machine to dictate robots target based on its state
     if state == SEARCH_BALLS:
         targetBall = None
@@ -28,6 +65,15 @@ def calcDistAndAngleToTarget(detectedObjects, state):
 
         # Calculate distance and angle to the selected ball
         if targetBall and robotPos[0] is not None and robotPos[1] is not None:
+            robotGridPos = toGridCoords(robotPos[0, 0], robotPos[0, 1])
+            ballGridPos = toGridCoords(targetBall[0], targetBall[0])
+
+            # Calculate direct distance to ball to see if pathfinding is necessary
+            directDistance = calculateDistance(robotPos[0], targetBall)
+
+            if len(obstacles) > 0 and directDistance > 100:
+                pass
+            
             robotDistance = calculateDistance(robotPos[0], targetBall)
             robotAngle = calculateAngleOfRotation(robotPos[0], robotPos[1], targetBall)
 

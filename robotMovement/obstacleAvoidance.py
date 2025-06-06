@@ -25,15 +25,10 @@ def toPixelCoords(gridX, gridY, fieldOrigin=(0, 0)):
     return (pixel_x, pixel_y)
     
 def heuristic(a, b):
-    # probably euclidean or manhatten distance.
+    # Calculates euclidean distance in grid coordinates
     # Takes grid points as input.
-    
-    # pixelA = toPixelCoords(a[0], a[1])
-    # pixelB = toPixelCoords(b[0], b[1])
     dx = b[0] - a[0]
     dy = b[1] - a[1]
-    # euclideanDistance = calculateDistance(pixelA, pixelB)
-    # return euclideanDistance
     return math.hypot(dx, dy)
 
 
@@ -118,6 +113,59 @@ def astar(grid, start, goal, heuristic):
     return None
 
 
+class PathFollower:
+    """Class to handle path following logic"""
+    
+    def __init__(self, lookahead_distance=50):
+        self.current_path = None
+        self.current_target_index = 0
+        self.lookahead_distance = lookahead_distance
+        self.path_complete = False
+    
+    def setPath(self, path, fieldOrigin=(0, 0)):
+        """Set a new path to follow"""
+        if path is None or len(path) == 0:
+            self.current_path = None
+            self.path_complete = True
+            return
+            
+        # Convert grid path to pixel coordinates
+        self.current_path = [toPixelCoords(point[0], point[1], fieldOrigin) for point in path]
+        self.current_target_index = 0 if len(self.current_path) > 1 else 0
+        self.path_complete = False
+        
+    def getNextTarget(self, robotPos):
+        """Get the next target point along the path"""
+        if (self.current_path is None or len(self.current_path) == 0 or 
+            self.path_complete or self.current_target_index >= len(self.current_path)):
+            return None
+    
+        # Check if we've reached the current target
+        current_target = self.current_path[self.current_target_index]
+        distance_to_target = calculateDistance(robotPos, current_target)
+        
+        # If close to current target, move to next one
+        if distance_to_target < self.lookahead_distance:
+            self.current_target_index += 1
+            
+            # Check if we've reached the end of the path
+            if self.current_target_index >= len(self.current_path):
+                self.path_complete = True
+                return None
+                
+            return self.current_path[self.current_target_index]
+        
+        return current_target
+        
+    def isPathComplete(self):
+        """Check if the current path has been completed"""
+        return self.path_complete
+        
+    def getCurrentPath(self):
+        """Get the current path for debugging/visualization"""
+        return self.current_path
+
+
 def getFieldSize(playfield):
     """Calculate the size of the playfield"""
     if playfield is None or len(playfield) < 2:
@@ -126,7 +174,6 @@ def getFieldSize(playfield):
     width = abs(max(playfield[:, 0]) - min(playfield[:, 0]))
     height = abs(max(playfield[:, 1]) - min(playfield[:, 1]))
     return (width, height)
-
 
 
 
