@@ -13,7 +13,7 @@ from imageRecognition.detect import ObjectDetection, DetectionMode
 import logging
 logging.getLogger('ultralytics').setLevel(logging.ERROR)
 
-ENABLE_SOCKET = True
+ENABLE_SOCKET = False
 windowsize = (1280,720)
 
 def main():
@@ -23,11 +23,10 @@ def main():
         client_socket.connect(("192.168.137.91", 12359))
 
     # Set image detection model
-    od = ObjectDetection(model="imageRecognition/yolov8_20250501_small.pt", detection_mode=DetectionMode.CAMERA, capture_index=2)
-    #od = ObjectDetection(model="imageRecognition/yolov8_20250501_small.pt", detection_mode=DetectionMode.IMAGE, image="test/roct5.png")
+    #od = ObjectDetection(model="imageRecognition/20250501-small-epoch40.pt", detection_mode=DetectionMode.CAMERA, capture_index=2)
+    od = ObjectDetection(model="imageRecognition/20250501-small-epoch40.pt", detection_mode=DetectionMode.IMAGE, image="test/roct6.png")
     
     # Set initial robot state. State machine can be found in robotMovement/selectRobotTarget.py
-    robotState = None
 
     # Main loop. Runs entire competition program.
     while True:
@@ -36,21 +35,23 @@ def main():
 
         # Calculate robots distance and angle to target, and set its state
         try:
-            distanceToTarget, angleToTarget, robotState = calcDistAndAngleToTarget(detectedObjects, robotState, crossInfo, frame)
+            distanceToTarget, angleToTarget, robotState = calcDistAndAngleToTarget(detectedObjects, crossInfo, frame)
+            cv2.putText(frame, f"State: {robotState}", (20, 60), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 0), 4)
+            
+            # Determine whether to hand balls in or not
+            vomit = determineAuxiliaryActions(distanceToTarget, angleToTarget, robotState)
+
+            # Calculate the engine speeds determining the robots movement based on distance and angle to target.
+            robotMovement = calculateSpeedAndRotation(distanceToTarget, angleToTarget, robotState)
+            # Send data to robot
+            if ENABLE_SOCKET:
+                client_socket.sendall(f"{round(robotMovement[0])}#{round(robotMovement[1])}#False#{vomit}\n".encode())
         except Exception:
-            continue
+            #continue
+            pass
             
-        cv2.putText(frame, f"State: {robotState}", (20, 60), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 0), 4)
-            
-        # Determine whether to hand balls in or not
-        vomit = determineAuxiliaryActions(distanceToTarget, angleToTarget, robotState)
+        
 
-        # Calculate the engine speeds determining the robots movement based on distance and angle to target.
-        robotMovement = calculateSpeedAndRotation(distanceToTarget, angleToTarget, robotState)
-
-        # Send data to robot
-        if ENABLE_SOCKET:
-            client_socket.sendall(f"{round(robotMovement[0])}#{round(robotMovement[1])}#False#{vomit}\n".encode())
         
         frame = cv2.resize(frame, windowsize)
         cv2.imshow("YOLOv8 Live Detection", frame)
