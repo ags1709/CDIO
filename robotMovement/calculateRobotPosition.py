@@ -54,10 +54,10 @@ def calculateRobotPositionFlexible(frontLeftCorner, frontRightCorner, backLeftCo
 
     # Now calculate points
     if (frontLeftCorner and frontRightCorner and backLeftCorner and backRightCorner):
-        print(f"\n Front Left Corner: {frontLeftCorner}: Front Right Corner {frontRightCorner}: Back Left Corner {backLeftCorner}: Back Right Corner {backRightCorner}")
+        #print(f"\n Front Left Corner: {frontLeftCorner}: Front Right Corner {frontRightCorner}: Back Left Corner {backLeftCorner}: Back Right Corner {backRightCorner}")
         forwardsPoint = ( (frontLeftCorner[0] + frontRightCorner[0]) / 2, (frontLeftCorner[1] + frontRightCorner[1]) / 2 )
         backwardsPoint = ( (backLeftCorner[0] + backRightCorner[0]) / 2, (backLeftCorner[1] + backRightCorner[1]) / 2 )
-        print(f"\n Forward point {forwardsPoint}, Backward points {backwardsPoint} \n")
+        #print(f"\n Forward point {forwardsPoint}, Backward points {backwardsPoint} \n")
         return (forwardsPoint, backwardsPoint)
     else:
         return((0,0),(0,0))

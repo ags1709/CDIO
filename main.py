@@ -13,7 +13,7 @@ from imageRecognition.detect import ObjectDetection, DetectionMode
 import logging
 logging.getLogger('ultralytics').setLevel(logging.ERROR)
 
-ENABLE_SOCKET = False
+ENABLE_SOCKET = True
 windowsize = (1280,720)
 
 def main():
@@ -23,8 +23,8 @@ def main():
         client_socket.connect(("192.168.137.91", 12359))
 
     # Set image detection model
-    #od = ObjectDetection(model="imageRecognition/20250501-small-epoch40.pt", detection_mode=DetectionMode.CAMERA, capture_index=2)
-    od = ObjectDetection(model="imageRecognition/20250501-small-epoch40.pt", detection_mode=DetectionMode.IMAGE, image="test/roct6.png")
+    od = ObjectDetection(model="imageRecognition/yolov8s_060625.pt", detection_mode=DetectionMode.CAMERA, capture_index=2)
+    #od = ObjectDetection(model="imageRecognition/yolov8s_060625.pt", detection_mode=DetectionMode.IMAGE, image="test/batch1_picture1.png")
     
     # Set initial robot state. State machine can be found in robotMovement/selectRobotTarget.py
 
@@ -46,8 +46,9 @@ def main():
             # Send data to robot
             if ENABLE_SOCKET:
                 client_socket.sendall(f"{round(robotMovement[0])}#{round(robotMovement[1])}#False#{vomit}\n".encode())
-        except Exception:
+        except Exception as e:
             #continue
+            print(e)
             pass
             
         

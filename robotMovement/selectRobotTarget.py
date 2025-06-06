@@ -41,10 +41,13 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
 
     # If no state has been set yet, put robot in ball searching state.
     if len(stateQueue) == 0:
-        stateQueue.append((SEARCH_BALLS, "123", "23"))
+        stateQueue.append((SEARCH_BALLS, ""))
 
     # This is the two points used to identify the robots position. 
     robotPos = calculateRobotPositionFlexible(detectedObjects["frontLeftCorner"], detectedObjects["frontRightCorner"], detectedObjects["backLeftCorner"], detectedObjects["backRightCorner"])
+    robotMiddle = ((robotPos[0][0] + robotPos[1][0]) / 2, (robotPos[0][1] + robotPos[1][1]) / 2)
+    robotRotation = calculateAngleOfTwoPoints(robotPos[0], robotPos[1])
+    
 
     state = stateQueue[0][0] # State
     stateVariables = stateQueue[0][1:] # Variables for state
@@ -60,10 +63,11 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
                 if is_objectmiddle_in_circle(targetBall, crossInfo.middle_point, crossInfo.size):
                     print("ORANGE BALL IN CROSS!")
                     intermediaryPoint = findIntermediatyCrossPoint(targetBall, crossInfo.middle_point, crossInfo.robot_gap, crossInfo.robot_intermediary_corners)
+                    stateQueue.pop(0)
                     stateQueue.append((TO_INTERMEDIARY, intermediaryPoint))
-                    exactRotationTarget = np.angle(crossInfo.angle_rad + np.pi)
+                    exactRotationTarget = (crossInfo.angle_rad + np.pi + np.pi) % (2*np.pi) - np.pi 
                     stateQueue.append((TO_EXACT_ROTATION, exactRotationTarget))
-                    stateQueue.append((SEARCH_BALLS))
+                    stateQueue.append((SEARCH_BALLS, ""))
             elif not detectedObjects["whiteBalls"] and not detectedObjects["orangeBalls"]:
                 intermediaryPoint = (detectedObjects["goals"][1][0] - 300, detectedObjects["goals"][1][1])
                 stateQueue.append((TO_INTERMEDIARY, intermediaryPoint))
@@ -75,6 +79,9 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         if state is SEARCH_BALLS and targetBall and robotPos[0] is not None and robotPos[1] is not None:
             robotDistance = calculateDistance(robotPos[0], targetBall)
             robotAngle = calculateAngleOfRotation(robotPos[0], robotPos[1], targetBall)
+            if robotDistance < 25:
+                print("Found ball")
+                stateQueue.pop(0)
 
         # If no balls are present, move to intermediary point in preperation for turning in balls.
 
@@ -85,20 +92,19 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
 
         #intermediaryPoint = (detectedObjects["goals"][1][0] - 300, detectedObjects["goals"][1][1])
         # Have robots middle point reach the intermediary point as it makes for better arrival at goal.
-        robotMiddle = ((robotPos[0][0] + robotPos[1][0]) / 2, (robotPos[0][1] + robotPos[1][1]) / 2)
         intermediaryPoint = stateVariables[0]
 
         cv2.circle(frame, tuple_toint(intermediaryPoint), 11, (50,200,50), 6) # Mark intermediary
         robotDistance = calculateDistance(robotMiddle, intermediaryPoint)
         robotAngle = calculateAngleOfRotation(robotPos[0], robotPos[1], intermediaryPoint)    
 
-        if robotDistance <= 10 and -0.2 < robotAngle < 0.2:
+        if robotDistance <= 25:# and -0.2 < robotAngle < 0.2:
             #state = intermediaryFinishState if intermediaryFinishState is not None else TO_GOAL
             stateQueue.pop(0)
     
     elif state == TO_GOAL:
         if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
-            stateQueue.append((SEARCH_BALLS))
+            stateQueue.append((SEARCH_BALLS, ""))
             stateQueue.pop(0)
         # NOTE: This turns in balls in the small goal. This assumes that the small goal is on the right side of the camera
         goalPos = detectedObjects["goals"][1]
@@ -113,5 +119,10 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         if -0.2 < robotAngle < 0.2:
             #state = intermediaryFinishState if intermediaryFinishState is not None else TO_GOAL
             stateQueue.pop(0)
+            targetBall = None # TODO: TEMP!!!
+    # Draw robot angle
+    drobotAngle = (robotAngle - robotRotation + np.pi) % (2*np.pi) - np.pi
+    cv2.arrowedLine(frame, tuple_toint(robotMiddle), (int(robotMiddle[0] + math.cos(drobotAngle)*120), int(robotMiddle[1] + math.sin(drobotAngle)*120)), (255,0,0), 4, tipLength=0.2) 
 
+    
     return robotDistance, robotAngle, state
