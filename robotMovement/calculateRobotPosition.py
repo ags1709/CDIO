@@ -1,6 +1,5 @@
 import math
 
-
 def calculateRobotPosition(frontLeftCorner, frontRightCorner, backLeftCorner, backRightCorner):
     if (frontLeftCorner and frontRightCorner and backLeftCorner and backRightCorner):
         forwardsPoint = ( (frontLeftCorner[0] + frontRightCorner[0]) / 2, (frontLeftCorner[1] + frontRightCorner[1]) / 2 )
@@ -67,18 +66,6 @@ def calculateRobotPositionFlexible(frontLeftCorner, frontRightCorner, backLeftCo
 
 # Help from ChatGPT
 #--------------------------
-def VectorCalculation(frontLeftCorner=None, backLeftCorner=None, backRightCorner=None, frontRightCorner=None):
-    if frontLeftCorner and backLeftCorner:
-        dx = frontLeftCorner[0] - backLeftCorner[0]
-        dy = frontLeftCorner[1] - backLeftCorner[1]
-        return (dx, dy)
-    elif frontLeftCorner and backRightCorner:
-        dx = frontLeftCorner[0] - backRightCorner[0]
-        dy = frontLeftCorner[1] - backRightCorner[1]
-        return (dx, dy)
-    return (0.0, 0.0)
-
-
 def subtract(p1, p2):
     return (p1[0] - p2[0], p1[1] - p2[1])
 
