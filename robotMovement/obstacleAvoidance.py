@@ -6,29 +6,42 @@ import heapq
 
 GRID_RESOLUTION = 10
 
-def toGridCoords(x, y, gridResolution):
-        return (x // gridResolution, y // gridResolution)
+# def toGridCoords(x, y):
+#         return (x // GRID_RESOLUTION, y // GRID_RESOLUTION)
     
-def toPixelCoords(gridX, gridY, gridResolution):
-    return (gridX * gridResolution, gridY * gridResolution)
+# def toPixelCoords(gridX, gridY):
+#     return (gridX * GRID_RESOLUTION, gridY * GRID_RESOLUTION)
+
+def toGridCoords(x, y, fieldOrigin=(0, 0)):
+    """Convert pixel coordinates to grid coordinates"""
+    adjusted_x = x - fieldOrigin[0]
+    adjusted_y = y - fieldOrigin[1]
+    return (int(adjusted_x // GRID_RESOLUTION), int(adjusted_y // GRID_RESOLUTION))
+    
+def toPixelCoords(gridX, gridY, fieldOrigin=(0, 0)):
+    """Convert grid coordinates to pixel coordinates"""
+    pixel_x = gridX * GRID_RESOLUTION + fieldOrigin[0] + GRID_RESOLUTION // 2
+    pixel_y = gridY * GRID_RESOLUTION + fieldOrigin[1] + GRID_RESOLUTION // 2
+    return (pixel_x, pixel_y)
     
 def heuristic(a, b):
     # probably euclidean or manhatten distance.
     # Takes grid points as input.
     
-    # pixelA = toPixelCoords(a)
-    # pixelB = toPixelCoords(b)
-    pixelA, pixelB = toPixelCoords(a, b, GRID_RESOLUTION)
-
-    euclideanDistance = calculateDistance(pixelA, pixelB)
-    return euclideanDistance
+    # pixelA = toPixelCoords(a[0], a[1])
+    # pixelB = toPixelCoords(b[0], b[1])
+    dx = b[0] - a[0]
+    dy = b[1] - a[1]
+    # euclideanDistance = calculateDistance(pixelA, pixelB)
+    # return euclideanDistance
+    return math.hypot(dx, dy)
 
 
 def calculateMarkedGrid(fieldPixelSize, detectedObstacles):
     # Calculates a grid path from starting point to ending point
     # Resolution of grid. The smaller this is the better the accuracy, but the more computation power required.
-    # gridResolution = 10
-    fieldWidthPx, fieldHeightPx = fieldPixelSize    
+    # GRID_RESOLUTION = 10
+    fieldWidthPx, fieldHeightPx = fieldPixelSize
     # Width of grid in nr of cells
     gridWidth = fieldWidthPx // GRID_RESOLUTION
     # Height of grid in nr of cells
@@ -91,7 +104,10 @@ def astar(grid, start, goal, heuristic):
             if 0 <= neighbor[0] < n and 0 <= neighbor[1] < m:
                 #  check if walkable
                 if grid[neighbor[0], neighbor[1]] == 0:
-                    tentativeG = currentG + 1
+                    moveCost = math.sqrt(2) if dx != 0 and dy != 0 else 1
+                    tentativeG = currentG + moveCost
+                    
+                    # tentativeG = currentG + 1
 
                     if neighbor not in gScore or tentativeG < gScore[neighbor]:
                         gScore[neighbor] = tentativeG
@@ -101,7 +117,16 @@ def astar(grid, start, goal, heuristic):
 
     return None
 
-        
+
+def getFieldSize(playfield):
+    """Calculate the size of the playfield"""
+    if playfield is None or len(playfield) < 2:
+        return (800, 600)  # Default size
+    
+    width = abs(max(playfield[:, 0]) - min(playfield[:, 0]))
+    height = abs(max(playfield[:, 1]) - min(playfield[:, 1]))
+    return (width, height)
+
 
 
 
@@ -115,8 +140,8 @@ testGridBeforeObstacles = np.array([[0 for _ in range(testGridWidth)] for _ in r
 testObstacles = [((20, 20), (30, 30)), ((70, 25), (120, 75)), ((140, 50), (180, 100))]
 testGridObstaclesMarked = calculateMarkedGrid(testFieldPixelSize, testObstacles)
 
-print(f"Grid before:\n {testGridBeforeObstacles}")
-print()
+# print(f"Grid before:\n {testGridBeforeObstacles}")
+# print()
 print(f"Grid With Obstacles:\n {testGridObstaclesMarked}")
 
 
