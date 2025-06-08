@@ -23,6 +23,9 @@ def is_objectmiddle_in_circle(objectpos, center, radius):
     distance_squared = np.sum((point - center) ** 2)
     return distance_squared <= radius ** 2
 
+def add_angle(a1, a2):
+    return (a1 + a2 + np.pi) % (2*np.pi) - np.pi
+
 def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
     # States for state machine. Can be expanded later to handle situations calling for specific behaviour like getting ball from corner/cross.
     SEARCH_BALLS = "SEARCH_BALLS"
@@ -46,7 +49,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
     # This is the two points used to identify the robots position. 
     robotPos = calculateRobotPositionFlexible(detectedObjects["frontLeftCorner"], detectedObjects["frontRightCorner"], detectedObjects["backLeftCorner"], detectedObjects["backRightCorner"])
     robotMiddle = ((robotPos[0][0] + robotPos[1][0]) / 2, (robotPos[0][1] + robotPos[1][1]) / 2)
-    robotRotation = calculateAngleOfTwoPoints(robotPos[0], robotPos[1])
+    robotRotation = calculateAngleOfTwoPoints(robotPos[1], robotPos[0])
     
 
     state = stateQueue[0][0] # State
@@ -121,8 +124,8 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
             stateQueue.pop(0)
             targetBall = None # TODO: TEMP!!!
     # Draw robot angle
-    drobotAngle = (robotAngle - robotRotation + np.pi) % (2*np.pi) - np.pi
-    cv2.arrowedLine(frame, tuple_toint(robotMiddle), (int(robotMiddle[0] + math.cos(drobotAngle)*120), int(robotMiddle[1] + math.sin(drobotAngle)*120)), (255,0,0), 4, tipLength=0.2) 
+    drobotAngle = add_angle(robotAngle, robotRotation)#(robotAngle - robotRotation + np.pi) % (2*np.pi) - np.pi
+    cv2.arrowedLine(frame, tuple_toint(robotPos[0]), (int(robotPos[0][0] + math.cos(drobotAngle)*250), int(robotPos[0][1] + math.sin(drobotAngle)*250)), (255,0,0), 4, tipLength=0.2) 
 
     
     return robotDistance, robotAngle, state
