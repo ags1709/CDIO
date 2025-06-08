@@ -81,7 +81,8 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         # Calculate distance and angle to the selected ball
         if state is SEARCH_BALLS and targetBall and robotPos[0] is not None and robotPos[1] is not None:
             robotDistance = calculateDistance(robotPos[0], targetBall)
-            robotAngle = calculateAngleOfRotation(robotPos[0], robotPos[1], targetBall)
+            robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], targetBall)
+            robotAngle = add_angle(robotToObjectAngle, -robotRotation)
             if robotDistance < 25:
                 print("Found ball")
                 stateQueue.pop(0)
@@ -99,7 +100,8 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
 
         cv2.circle(frame, tuple_toint(intermediaryPoint), 11, (50,200,50), 6) # Mark intermediary
         robotDistance = calculateDistance(robotMiddle, intermediaryPoint)
-        robotAngle = calculateAngleOfRotation(robotPos[0], robotPos[1], intermediaryPoint)    
+        robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], intermediaryPoint)
+        robotAngle = add_angle(robotToObjectAngle, -robotRotation)   
 
         if robotDistance <= 25:# and -0.2 < robotAngle < 0.2:
             #state = intermediaryFinishState if intermediaryFinishState is not None else TO_GOAL
@@ -113,11 +115,12 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         goalPos = detectedObjects["goals"][1]
 
         robotDistance = calculateDistance(robotPos[0], goalPos)
-        robotAngle = calculateAngleOfRotation(robotPos[0], robotPos[1], goalPos)
+        robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], goalPos)
+        robotAngle = add_angle(robotToObjectAngle, -robotRotation)
         
     elif state == TO_EXACT_ROTATION:
         exactRotationTarget = stateVariables[0]
-        robotAngle = calculateAngleOfTwoPoints(robotPos[0], robotPos[1]) - exactRotationTarget
+        robotAngle = robotRotation - exactRotationTarget # TODO: Check if this works lol
 
         if -0.2 < robotAngle < 0.2:
             #state = intermediaryFinishState if intermediaryFinishState is not None else TO_GOAL
