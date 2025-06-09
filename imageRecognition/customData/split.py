@@ -3,11 +3,12 @@ import random
 import shutil
 
 # Source directories
-image_dir = './images'  # original image folder
-label_dir = './labels'  # original label folder
+dataset_dir = 'eggSet'
+image_dir = f'./imageRecognition/customData/{dataset_dir}/images'  # original image folder
+label_dir = f'./imageRecognition/customData/{dataset_dir}/labels'  # original label folder
 
 # Output dataset directory
-output_dir = './dataset'
+output_dir = f'./imageRecognition/customData/{dataset_dir}/dataset'
 splits = {
     'train': 0.7,
     'valid': 0.15,
