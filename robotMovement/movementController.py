@@ -23,15 +23,16 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
     if state == "SEARCH_BALLS":
         # Proportionality constants. Tune to change how fast speed changes
         kp_speed = 0.2
+        goalDistanceFromBall = 20
+
 
         errorForward = distanceFromTarget - goalDistanceFromBall
         errorAngleToTarget = angleToTarget
-        dt = time.time() - previous_time
+        dt = max(time.time() - previous_time, 0.001)
 
         DForward = kd * (errorForward - previous_error_forward)  / dt
         DTurn = kd * (errorAngleToTarget - previous_error_angle_to_target) / dt
 
-        goalDistanceFromBall = 20
         # Assuming that we use MoveSteering().on(steering, speed), the values range from -100 to 100, adjust below values accordingly
         forwardSpeed = max(5, min(100, kp_speed * (distanceFromTarget - goalDistanceFromBall)) + DForward)
         turnSpeed = getTurnSpeed(angleToTarget) + DTurn
@@ -42,12 +43,11 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
 
     elif state == "TO_INTERMEDIARY":
         kp_speed = 0.2
-
         goalDistanceFromBall = 10
 
         errorForward = distanceFromTarget - goalDistanceFromBall
         errorAngleToTarget = angleToTarget
-        dt = time.time() - previous_time
+        dt = max(time.time() - previous_time, 0.001)
 
         DForward = kd * (errorForward - previous_error_forward)  / dt
         DTurn = kd * (errorAngleToTarget - previous_error_angle_to_target) / dt
@@ -61,21 +61,20 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
 
     elif state == "TO_GOAL":
         kp_speed = 0.2
+        goalDistanceFromBall = 100
 
         errorForward = distanceFromTarget - goalDistanceFromBall
         errorAngleToTarget = angleToTarget
-
-        dt = time.time() - previous_time
-        previous_time = time.time()
+        dt = max(time.time() - previous_time, 0.001)
 
         DForward = kd * (errorForward - previous_error_forward)  / dt
         DTurn = kd * (errorAngleToTarget - previous_error_angle_to_target) / dt
 
-        goalDistanceFromBall = 100
         forwardSpeed = max(0, min(100, kp_speed * (distanceFromTarget - goalDistanceFromBall)) + DForward)
         turnSpeed = getTurnSpeed(angleToTarget) + DTurn
 
         previous_error_forward = errorForward 
+        previous_time = time.time()
         previous_error_angle_to_target = errorAngleToTarget
 
 
