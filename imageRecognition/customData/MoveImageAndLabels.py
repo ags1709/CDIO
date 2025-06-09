@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 import shutil
 
+# ChatGPT
 # Set the source directory where your .png and .txt files currently are
 source_dir = Path("imageRecognition\customData\eggSet")  # Change this as needed
 images_dir = source_dir / "images"
