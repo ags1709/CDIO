@@ -1,6 +1,6 @@
 import numpy as np
 
-def getTurnSpeed(angleToTarget: float):
+def getTurnStrength(angleToTarget: float):
     # return max(-100, min(100, angleToTarget**3*40+angleToTarget*50)) # x^(3)*40+x*50
     
     # Try tuning constant.
@@ -18,32 +18,27 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
         # Proportionality constants. Tune to change how fast speed changes
         kp_speed = 0.2
 
-        goalDistanceFromBall = 20
+        goalDistanceFromBall = 0
         # Assuming that we use MoveSteering().on(steering, speed), the values range from -100 to 100, adjust below values accordingly
         
-        # Try limiting engineSpeeds as it determines the speed at which we turn. Maybe especially limit it at large angles? And no limit or lower limit when angle is small enough? 
-        # Try not moving forward until angle is satisfyingly small? Probably slow, but probably effective.
+
+        # Maybe change enginespeeds if ball is very close?
         
-        # If distance is large, turn before moving
-        if distanceFromTarget > 100:
+        # New approach to movement; Turn before moving
+        if angleToTarget < -0.0872665:
+            turnStrength = -100
+            engineSpeeds = 2
+            if angleToTarget < -0.52:
+                engineSpeeds = 15
+        elif angleToTarget >= 0.0872665:
+            turnStrength = 100
+            engineSpeeds = 2
+            if angleToTarget > 0.52:
+                engineSpeeds = 15
+        else: 
+            turnStrength = 0
+            engineSpeeds = 40
 
-            turnStrength = getTurnSpeed(angleToTarget) 
-            if angleToTarget < -0.0872665:
-                engineSpeeds = 2
-                if angleToTarget < -0.785:
-                    engineSpeeds = 10
-                turnStrength = -100
-            elif angleToTarget >= 0.0872665:
-                engineSpeeds = 2
-                if angleToTarget > 0.785:
-                    engineSpeeds = 10
-                turnStrength = 100
-            else: 
-                turnStrength = 0
-                engineSpeeds = 20
-
-        # Adjust forward speed depending on angle. Only drive forwards if angle is small enough
-        # engineSpeeds = max(5, min(5, kp_speed * (distanceFromTarget - goalDistanceFromBall)))
         
 
     elif state == "TO_INTERMEDIARY":
@@ -51,14 +46,14 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
 
         goalDistanceFromBall = 10
         engineSpeeds = max(40, min(100, kp_speed * (distanceFromTarget - goalDistanceFromBall)))
-        turnStrength = getTurnSpeed(angleToTarget) 
+        turnStrength = getTurnStrength(angleToTarget) 
 
     elif state == "TO_GOAL":
         kp_speed = 0.2
 
         goalDistanceFromBall = 100
         engineSpeeds = max(0, min(100, kp_speed * (distanceFromTarget - goalDistanceFromBall)))
-        turnStrength = getTurnSpeed(angleToTarget) 
+        turnStrength = getTurnStrength(angleToTarget) 
     
 
     return (turnStrength, engineSpeeds)
