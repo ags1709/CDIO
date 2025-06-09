@@ -5,10 +5,9 @@ def getTurnSpeed(angleToTarget: float):
     
     # Try tuning constant.
     kpTurn = 20
-    turnSpeed = kpTurn * angleToTarget
+    turnStrength = kpTurn * angleToTarget
 
-    # Try capping turn speed at eg. 50. Maybe not, as this would not allow for turning in place. Test?
-    # return max(-50, min(50, turnSpeed))
+    return turnStrength
 
 # PID controller
 def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
@@ -22,25 +21,45 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
         goalDistanceFromBall = 20
         # Assuming that we use MoveSteering().on(steering, speed), the values range from -100 to 100, adjust below values accordingly
         
-        # Try limiting forwardSpeed as it determines the speed at which we turn. Maybe especially limit it at large angles? And no limit or lower limit when angle is small enough? 
+        # Try limiting engineSpeeds as it determines the speed at which we turn. Maybe especially limit it at large angles? And no limit or lower limit when angle is small enough? 
         # Try not moving forward until angle is satisfyingly small? Probably slow, but probably effective.
-        forwardSpeed = max(10, min(100, kp_speed * (distanceFromTarget - goalDistanceFromBall)))
-        turnSpeed = getTurnSpeed(angleToTarget) 
+        
+        # If distance is large, turn before moving
+        if distanceFromTarget > 100:
+
+            turnStrength = getTurnSpeed(angleToTarget) 
+            if angleToTarget < -0.0872665:
+                engineSpeeds = 2
+                if angleToTarget < -0.785:
+                    engineSpeeds = 10
+                turnStrength = -100
+            elif angleToTarget >= 0.0872665:
+                engineSpeeds = 2
+                if angleToTarget > 0.785:
+                    engineSpeeds = 10
+                turnStrength = 100
+            else: 
+                turnStrength = 0
+                engineSpeeds = 20
+
+        # Adjust forward speed depending on angle. Only drive forwards if angle is small enough
+        # engineSpeeds = max(5, min(5, kp_speed * (distanceFromTarget - goalDistanceFromBall)))
+        
 
     elif state == "TO_INTERMEDIARY":
         kp_speed = 0.2
 
         goalDistanceFromBall = 10
-        forwardSpeed = max(40, min(100, kp_speed * (distanceFromTarget - goalDistanceFromBall)))
-        turnSpeed = getTurnSpeed(angleToTarget) 
+        engineSpeeds = max(40, min(100, kp_speed * (distanceFromTarget - goalDistanceFromBall)))
+        turnStrength = getTurnSpeed(angleToTarget) 
 
     elif state == "TO_GOAL":
         kp_speed = 0.2
 
         goalDistanceFromBall = 100
-        forwardSpeed = max(0, min(100, kp_speed * (distanceFromTarget - goalDistanceFromBall)))
-        turnSpeed = getTurnSpeed(angleToTarget) 
+        engineSpeeds = max(0, min(100, kp_speed * (distanceFromTarget - goalDistanceFromBall)))
+        turnStrength = getTurnSpeed(angleToTarget) 
     
 
-    return (turnSpeed, forwardSpeed)
+    return (turnStrength, engineSpeeds)
     
