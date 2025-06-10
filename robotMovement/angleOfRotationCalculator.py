@@ -16,6 +16,9 @@ def rotatePointsAroundMidPoint(p1, p2):
     return reTranslatedp1, reTranslatedp2
 
 
+def calculateAngleOfTwoPoints(point1, point2):
+    return math.atan2(point2[1]-point1[1], point2[0]-point1[0])
+
 
 def calculateAngleOfRotation(forwardsPoint, backwardsPoint, goalPoint):
     # Rotate points 90 degrees so they properly point forwards and backwards (This is to the color paper being sideways into account)
@@ -40,11 +43,3 @@ def calculateAngleOfRotation(forwardsPoint, backwardsPoint, goalPoint):
 
     return angleOfRotation
 
-# Small test
-
-# point2 = (2,2)
-# point1 = (1,1)
-# goalPoint = (1, 3)
-
-# angle = calculateAngleOfRotation(point1, point2, goalPoint)
-# print(angle)
