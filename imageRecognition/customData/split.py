@@ -7,7 +7,7 @@ image_dir = './eggSet/images'  # original image folder
 label_dir = './eggSet/labels'  # original label folder
 
 # Output dataset directory
-output_dir = './dataset'
+output_dir = f'./imageRecognition/customData/{dataset_dir}/dataset'
 splits = {
     'train': 0.7,
     'valid': 0.15,
