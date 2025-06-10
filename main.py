@@ -9,6 +9,7 @@ from robotMovement.calculateRobotPosition import calculateRobotPositionFlexible
 from ultralytics import YOLO
 import math
 from imageRecognition.detect import ObjectDetection, DetectionMode
+import traceback
 
 import logging
 logging.getLogger('ultralytics').setLevel(logging.ERROR)
@@ -24,7 +25,7 @@ def main():
 
     # Set image detection model
     od = ObjectDetection(model="imageRecognition/yolov8s_060625.pt", detection_mode=DetectionMode.CAMERA, capture_index=2)
-    #od = ObjectDetection(model="imageRecognition/yolov8s_060625.pt", detection_mode=DetectionMode.IMAGE, image="test/batch1_picture1.png")
+    #od = ObjectDetection(model="imageRecognition/yolov8s_060625.pt", detection_mode=DetectionMode.IMAGE, image="test/batch5_picture1.png")
     
     # Set initial robot state. State machine can be found in robotMovement/selectRobotTarget.py
 
@@ -49,7 +50,8 @@ def main():
         except Exception as e:
             #continue
             print(e)
-            pass
+            print(traceback.print_exc())
+            #pass
             
         
 

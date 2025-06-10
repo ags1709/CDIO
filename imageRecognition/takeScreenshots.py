@@ -24,7 +24,7 @@ while True:
 
    
     # Display the resulting frame
-    cv2.imshow('Webcam Feed', frame)
+    cv2.imshow('Webcam Feed', cv2.resize(frame, (1280,720)))
 
     # Take screen shots every tenth frame automatically
     # if frameCounter % 10 == 0:

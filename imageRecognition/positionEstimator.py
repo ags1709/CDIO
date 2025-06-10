@@ -67,7 +67,7 @@ def estimateCross(result, cap) -> CrossInfo:
         g = crop_frame[:, :, 1].astype(np.float32)
         r = crop_frame[:, :, 2].astype(np.float32)
         # Create a mask where red is strong and green/blue are weak relative to red
-        condition = (r > 110) & (g < r / 1.6) & (b < r / 1.6)
+        condition = (r > 110) & (g < r / 2.4) & (b < r / 2.4)
         red_thresh = condition.astype(np.uint8) * 255  # Convert to binary mask
         # Apply the mask to keep only the red pixels
         # red_thresh = cv2.bitwise_and(crop_frame, crop_frame, mask=mask)
@@ -152,9 +152,9 @@ def estimateCross(result, cap) -> CrossInfo:
         #cv2.putText(cap, "Obstacle", (x1_abs, y1_abs), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (100,100,100), 2, cv2.LINE_AA)
     
         # Show
-        # cv2.imshow("Edges", edges)
-        # cv2.imshow("Red channel", red_thresh)
-        # cv2.imshow("Orientation", crop_frame)
+        cv2.imshow("Edges", edges)
+        cv2.imshow("Red channel", red_thresh)
+        cv2.imshow("Orientation", crop_frame)
         
         return info
     else:

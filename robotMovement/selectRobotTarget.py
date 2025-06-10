@@ -36,7 +36,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
     global targetBall; global stateQueue
         
     robotDistance = None
-    robotAngle = None
+    robotAngle = 0
     
     # TEMP!
     #state = SEARCH_BALLS
@@ -68,7 +68,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
                     intermediaryPoint = findIntermediatyCrossPoint(targetBall, crossInfo.middle_point, crossInfo.robot_gap, crossInfo.robot_intermediary_corners)
                     stateQueue.pop(0)
                     stateQueue.append((TO_INTERMEDIARY, intermediaryPoint))
-                    exactRotationTarget = (crossInfo.angle_rad + np.pi + np.pi) % (2*np.pi) - np.pi 
+                    exactRotationTarget = (crossInfo.angle_rad + np.pi + np.pi) % (2*np.pi) - np.pi  # TODO: THIS IS WRONG!
                     stateQueue.append((TO_EXACT_ROTATION, exactRotationTarget))
                     stateQueue.append((SEARCH_BALLS, ""))
             elif not detectedObjects["whiteBalls"] and not detectedObjects["orangeBalls"]:
@@ -103,7 +103,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], intermediaryPoint)
         robotAngle = add_angle(robotToObjectAngle, -robotRotation)   
 
-        if robotDistance <= 25:# and -0.2 < robotAngle < 0.2:
+        if robotDistance <= 50:# and -0.2 < robotAngle < 0.2:
             #state = intermediaryFinishState if intermediaryFinishState is not None else TO_GOAL
             stateQueue.pop(0)
     
@@ -120,7 +120,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         
     elif state == TO_EXACT_ROTATION:
         exactRotationTarget = stateVariables[0]
-        robotAngle = robotRotation - exactRotationTarget # TODO: Check if this works lol
+        robotAngle = add_angle(exactRotationTarget, -robotRotation)  # TODO: Check if this works lol
 
         if -0.2 < robotAngle < 0.2:
             #state = intermediaryFinishState if intermediaryFinishState is not None else TO_GOAL
