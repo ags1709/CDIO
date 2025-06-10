@@ -3,8 +3,8 @@ import random
 import shutil
 
 # Source directories
-image_dir = './images'  # original image folder
-label_dir = './labels'  # original label folder
+image_dir = './eggSet/images'  # original image folder
+label_dir = './eggSet/labels'  # original label folder
 
 # Output dataset directory
 output_dir = './dataset'
