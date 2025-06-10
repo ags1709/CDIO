@@ -19,25 +19,39 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
         kp_speed = 0.2
 
         goalDistanceFromBall = 0
-        # Assuming that we use MoveSteering().on(steering, speed), the values range from -100 to 100, adjust below values accordingly
-        
 
         # Maybe change enginespeeds if ball is very close?
         
-        # New approach to movement; Turn before moving
-        if angleToTarget < -0.0872665:
+        # Choose one of the below movement styles. Comment out the other.
+        # -----------------------------------------------------------------------------------------------
+        # Normal movement but with turning first if angle is high (and significantly reduced speed)
+        if angleToTarget < -0.52:
             turnStrength = -100
-            engineSpeeds = 2
-            if angleToTarget < -0.52:
-                engineSpeeds = 15
-        elif angleToTarget >= 0.0872665:
+            engineSpeeds = 15
+        elif angleToTarget >= 0.52:
             turnStrength = 100
-            engineSpeeds = 2
-            if angleToTarget > 0.52:
-                engineSpeeds = 15
-        else: 
-            turnStrength = 0
-            engineSpeeds = 40
+            engineSpeeds = 15
+        else:
+            turnStrength = getTurnStrength(angleToTarget)
+            engineSpeeds = max(5, min(30, kp_speed * (distanceFromTarget - goalDistanceFromBall)))
+
+        # --------------------------------------------------------------------------------------------------
+        # New approach to movement; Turn before moving
+        # if angleToTarget < -0.0872665:
+        #     turnStrength = -100
+        #     engineSpeeds = 2
+        #     if angleToTarget < -0.52:
+        #         engineSpeeds = 15
+        # elif angleToTarget >= 0.0872665:
+        #     turnStrength = 100
+        #     engineSpeeds = 2
+        #     if angleToTarget > 0.52:
+        #         engineSpeeds = 15
+        # else: 
+        #     turnStrength = 0
+        #     engineSpeeds = 40
+
+        # --------------------------------------------------------------------------------------------------
 
         
 
