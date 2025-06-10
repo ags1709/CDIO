@@ -54,7 +54,7 @@ class ObjectDetection():
                 print("Failed to grab frame.")
                 raise Exception("Failed to grab grame.")
         elif self.mode == DetectionMode.IMAGE:
-            frame = self.frame
+            frame = self.frame.copy()
         else:
             raise Exception("Detection mode not supported: ", self.mode)
 

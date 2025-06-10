@@ -35,7 +35,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
 
     global targetBall; global stateQueue
         
-    robotDistance = None
+    robotDistance = 0
     robotAngle = 0
     
     # TEMP!
@@ -68,7 +68,8 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
                     intermediaryPoint = findIntermediatyCrossPoint(targetBall, crossInfo.middle_point, crossInfo.robot_gap, crossInfo.robot_intermediary_corners)
                     stateQueue.pop(0)
                     stateQueue.append((TO_INTERMEDIARY, intermediaryPoint))
-                    exactRotationTarget = (crossInfo.angle_rad + np.pi + np.pi) % (2*np.pi) - np.pi  # TODO: THIS IS WRONG!
+                    #exactRotationTarget = (crossInfo.angle_rad + np.pi + np.pi) % (2*np.pi) - np.pi
+                    exactRotationTarget = calculateAngleOfTwoPoints(intermediaryPoint, targetBall) # TODO: Suboptimal with intermediary point and not robot point used after reaching target but whatever.
                     stateQueue.append((TO_EXACT_ROTATION, exactRotationTarget))
                     stateQueue.append((SEARCH_BALLS, ""))
             elif not detectedObjects["whiteBalls"] and not detectedObjects["orangeBalls"]:

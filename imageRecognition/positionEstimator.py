@@ -109,7 +109,7 @@ def estimateCross(result, cap) -> CrossInfo:
         # direction = (int(center[0] + dx*100), int(center[1] + dy*100))
         # cv2.arrowedLine(crop_frame, center, direction, (0, 255, 0), 3)
         
-        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) # WARNING: Perhaps use red_thresh instead of edges here?
         if contours == None:
             print("No contours found for cross")
             return
@@ -152,9 +152,9 @@ def estimateCross(result, cap) -> CrossInfo:
         #cv2.putText(cap, "Obstacle", (x1_abs, y1_abs), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (100,100,100), 2, cv2.LINE_AA)
     
         # Show
-        cv2.imshow("Edges", edges)
-        cv2.imshow("Red channel", red_thresh)
-        cv2.imshow("Orientation", crop_frame)
+        # cv2.imshow("Edges", edges)
+        # cv2.imshow("Red channel", red_thresh)
+        # cv2.imshow("Orientation", crop_frame)
         
         return info
     else:
