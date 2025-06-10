@@ -44,7 +44,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
 
     # If no state has been set yet, put robot in ball searching state.
     if len(stateQueue) == 0:
-        stateQueue.append((SEARCH_BALLS, ""))
+        stateQueue.append((SEARCH_BALLS, {}))
 
     # This is the two points used to identify the robots position. 
     robotPos = calculateRobotPositionFlexible(detectedObjects["frontLeftCorner"], detectedObjects["frontRightCorner"], detectedObjects["backLeftCorner"], detectedObjects["backRightCorner"])
@@ -58,7 +58,10 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
     if state == SEARCH_BALLS:
         # TODO: WARNING! CHECK THAT THE TARGET BALL HAS NOT MOVED TOO MUCH!!!! HERE WE ASSUME IT IS STATIONARY WHICH IS BAAAAD
         if targetBall == None:
-            if detectedObjects.get("whiteBalls") and len(detectedObjects["whiteBalls"]) > 0:
+            stateJson = stateVariables[0]
+            if 'target' in stateJson:
+                targetBall = stateJson['target']
+            elif detectedObjects.get("whiteBalls") and len(detectedObjects["whiteBalls"]) > 0:
                 targetBall = min(detectedObjects["whiteBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
                 # TODO: Apply cross logic to white also
             elif detectedObjects.get("orangeBalls") and len(detectedObjects["orangeBalls"]) > 0:
@@ -71,7 +74,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
                     #exactRotationTarget = (crossInfo.angle_rad + np.pi + np.pi) % (2*np.pi) - np.pi
                     exactRotationTarget = calculateAngleOfTwoPoints(intermediaryPoint, targetBall) # TODO: Suboptimal with intermediary point and not robot point used after reaching target but whatever.
                     stateQueue.append((TO_EXACT_ROTATION, exactRotationTarget))
-                    stateQueue.append((SEARCH_BALLS, ""))
+                    stateQueue.append((SEARCH_BALLS, { 'target': targetBall}))
             elif not detectedObjects["whiteBalls"] and not detectedObjects["orangeBalls"]:
                 intermediaryPoint = (detectedObjects["goals"][1][0] - 300, detectedObjects["goals"][1][1])
                 stateQueue.append((TO_INTERMEDIARY, intermediaryPoint))
@@ -110,7 +113,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
     
     elif state == TO_GOAL:
         if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
-            stateQueue.append((SEARCH_BALLS, ""))
+            stateQueue.append((SEARCH_BALLS, {}))
             stateQueue.pop(0)
         # NOTE: This turns in balls in the small goal. This assumes that the small goal is on the right side of the camera
         goalPos = detectedObjects["goals"][1]

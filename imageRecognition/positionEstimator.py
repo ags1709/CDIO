@@ -91,7 +91,7 @@ def estimateCross(result, cap) -> CrossInfo:
             edges = cv2.bitwise_and(edges, mask)
         
         contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-        all_points = np.vstack([cnt.reshape(-1, 2) for cnt in contours])
+        #all_points = np.vstack([cnt.reshape(-1, 2) for cnt in contours])
 
         # # Apply PCA to the contour points
         # mean, eigenvectors = cv2.PCACompute(all_points.astype(np.float32), mean=np.array([]))

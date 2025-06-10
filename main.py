@@ -24,18 +24,18 @@ def main():
         client_socket.connect(("192.168.137.91", 12359))
 
     # Set image detection model
-    od = ObjectDetection(model="imageRecognition/yolov8s_060625.pt", detection_mode=DetectionMode.CAMERA, capture_index=2)
-    #od = ObjectDetection(model="imageRecognition/yolov8s_060625.pt", detection_mode=DetectionMode.IMAGE, image="test/batch5_picture1.png")
+    od = ObjectDetection(model="imageRecognition/yolov8s_060625.pt", detection_mode=DetectionMode.CAMERA, capture_index=3)
+    #od = ObjectDetection(model="imageRecognition/yolov8s_060625.pt", detection_mode=DetectionMode.IMAGE, image="test/orangenav1.png")
     
     # Set initial robot state. State machine can be found in robotMovement/selectRobotTarget.py
 
     # Main loop. Runs entire competition program.
     while True:
         # use model to detect objects
-        frame, detectedObjects, crossInfo = od.detectAll()
 
         # Calculate robots distance and angle to target, and set its state
         try:
+            frame, detectedObjects, crossInfo = od.detectAll()
             distanceToTarget, angleToTarget, robotState = calcDistAndAngleToTarget(detectedObjects, crossInfo, frame)
             cv2.putText(frame, f"State: {robotState}", (20, 60), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 0), 4)
             
@@ -62,6 +62,8 @@ def main():
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 od.close()
                 exit(0)
+            if cv2.waitKey(1) &  0xFF == ord('n'):
+                break
         
         
         if cv2.waitKey(1) & 0xFF == ord('q'):
