@@ -40,9 +40,11 @@ def calculateAngleOfRotation(forwardsPoint, backwardsPoint, goalPoint):
 
     return angleOfRotation
 
-point2 = (2,2)
-point1 = (1,1)
-goalPoint = (1, 3)
+# Small test
 
-angle = calculateAngleOfRotation(point1, point2, goalPoint)
-print(angle)
+# point2 = (2,2)
+# point1 = (1,1)
+# goalPoint = (1, 3)
+
+# angle = calculateAngleOfRotation(point1, point2, goalPoint)
+# print(angle)
