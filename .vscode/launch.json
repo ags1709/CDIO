@@ -11,5 +11,12 @@
             "program": "testMain.py",
             "console": "integratedTerminal"
         },
+        {
+            "name": "main",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "main.py",
+            "console": "integratedTerminal"
+        }
     ]
 }

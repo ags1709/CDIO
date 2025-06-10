@@ -13,7 +13,7 @@ if not cap.isOpened():
 # today = date.today()
 imgCounter = 0
 frameCounter = 0
-batch = 4
+batch = 5
 while True:
     ret, frame = cap.read()
     # Capture frame-by-frame
@@ -24,7 +24,7 @@ while True:
 
    
     # Display the resulting frame
-    cv2.imshow('Webcam Feed', frame)
+    cv2.imshow('Webcam Feed', cv2.resize(frame, (1280,720)))
 
     # Take screen shots every tenth frame automatically
     # if frameCounter % 10 == 0:
@@ -41,7 +41,7 @@ while True:
 
     elif key & 0xFF == ord('s'):
         # imgName = f"customData/{date.today}_picture_{imgCounter}.png"
-        imgName = f"customData/eggSet/batch{batch}_picture{imgCounter}.png"
+        imgName = f"customData/dataset4/batch{batch}_picture{imgCounter}.png"
 
         cv2.imwrite(imgName, frame)
         print("Screenshot taken")
