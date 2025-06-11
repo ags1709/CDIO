@@ -32,6 +32,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
     TO_INTERMEDIARY = "TO_INTERMEDIARY"
     TO_GOAL = "TO_GOAL"
     TO_EXACT_ROTATION = "TO_EXACT_ROTATION"
+    BACKOFF = "BACKOFF"
 
     global targetBall; global stateQueue
         
@@ -75,6 +76,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
                     exactRotationTarget = calculateAngleOfTwoPoints(intermediaryPoint, targetBall) # TODO: Suboptimal with intermediary point and not robot point used after reaching target but whatever.
                     stateQueue.append((TO_EXACT_ROTATION, exactRotationTarget))
                     stateQueue.append((SEARCH_BALLS, { 'target': targetBall}))
+                    stateQueue.append((BACKOFF, intermediaryPoint))
             elif not detectedObjects["whiteBalls"] and not detectedObjects["orangeBalls"]:
                 intermediaryPoint = (detectedObjects["goals"][1][0] - 300, detectedObjects["goals"][1][1])
                 stateQueue.append((TO_INTERMEDIARY, intermediaryPoint))
@@ -130,6 +132,19 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
             #state = intermediaryFinishState if intermediaryFinishState is not None else TO_GOAL
             stateQueue.pop(0)
             targetBall = None # TODO: TEMP!!!
+    
+    elif state == BACKOFF:
+        # Backoff to point
+        pixelBackoffPoint = stateVariables[0]
+        robotDistance = calculateDistance(robotPos[1], pixelBackoffPoint)
+        #robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[1], pixelBackoffPoint)
+        #robotAngle = add_angle(robotToObjectAngle, -robotRotation)
+        robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], pixelBackoffPoint)
+        robotAngle = add_angle(robotToObjectAngle, -robotRotation)  
+        if robotDistance <= 50:
+            stateQueue.pop(0)
+            
+    
     # Draw robot angle
     drobotAngle = add_angle(robotAngle, robotRotation)#(robotAngle - robotRotation + np.pi) % (2*np.pi) - np.pi
     cv2.arrowedLine(frame, tuple_toint(robotPos[0]), (int(robotPos[0][0] + math.cos(drobotAngle)*250), int(robotPos[0][1] + math.sin(drobotAngle)*250)), (255,0,0), 4, tipLength=0.2) 

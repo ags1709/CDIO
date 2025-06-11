@@ -21,7 +21,7 @@ def main():
     # Set connection to robot
     if ENABLE_SOCKET:
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_socket.connect(("192.168.137.91", 12359))
+        client_socket.connect(("192.168.137.112", 12359))
 
     # Set image detection model
     od = ObjectDetection(model="imageRecognition/yolov8s_060625.pt", detection_mode=DetectionMode.CAMERA, capture_index=3)
