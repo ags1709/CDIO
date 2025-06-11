@@ -105,19 +105,23 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         robotAngle = add_angle(robotToObjectAngle, -robotRotation)   
 
         if robotDistance <= 50:# and -0.2 < robotAngle < 0.2:
+            print("Reached intermediary point!")
             #state = intermediaryFinishState if intermediaryFinishState is not None else TO_GOAL
             stateQueue.pop(0)
-    
-    elif state == TO_GOAL:
-        if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
-            stateQueue.append((SEARCH_BALLS, ""))
-            stateQueue.pop(0)
-        # NOTE: This turns in balls in the small goal. This assumes that the small goal is on the right side of the camera
-        goalPos = detectedObjects["goals"][1]
+           
 
+    elif state == TO_GOAL:
+        print("TO_GOAL")
+        # If no balls are present, move to goal.
+        goalPos = detectedObjects["goals"][1]
         robotDistance = calculateDistance(robotPos[0], goalPos)
         robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], goalPos)
         robotAngle = add_angle(robotToObjectAngle, -robotRotation)
+
+    # Add a condition for arrival if needed
+        if robotDistance <= 50:
+            print("Reached the goal!")
+            stateQueue.pop(0)
         
     elif state == TO_EXACT_ROTATION:
         exactRotationTarget = stateVariables[0]
