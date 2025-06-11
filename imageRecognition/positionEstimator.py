@@ -67,7 +67,7 @@ def estimateCross(result, cap) -> CrossInfo:
         g = crop_frame[:, :, 1].astype(np.float32)
         r = crop_frame[:, :, 2].astype(np.float32)
         # Create a mask where red is strong and green/blue are weak relative to red
-        condition = (r > 110) & (g < r / 2.4) & (b < r / 2.4)
+        condition = (r > 110) & (g < r / 2) & (b < r / 2)
         red_thresh = condition.astype(np.uint8) * 255  # Convert to binary mask
         # Apply the mask to keep only the red pixels
         # red_thresh = cv2.bitwise_and(crop_frame, crop_frame, mask=mask)
@@ -109,7 +109,7 @@ def estimateCross(result, cap) -> CrossInfo:
         # direction = (int(center[0] + dx*100), int(center[1] + dy*100))
         # cv2.arrowedLine(crop_frame, center, direction, (0, 255, 0), 3)
         
-        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) # WARNING: Perhaps use red_thresh instead of edges here?
+        contours, _ = cv2.findContours(red_thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) # WARNING: Perhaps use red_thresh instead of edges here?
         if contours == None:
             print("No contours found for cross")
             return

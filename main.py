@@ -10,6 +10,7 @@ from ultralytics import YOLO
 import math
 from imageRecognition.detect import ObjectDetection, DetectionMode
 import traceback
+import sys
 
 import logging
 logging.getLogger('ultralytics').setLevel(logging.ERROR)
@@ -21,7 +22,7 @@ def main():
     # Set connection to robot
     if ENABLE_SOCKET:
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_socket.connect(("192.168.137.91", 12359))
+        client_socket.connect(("192.168.137.112", 12359))
 
     # Set image detection model
     od = ObjectDetection(model="imageRecognition/yolov8s_060625.pt", detection_mode=DetectionMode.CAMERA, capture_index=3)
@@ -56,7 +57,7 @@ def main():
         
 
         
-        frame = cv2.resize(frame, windowsize)
+        frame = cv2.resize(od.frame, windowsize)
         cv2.imshow("YOLOv8 Live Detection", frame)
         while od.mode == DetectionMode.IMAGE:
             if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -71,5 +72,24 @@ def main():
             break
 
 
+
+def returnCameraIndexes():
+    # checks the first 10 indexes.
+    index = 0
+    arr = []
+    i = 10
+    while i > 0:
+        print("Opening ", index)
+        cap = cv2.VideoCapture(index)
+        if cap.read()[0]:
+            arr.append(str(index) + ": " + cap.getBackendName())
+            cap.release()
+        index += 1
+        i -= 1
+    return arr
+
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) >= 2 and sys.argv[1] == "findcam":
+        print(returnCameraIndexes())
+    else:
+        main()

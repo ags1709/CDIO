@@ -30,14 +30,14 @@ class ObjectDetection():
             if self.frame is None:
                 print("Error: Could not open image @ ", image)
                 exit()
-            self.frame = cv2.resize(self.frame, (1920, 1080))
+            #self.frame = cv2.resize(self.frame, (1920, 1080))
         elif detection_mode == DetectionMode.CAMERA:
             self.cap = cv2.VideoCapture(capture_index)
             if not self.cap.isOpened():
                 print("Error: Could not open camera with index ", capture_index)
                 exit()
-            self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
-            self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
+            self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+            self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
     
         
     def close(self):
@@ -50,6 +50,7 @@ class ObjectDetection():
     def detectAll(self) -> tuple[cv2.typing.MatLike, dict[str, any], CrossInfo]:
         if self.mode == DetectionMode.CAMERA:
             ret, frame = self.cap.read()
+            self.frame = frame
             if not ret:
                 print("Failed to grab frame.")
                 raise Exception("Failed to grab grame.")
