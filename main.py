@@ -46,7 +46,7 @@ def main():
             robotMovement = calculateSpeedAndRotation(distanceToTarget, angleToTarget, robotState)
             # Send data to robot
             if ENABLE_SOCKET:
-                client_socket.sendall(f"{round(robotMovement[0])}#{round(robotMovement[1])}#False#{vomit}\n".encode())
+                client_socket.sendall(f"{round(robotMovement[0])}#{round(robotMovement[1])}#{vomit}\n".encode())
         except Exception as e:
             #continue
             print(e)
