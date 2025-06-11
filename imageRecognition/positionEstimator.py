@@ -4,6 +4,7 @@ import numpy as np
 import math
 from robotMovement.tools import tuple_toint
 
+windowsize = (1280,720)
 class CrossInfo:
     robot_gap: int
     middle_point: tuple
@@ -67,7 +68,7 @@ def estimateCross(result, cap) -> CrossInfo:
         g = crop_frame[:, :, 1].astype(np.float32)
         r = crop_frame[:, :, 2].astype(np.float32)
         # Create a mask where red is strong and green/blue are weak relative to red
-        condition = (r > 110) & (g < r / 2) & (b < r / 2)
+        condition = (r > 110) & (g < r / 1.6) & (b < r / 1.6)
         red_thresh = condition.astype(np.uint8) * 255  # Convert to binary mask
         # Apply the mask to keep only the red pixels
         # red_thresh = cv2.bitwise_and(crop_frame, crop_frame, mask=mask)
@@ -90,7 +91,7 @@ def estimateCross(result, cap) -> CrossInfo:
             # Apply the mask
             edges = cv2.bitwise_and(edges, mask)
         
-        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        #contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
         #all_points = np.vstack([cnt.reshape(-1, 2) for cnt in contours])
 
         # # Apply PCA to the contour points
@@ -171,4 +172,62 @@ def findIntermediatyCrossPoint(ball, cross_middle_point, robot_gap, cross_int_co
         
     
     
+def estimatePlayArea(result, cap) -> CrossInfo:
+    #cv2.imshow("crop frame", crop_frame)
     
+    #gray = cv2.cvtColor(crop_frame, cv2.COLOR_BGR2GRAY)
+    b = cap[:, :, 0].astype(np.float32)
+    g = cap[:, :, 1].astype(np.float32)
+    r = cap[:, :, 2].astype(np.float32)
+    # Create a mask where red is strong and green/blue are weak relative to red
+    condition = (r > 150) & (g < r / 1.8) & (b < r / 1.8)
+    red_thresh = condition.astype(np.uint8) * 255  # Convert to binary mask
+    # Apply the mask to keep only the red pixels
+    # red_thresh = cv2.bitwise_and(crop_frame, crop_frame, mask=mask)
+    # red_thresh = cv2.cvtColor(red_thresh, cv2.COLOR_BGR2GRAY)
+    red_thresh = cv2.GaussianBlur(red_thresh, (5, 5), 0)
+    
+
+    edges = cv2.Canny(red_thresh, 60, 255) # Note: this is a 2d array of either 0 or 255 as an int
+    
+    
+    contours, _ = cv2.findContours(red_thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) # WARNING: Perhaps use red_thresh instead of edges here?
+    if contours == None:
+        print("No contours found for cross")
+        return
+    #largest_contour = max(contours, key=cv2.contourArea)
+    
+    largest = max(contours, key=cv2.contourArea)
+
+    # Approximate the contour to a polygon
+    epsilon = 0.01 * cv2.arcLength(largest, True)
+    approx = cv2.approxPolyDP(largest, epsilon, True)
+
+    # Extract corner points from the approximation
+    points = approx.reshape(-1, 2)
+
+    # Find 4 extreme points based on sum and difference of x and y
+    # These heuristics help find corners of square-like shapes
+    top_left     = min(points, key=lambda p: p[0] + p[1])
+    top_right    = max(points, key=lambda p: p[0] - p[1])
+    bottom_left  = max(points, key=lambda p: p[1] - p[0])
+    bottom_right = max(points, key=lambda p: p[0] + p[1])
+
+    corners = [top_left, top_right, bottom_right, bottom_left]
+
+    # Visualize
+    output = cap.copy()#cv2.cvtColor(binary, cv2.COLOR_GRAY2BGR)
+    for i, pt in enumerate(corners):
+        cv2.circle(output, tuple(pt), 10, (0, 255, 0), -1)
+        cv2.putText(output, f"{i}", tuple(pt), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 0, 0), 2)
+
+    cv2.imshow("Detected Corners", cv2.resize(output, windowsize))
+    
+    #cv2.imshow("Edges", cv2.resize(edges, windowsize))
+    #cv2.imshow("Red channel", cv2.resize(red_thresh, windowsize))
+    #cv2.imshow("Contours", contours)
+    #output = cv2.cvtColor(cap.copy(), cv2.COLOR_GRAY2BGR)
+    #frame = cap.copy()
+    #cv2.drawContours(frame, crosses, -1, (0, 255, 0), 2)
+    #cv2.imshow('Detected Crosses', cv2.resize(frame, windowsize))
+    # print(crosses)

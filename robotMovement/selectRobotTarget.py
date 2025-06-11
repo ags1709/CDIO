@@ -142,7 +142,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         #robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], pixelBackoffPoint)
         #robotAngle = add_angle(robotToObjectAngle, -robotRotation) 
         # TODO: Readd robot angle so it does not fuck with the distance and shit
-        if robotDistance <= 50:
+        if robotDistance <= 30:
             stateQueue.pop(0)
             
     
