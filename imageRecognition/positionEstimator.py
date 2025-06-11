@@ -91,6 +91,9 @@ def estimateCross(result, cap) -> CrossInfo:
             edges = cv2.bitwise_and(edges, mask)
         
         contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        if not contours:
+            return None  # or handle as appropriate for your code
+
         all_points = np.vstack([cnt.reshape(-1, 2) for cnt in contours])
 
         # # Apply PCA to the contour points
@@ -168,7 +171,6 @@ def findIntermediatyCrossPoint(ball, cross_middle_point, robot_gap, cross_int_co
         if abs(corner[0] - angle_ball) < abs(closest[0] - angle_ball):
             closest = corner
     return closest[1]
-        
-    
-    
-    
+
+
+
