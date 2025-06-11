@@ -15,6 +15,10 @@ stateQueue = [ # Format: (State,variables)
 
 # SEARCH_BALLS
 targetBall = None
+def log_state_transition(state: str, file_path: str = "state_transitions.txt"):
+    with open(file_path, "a") as f:
+        f.write(f"{state}\n")
+
 
 def is_objectmiddle_in_circle(objectpos, center, radius):
     #middle = ( (objectpos[0][0] + objectpos[1][0])/2, (objectpos[0][1] + objectpos[1][1])/2 )
@@ -57,6 +61,8 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
     # Use state machine to dictate robots target based on its state
     if state == SEARCH_BALLS:
         # TODO: WARNING! CHECK THAT THE TARGET BALL HAS NOT MOVED TOO MUCH!!!! HERE WE ASSUME IT IS STATIONARY WHICH IS BAAAAD
+        log_state_transition(SEARCH_BALLS)
+
         if targetBall == None:
             if detectedObjects.get("whiteBalls") and len(detectedObjects["whiteBalls"]) > 0:
                 targetBall = min(detectedObjects["whiteBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
@@ -97,6 +103,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         # If no balls are present, move to intermediary point in preperation for turning in balls.
 
     if state == TO_INTERMEDIARY: # 
+        log_state_transition(TO_INTERMEDIARY)
 
         # if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
         #     state = SEARCH_BALLS
@@ -117,6 +124,8 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
            
 
     elif state == TO_GOAL:
+        log_state_transition(TO_GOAL)
+
         print("TO_GOAL")
         # If no balls are present, move to goal.
         goalPos = detectedObjects["goals"][1]
@@ -130,6 +139,8 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
             stateQueue.pop(0)
         
     elif state == TO_EXACT_ROTATION:
+        log_state_transition(TO_EXACT_ROTATION)
+
         exactRotationTarget = stateVariables[0]
         robotAngle = add_angle(exactRotationTarget, -robotRotation)  # TODO: Check if this works lol
 
