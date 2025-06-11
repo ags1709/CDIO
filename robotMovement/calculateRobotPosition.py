@@ -4,6 +4,10 @@ import math
 camera_height = 170
 corner_height = 25
 
+# Camera resolution, really scuffed
+frame_w = 1920
+frame_h = 1080
+
 def calculateRobotPosition(frontLeftCorner, frontRightCorner, backLeftCorner, backRightCorner):
     if (frontLeftCorner and frontRightCorner and backLeftCorner and backRightCorner):
         forwardsPoint = ( (frontLeftCorner[0] + frontRightCorner[0]) / 2, (frontLeftCorner[1] + frontRightCorner[1]) / 2 )
@@ -60,10 +64,11 @@ def calculateRobotPositionFlexible(frontLeftCorner, frontRightCorner, backLeftCo
     if (frontLeftCorner and frontRightCorner and backLeftCorner and backRightCorner):
         # Transform the points down to the ground plane instead of being in the air
         factor = (camera_height - corner_height) / camera_height
-        frontLeftCorner  = (factor * frontLeftCorner[0],  factor * frontLeftCorner[1])
-        frontRightCorner = (factor * frontRightCorner[0], factor * frontRightCorner[1])
-        backLeftCorner   = (factor * backLeftCorner[0],   factor * backLeftCorner[1])
-        backRightCorner  = (factor * backRightCorner[0],  factor * backRightCorner[1])
+        x, y = frame_w / 2, frame_h / 2
+        frontLeftCorner  = (factor * (frontLeftCorner[0]  - x) + x, factor * (frontLeftCorner[1]  - y) + y)
+        frontRightCorner = (factor * (frontRightCorner[0] - x) + x, factor * (frontRightCorner[1] - y) + y)
+        backLeftCorner   = (factor * (backLeftCorner[0]   - x) + x, factor * (backLeftCorner[1]   - y) + y)
+        backRightCorner  = (factor * (backRightCorner[0]  - x) + x, factor * (backRightCorner[1]  - y) + y)
         #print(f"\n Front Left Corner: {frontLeftCorner}: Front Right Corner {frontRightCorner}: Back Left Corner {backLeftCorner}: Back Right Corner {backRightCorner}")
         forwardsPoint = ( (frontLeftCorner[0] + frontRightCorner[0]) / 2, (frontLeftCorner[1] + frontRightCorner[1]) / 2 )
         backwardsPoint = ( (backLeftCorner[0] + backRightCorner[0]) / 2, (backLeftCorner[1] + backRightCorner[1]) / 2 )

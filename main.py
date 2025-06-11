@@ -14,7 +14,7 @@ import traceback
 import logging
 logging.getLogger('ultralytics').setLevel(logging.ERROR)
 
-ENABLE_SOCKET = False
+ENABLE_SOCKET = True
 windowsize = (1280,720)
 
 def main():

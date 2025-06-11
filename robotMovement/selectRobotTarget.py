@@ -63,6 +63,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
                 # TODO: Apply cross logic to white also
             elif detectedObjects.get("orangeBalls") and len(detectedObjects["orangeBalls"]) > 0:
                 targetBall = min(detectedObjects["orangeBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
+                print("ORANGE BALL DETECTED!")
                 if is_objectmiddle_in_circle(targetBall, crossInfo.middle_point, crossInfo.size):
                     print("ORANGE BALL IN CROSS!")
                     intermediaryPoint = findIntermediatyCrossPoint(targetBall, crossInfo.middle_point, crossInfo.robot_gap, crossInfo.robot_intermediary_corners)
@@ -72,7 +73,10 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
                     exactRotationTarget = calculateAngleOfTwoPoints(intermediaryPoint, targetBall) # TODO: Suboptimal with intermediary point and not robot point used after reaching target but whatever.
                     stateQueue.append((TO_EXACT_ROTATION, exactRotationTarget))
                     stateQueue.append((SEARCH_BALLS, ""))
+                else:
+                    targetBall = min(detectedObjects["orangeBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
             elif not detectedObjects["whiteBalls"] and not detectedObjects["orangeBalls"]:
+                print("No white balls")
                 intermediaryPoint = (detectedObjects["goals"][1][0] - 300, detectedObjects["goals"][1][1])
                 stateQueue.append((TO_INTERMEDIARY, intermediaryPoint))
                 stateQueue.append((TO_GOAL))
@@ -87,6 +91,8 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
             if robotDistance < 25:
                 print("Found ball")
                 stateQueue.pop(0)
+                targetBall = None # Reset target ball
+
 
         # If no balls are present, move to intermediary point in preperation for turning in balls.
 
