@@ -102,7 +102,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         cv2.circle(frame, tuple_toint(intermediaryPoint), 11, (50,200,50), 6) # Mark intermediary
         robotDistance = calculateDistance(robotMiddle, intermediaryPoint)
         robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], intermediaryPoint)
-        robotAngle = add_angle(robotToObjectAngle, -robotRotation)   
+        robotAngle = add_angle(robotToObjectAngle, -robotRotation)
 
         if robotDistance <= 50:# and -0.2 < robotAngle < 0.2:
             #state = intermediaryFinishState if intermediaryFinishState is not None else TO_GOAL
