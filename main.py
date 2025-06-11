@@ -14,17 +14,17 @@ import traceback
 import logging
 logging.getLogger('ultralytics').setLevel(logging.ERROR)
 
-ENABLE_SOCKET = True
+ENABLE_SOCKET = False
 windowsize = (1280,720)
 
 def main():
     # Set connection to robot
     if ENABLE_SOCKET:
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_socket.connect(("192.168.137.91", 12359))
+        client_socket.connect(("192.168.137.112", 12359))
 
     # Set image detection model
-    od = ObjectDetection(model="imageRecognition/yolov8s_060625.pt", detection_mode=DetectionMode.CAMERA, capture_index=2)
+    od = ObjectDetection(model="imageRecognition/ImageModels/best.pt", detection_mode=DetectionMode.CAMERA, capture_index=2)
     #od = ObjectDetection(model="imageRecognition/yolov8s_060625.pt", detection_mode=DetectionMode.IMAGE, image="test/batch5_picture1.png")
     
     # Set initial robot state. State machine can be found in robotMovement/selectRobotTarget.py
@@ -46,7 +46,7 @@ def main():
             robotMovement = calculateSpeedAndRotation(distanceToTarget, angleToTarget, robotState)
             # Send data to robot
             if ENABLE_SOCKET:
-                client_socket.sendall(f"{round(robotMovement[0])}#{round(robotMovement[1])}#False#{vomit}\n".encode())
+                client_socket.sendall(f"{round(robotMovement[0])}#{round(robotMovement[1])}#{vomit}\n".encode())
         except Exception as e:
             #continue
             print(e)
