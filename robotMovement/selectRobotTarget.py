@@ -128,7 +128,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
     elif state == TO_GOAL:
         # log_state_transition(TO_GOAL)
 
-        print("TO_GOAL")
+        #print("TO_GOAL")
         # If no balls are present, move to goal.
         goalPos = detectedObjects["goals"][1]
         robotDistance = calculateDistance(robotPos[0], goalPos)

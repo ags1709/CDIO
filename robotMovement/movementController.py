@@ -1,7 +1,7 @@
 import numpy as np
 
 def getTurnSpeed(angleToTarget: float):
-    turn = max(-100, min(100, angleToTarget**5*2+angleToTarget*30)) # x^(3)*40+x*50
+    turn = max(-100, min(100, angleToTarget**5*2+angleToTarget*40)) # x^(3)*40+x*50
     #turn += 2 if turn>0 else -2
     #turn = np.clip(turn, -100, 100)
     return turn

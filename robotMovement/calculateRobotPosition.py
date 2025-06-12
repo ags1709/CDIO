@@ -2,7 +2,7 @@ import math
 
 # The heights of different things in cm
 camera_height = 170
-corner_height = 25
+corner_height = 18
 
 # Camera resolution, really scuffed
 frame_w = 1920
@@ -63,12 +63,10 @@ def calculateRobotPositionFlexible(frontLeftCorner, frontRightCorner, backLeftCo
     # Now calculate points
     if (frontLeftCorner and frontRightCorner and backLeftCorner and backRightCorner):
         # Transform the points down to the ground plane instead of being in the air
-        factor = (camera_height - corner_height) / camera_height
-        x, y = frame_w / 2, frame_h / 2
-        frontLeftCorner  = (factor * (frontLeftCorner[0]  - x) + x, factor * (frontLeftCorner[1]  - y) + y)
-        frontRightCorner = (factor * (frontRightCorner[0] - x) + x, factor * (frontRightCorner[1] - y) + y)
-        backLeftCorner   = (factor * (backLeftCorner[0]   - x) + x, factor * (backLeftCorner[1]   - y) + y)
-        backRightCorner  = (factor * (backRightCorner[0]  - x) + x, factor * (backRightCorner[1]  - y) + y)
+        frontLeftCorner  = correctPerspective(frontLeftCorner)
+        frontRightCorner = correctPerspective(frontRightCorner)
+        backLeftCorner   = correctPerspective(backLeftCorner)
+        backRightCorner  = correctPerspective(backRightCorner)
         #print(f"\n Front Left Corner: {frontLeftCorner}: Front Right Corner {frontRightCorner}: Back Left Corner {backLeftCorner}: Back Right Corner {backRightCorner}")
         forwardsPoint = ( (frontLeftCorner[0] + frontRightCorner[0]) / 2, (frontLeftCorner[1] + frontRightCorner[1]) / 2 )
         backwardsPoint = ( (backLeftCorner[0] + backRightCorner[0]) / 2, (backLeftCorner[1] + backRightCorner[1]) / 2 )
@@ -78,6 +76,10 @@ def calculateRobotPositionFlexible(frontLeftCorner, frontRightCorner, backLeftCo
         return((0,0),(0,0))
         #raise ValueError("Not enough information to calculate corners.")
 
+def correctPerspective(point):
+    factor = (camera_height - corner_height) / camera_height
+    x, y = 1920 / 2, 1080 / 2
+    return (factor * (point[0]  - x) + x, factor * (point[1]  - y) + y)
 
 # Help from ChatGPT
 #--------------------------
