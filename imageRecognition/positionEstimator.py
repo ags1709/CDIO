@@ -191,6 +191,8 @@ def intersection_from_2pts(p1, p2, p3, p4):
     y = (A1 * C2 - A2 * C1) / det
     return (int(x), int(y))
 
+
+
 def estimatePlayArea(result, cap):
     h, w = cap.shape[:2]
     cx, cy = w // 2, h // 2
@@ -234,7 +236,31 @@ def estimatePlayArea(result, cap):
 
     extremities = [tl_top, tl_left, tr_top, tr_right, br_bottom, br_right, bl_bottom, bl_left]
     
-    
+    # Unpack for clarity
+    tl_top, tl_left, tr_top, tr_right, br_bottom, br_right, bl_bottom, bl_left = extremities
+
+    # Define correct corner lines
+    corner_lines = [
+        # Top-left corner
+        ((tl_left, tr_right), (tl_top, bl_bottom)),
+
+        # Top-right corner
+        ((tr_right, tl_left), (tr_top, br_bottom)),
+
+        # Bottom-right corner
+        ((br_right, bl_left), (br_bottom, tr_top)),
+
+        # Bottom-left corner
+        ((bl_left, br_right), (bl_bottom, tl_top)),
+    ]
+
+
+    # Compute actual corner points
+    corner_points = []
+    for (line1, line2) in corner_lines:
+        pt = intersection_from_2pts(*line1, *line2)
+        if pt:
+            corner_points.append(pt)
 
     if any(p is None for p in extremities):
         print("Some points were not found in their 1/8 zones.")
@@ -262,5 +288,16 @@ def estimatePlayArea(result, cap):
 
     for i, pt in enumerate(extremities):
         cv2.circle(output, pt, 5, (0, 0, 255), -1)
+    
+    # Draw corners
+    for i, pt in enumerate(corner_points):
+        cv2.circle(output, pt, 10, (0, 255, 255), -1)
+        cv2.putText(output, f"Corner {i}", (pt[0] + 5, pt[1] - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+
+    # Draw lines
+    print(corner_points)
+    for (p1, p2) in [l for pair in corner_lines for l in pair]:
+        cv2.line(output, p1, p2, (255, 0, 0), 1)
+
 
     cv2.imshow("Play Area - Refined 8 Region Extremes", cv2.resize(output, (640, 480)))
