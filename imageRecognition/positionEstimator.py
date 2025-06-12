@@ -190,7 +190,7 @@ def intersection_from_2pts_np(p1, p2, p3, p4):
     except np.linalg.LinAlgError:
         return None
 
-def estimatePlayArea(result, cap):
+def estimatePlayArea(result, cap) -> list[tuple[float, float]]:
     h, w = cap.shape[:2]
     cx, cy = w // 2, h // 2
     w8, h8 = w // 8, h // 8
@@ -250,7 +250,7 @@ def estimatePlayArea(result, cap):
         # Bottom-left corner
         ((bl_left, br_right), (bl_bottom, tl_top)),
     ]
-    print(corner_lines)
+    #print(corner_lines)
 
 
     # Compute actual corner points
@@ -279,23 +279,24 @@ def estimatePlayArea(result, cap):
             corners.append(pt)
 
     # Draw result
-    output = cap.copy()
-    for i, pt in enumerate(corners):
-        cv2.circle(output, pt, 10, (0, 255, 0), -1)
-        cv2.putText(output, str(i), pt, cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 0, 0), 2)
+    # output = cap.copy()
+    # for i, pt in enumerate(corners):
+    #     cv2.circle(output, pt, 10, (0, 255, 0), -1)
+    #     cv2.putText(output, str(i), pt, cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 0, 0), 2)
 
-    for i, pt in enumerate(extremities):
-        cv2.circle(output, pt, 5, (0, 0, 255), -1)
+    # for i, pt in enumerate(extremities):
+    #     cv2.circle(output, pt, 5, (0, 0, 255), -1)
     
     # Draw corners
     for i, pt in enumerate(corner_points):
-        cv2.circle(output, pt, 10, (0, 255, 255), -1)
-        cv2.putText(output, f"Corner {i}", (pt[0] + 5, pt[1] - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+        cv2.circle(cap, pt, 10, (0, 255, 255), -1)
+        cv2.putText(cap, f"Corner {i}", (pt[0] + 5, pt[1] - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
 
-    # Draw lines
-    print(corner_points)
-    for (p1, p2) in [l for pair in corner_lines for l in pair]:
-        cv2.line(output, p1, p2, (255, 0, 0), 1)
+    # # Draw lines
+    # print(corner_points)
+    # for (p1, p2) in [l for pair in corner_lines for l in pair]:
+    #     cv2.line(output, p1, p2, (255, 0, 0), 1)
 
 
-    cv2.imshow("Play Area - Refined 8 Region Extremes", cv2.resize(output, (640, 480)))
+    # cv2.imshow("Play Area - Refined 8 Region Extremes", cv2.resize(output, (640, 480)))
+    return corner_points
