@@ -234,7 +234,7 @@ def estimatePlayArea(result, cap) -> list[tuple[float, float]]:
     extremities = [tl_top, tl_left, tr_top, tr_right, br_bottom, br_right, bl_bottom, bl_left]
     
     # Unpack for clarity
-    tl_top, tl_left, tr_top, tr_right, br_bottom, br_right, bl_bottom, bl_left = extremities
+    # tl_top, tl_left, tr_top, tr_right, br_bottom, br_right, bl_bottom, bl_left = extremities
 
     # Define correct corner lines
     corner_lines = [
@@ -256,6 +256,9 @@ def estimatePlayArea(result, cap) -> list[tuple[float, float]]:
     # Compute actual corner points
     corner_points = []
     for (line1, line2) in corner_lines:
+        if line1 is None or line2 is None:
+            print("Error! missing corner_lines element")
+            return None
         pt = intersection_from_2pts_np(*line1, *line2)
         if pt:
             corner_points.append(pt)
