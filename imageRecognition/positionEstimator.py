@@ -173,25 +173,22 @@ def findIntermediatyCrossPoint(ball, cross_middle_point, robot_gap, cross_int_co
 
 
 
+def intersection_from_2pts_np(p1, p2, p3, p4):
+    p1, p2, p3, p4 = map(np.array, [p1, p2, p3, p4])
+    d1 = p2 - p1
+    d2 = p4 - p3
+    A = np.array([d1, -d2]).T
+    b = p3 - p1
 
-def intersection_from_2pts(p1, p2, p3, p4):
-    """Compute intersection of lines (p1,p2) and (p3,p4)"""
-    A1 = p2[1] - p1[1]
-    B1 = p1[0] - p2[0]
-    C1 = A1 * p1[0] + B1 * p1[1]
+    if np.linalg.matrix_rank(A) < 2:
+        return None
 
-    A2 = p4[1] - p3[1]
-    B2 = p3[0] - p4[0]
-    C2 = A2 * p3[0] + B2 * p3[1]
-
-    det = A1 * B2 - A2 * B1
-    if det == 0:
-        return None  # Parallel lines
-    x = (B2 * C1 - B1 * C2) / det
-    y = (A1 * C2 - A2 * C1) / det
-    return (int(x), int(y))
-
-
+    try:
+        t_s = np.linalg.solve(A, b)
+        intersection = p1 + t_s[0] * d1
+        return tuple(map(int, intersection))
+    except np.linalg.LinAlgError:
+        return None
 
 def estimatePlayArea(result, cap):
     h, w = cap.shape[:2]
@@ -245,7 +242,7 @@ def estimatePlayArea(result, cap):
         ((tl_left, tr_right), (tl_top, bl_bottom)),
 
         # Top-right corner
-        ((tr_right, tl_left), (tr_top, br_bottom)),
+        ((tl_left, tr_right), (br_bottom, tr_top)),
 
         # Bottom-right corner
         ((br_right, bl_left), (br_bottom, tr_top)),
@@ -253,12 +250,13 @@ def estimatePlayArea(result, cap):
         # Bottom-left corner
         ((bl_left, br_right), (bl_bottom, tl_top)),
     ]
+    print(corner_lines)
 
 
     # Compute actual corner points
     corner_points = []
     for (line1, line2) in corner_lines:
-        pt = intersection_from_2pts(*line1, *line2)
+        pt = intersection_from_2pts_np(*line1, *line2)
         if pt:
             corner_points.append(pt)
 
@@ -276,7 +274,7 @@ def estimatePlayArea(result, cap):
     ]
     corners = []
     for p1, p2, p3, p4 in pairs:
-        pt = intersection_from_2pts(p1, p2, p3, p4)
+        pt = intersection_from_2pts_np(p1, p2, p3, p4)
         if pt:
             corners.append(pt)
 
