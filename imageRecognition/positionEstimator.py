@@ -170,64 +170,97 @@ def findIntermediatyCrossPoint(ball, cross_middle_point, robot_gap, cross_int_co
             closest = corner
     return closest[1]
         
-    
-    
-def estimatePlayArea(result, cap) -> CrossInfo:
-    #cv2.imshow("crop frame", crop_frame)
-    
-    #gray = cv2.cvtColor(crop_frame, cv2.COLOR_BGR2GRAY)
-    b = cap[:, :, 0].astype(np.float32)
-    g = cap[:, :, 1].astype(np.float32)
-    r = cap[:, :, 2].astype(np.float32)
-    # Create a mask where red is strong and green/blue are weak relative to red
-    condition = (r > 150) & (g < r / 1.8) & (b < r / 1.8)
-    red_thresh = condition.astype(np.uint8) * 255  # Convert to binary mask
-    # Apply the mask to keep only the red pixels
-    # red_thresh = cv2.bitwise_and(crop_frame, crop_frame, mask=mask)
-    # red_thresh = cv2.cvtColor(red_thresh, cv2.COLOR_BGR2GRAY)
-    red_thresh = cv2.GaussianBlur(red_thresh, (5, 5), 0)
-    
 
-    edges = cv2.Canny(red_thresh, 60, 255) # Note: this is a 2d array of either 0 or 255 as an int
-    
-    
-    contours, _ = cv2.findContours(red_thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) # WARNING: Perhaps use red_thresh instead of edges here?
-    if contours == None:
-        print("No contours found for cross")
+
+
+
+def intersection_from_2pts(p1, p2, p3, p4):
+    """Compute intersection of lines (p1,p2) and (p3,p4)"""
+    A1 = p2[1] - p1[1]
+    B1 = p1[0] - p2[0]
+    C1 = A1 * p1[0] + B1 * p1[1]
+
+    A2 = p4[1] - p3[1]
+    B2 = p3[0] - p4[0]
+    C2 = A2 * p3[0] + B2 * p3[1]
+
+    det = A1 * B2 - A2 * B1
+    if det == 0:
+        return None  # Parallel lines
+    x = (B2 * C1 - B1 * C2) / det
+    y = (A1 * C2 - A2 * C1) / det
+    return (int(x), int(y))
+
+def estimatePlayArea(result, cap):
+    h, w = cap.shape[:2]
+    cx, cy = w // 2, h // 2
+    w8, h8 = w // 8, h // 8
+
+    # Red pixel mask
+    b, g, r = cap[:, :, 0], cap[:, :, 1], cap[:, :, 2]
+    red_mask = ((r > 150) & (g < r / 1.8) & (b < r / 1.8)).astype(np.uint8) * 255
+    red_mask = cv2.GaussianBlur(red_mask, (5, 5), 0)
+
+    # Contours
+    contours, _ = cv2.findContours(red_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if not contours:
+        print("No contours")
         return
-    #largest_contour = max(contours, key=cv2.contourArea)
+    points = np.vstack(contours).squeeze()
+
+    # 8-point selection with stricter bounds
+    def filter_and_pick(condition_fn, sort_key_fn, reverse=False):
+        filtered = [p for p in points if condition_fn(p)]
+        if not filtered:
+            return None
+        return sorted(filtered, key=sort_key_fn, reverse=reverse)[0]
+
+    # 8 extreme points (2 per corner)
+    # top-left
+    tl_top  = filter_and_pick(lambda p: p[0] < w8*2 and p[1] < h8*2, lambda p: p[1])     # topmost
+    tl_left = filter_and_pick(lambda p: p[0] < w8*2 and p[1] < h8*2, lambda p: p[0])     # leftmost
+
+    # top-right
+    tr_top   = filter_and_pick(lambda p: p[0] > w*6//8 and p[1] < h8*2, lambda p: p[1])
+    tr_right = filter_and_pick(lambda p: p[0] > w*6//8 and p[1] < h8*2, lambda p: p[0], reverse=True)
+
+    # bottom-right
+    br_bottom = filter_and_pick(lambda p: p[0] > w*6//8 and p[1] > h*6//8, lambda p: p[1], reverse=True)
+    br_right  = filter_and_pick(lambda p: p[0] > w*6//8 and p[1] > h*6//8, lambda p: p[0], reverse=True)
+
+    # bottom-left
+    bl_bottom = filter_and_pick(lambda p: p[0] < w8*2 and p[1] > h*6//8, lambda p: p[1], reverse=True)
+    bl_left   = filter_and_pick(lambda p: p[0] < w8*2 and p[1] > h*6//8, lambda p: p[0])
+
+    extremities = [tl_top, tl_left, tr_top, tr_right, br_bottom, br_right, bl_bottom, bl_left]
     
-    largest = max(contours, key=cv2.contourArea)
+    
 
-    # Approximate the contour to a polygon
-    epsilon = 0.01 * cv2.arcLength(largest, True)
-    approx = cv2.approxPolyDP(largest, epsilon, True)
+    if any(p is None for p in extremities):
+        print("Some points were not found in their 1/8 zones.")
+        return
 
-    # Extract corner points from the approximation
-    points = approx.reshape(-1, 2)
+    # Compute intersections of each side
+    # Sides: top, right, bottom, left
+    pairs = [
+        (tl_top, tl_left, tr_top, tr_right),       # top-left and top-right
+        (tr_top, tr_right, br_bottom, br_right),   # top-right and bottom-right
+        (br_bottom, br_right, bl_bottom, bl_left), # bottom-right and bottom-left
+        (bl_bottom, bl_left, tl_top, tl_left),     # bottom-left and top-left
+    ]
+    corners = []
+    for p1, p2, p3, p4 in pairs:
+        pt = intersection_from_2pts(p1, p2, p3, p4)
+        if pt:
+            corners.append(pt)
 
-    # Find 4 extreme points based on sum and difference of x and y
-    # These heuristics help find corners of square-like shapes
-    top_left     = min(points, key=lambda p: p[0] + p[1])
-    top_right    = max(points, key=lambda p: p[0] - p[1])
-    bottom_left  = max(points, key=lambda p: p[1] - p[0])
-    bottom_right = max(points, key=lambda p: p[0] + p[1])
-
-    corners = [top_left, top_right, bottom_right, bottom_left]
-
-    # Visualize
-    output = cap.copy()#cv2.cvtColor(binary, cv2.COLOR_GRAY2BGR)
+    # Draw result
+    output = cap.copy()
     for i, pt in enumerate(corners):
-        cv2.circle(output, tuple(pt), 10, (0, 255, 0), -1)
-        cv2.putText(output, f"{i}", tuple(pt), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 0, 0), 2)
+        cv2.circle(output, pt, 10, (0, 255, 0), -1)
+        cv2.putText(output, str(i), pt, cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 0, 0), 2)
 
-    cv2.imshow("Detected Corners", cv2.resize(output, windowsize))
-    
-    #cv2.imshow("Edges", cv2.resize(edges, windowsize))
-    #cv2.imshow("Red channel", cv2.resize(red_thresh, windowsize))
-    #cv2.imshow("Contours", contours)
-    #output = cv2.cvtColor(cap.copy(), cv2.COLOR_GRAY2BGR)
-    #frame = cap.copy()
-    #cv2.drawContours(frame, crosses, -1, (0, 255, 0), 2)
-    #cv2.imshow('Detected Crosses', cv2.resize(frame, windowsize))
-    # print(crosses)
+    for i, pt in enumerate(extremities):
+        cv2.circle(output, pt, 5, (0, 0, 255), -1)
+
+    cv2.imshow("Play Area - Refined 8 Region Extremes", cv2.resize(output, (640, 480)))
