@@ -24,7 +24,7 @@ def main():
         client_socket.connect(("192.168.137.112", 12359))
 
     # Set image detection model
-    od = ObjectDetection(model="imageRecognition/ImageModels/best.pt", detection_mode=DetectionMode.CAMERA, capture_index=2)
+    od = ObjectDetection(model="imageRecognition/imageModels/best.pt", detection_mode=DetectionMode.CAMERA, capture_index=3)
     #od = ObjectDetection(model="imageRecognition/yolov8s_060625.pt", detection_mode=DetectionMode.IMAGE, image="test/batch5_picture1.png")
     
     # Set initial robot state. State machine can be found in robotMovement/selectRobotTarget.py
