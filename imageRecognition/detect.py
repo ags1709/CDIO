@@ -1,6 +1,6 @@
 import cv2
 from ultralytics import YOLO
-from imageRecognition.positionEstimator import estimateGoals, estimateCross, estimatePlayArea, CrossInfo
+from imageRecognition.positionEstimator import estimateGoals, estimateCross, estimatePlayArea, estimatePlayAreaIntermediate, CrossInfo
 from imageRecognition.positionEstimator import estimatePositionFromSquare
 import enum
 
@@ -79,6 +79,7 @@ class ObjectDetection():
         goals = estimateGoals(result, frame)
         crossinfo = estimateCross(result, frame)
         playarea = estimatePlayArea(result, frame)
+        playareaIntermediate = estimatePlayAreaIntermediate(result, playarea, frame)
         
         
         for box in boxes:

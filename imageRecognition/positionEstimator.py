@@ -303,3 +303,36 @@ def estimatePlayArea(result, cap) -> list[tuple[float, float]]:
 
     # cv2.imshow("Play Area - Refined 8 Region Extremes", cv2.resize(output, (640, 480)))
     return corner_points
+
+
+def deltaTuple(t1, t2):
+    return (t2[0] - t1[0], t2[1]-t1[1])
+def multTuple(t, d):
+    return (t[0]*d, t[1]*d)
+def addTuple(t1, t2):
+    return (t1[0]+t2[0], t1[1]+t2[1])
+
+def estimatePlayAreaIntermediate(result, playarea, frame):
+    
+    interSize = 0.8
+    
+    dbl = deltaTuple(playarea[0], playarea[3])
+    dtr = deltaTuple(playarea[0], playarea[1])
+    dbr = deltaTuple(playarea[0], playarea[2])
+    
+    dbl_d = multTuple(dbl, interSize)
+    dtr_d = multTuple(dtr, interSize)
+    dbr_d = multTuple(dbr, interSize)
+    
+    areaoffset_xy = multTuple(deltaTuple(dbr_d, dbr), 0.5)
+    
+    tl = addTuple(playarea[0], areaoffset_xy)
+    bl = addTuple(tl, dbl_d)
+    tr = addTuple(tl, dtr_d)
+    br = addTuple(tl, dbr_d)
+    
+    cv2.line(frame, tuple_toint(tl), tuple_toint(bl), (0, 255, 255), 2)
+    cv2.line(frame, tuple_toint(tl), tuple_toint(tr), (0, 255, 255), 2)
+    cv2.line(frame, tuple_toint(br), tuple_toint(tr), (0, 255, 255), 2)
+    cv2.line(frame, tuple_toint(br), tuple_toint(bl), (0, 255, 255), 2)
+    
