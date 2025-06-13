@@ -1,8 +1,9 @@
 import cv2
 from ultralytics import YOLO
-from imageRecognition.positionEstimator import estimateGoals, estimateCross, estimatePlayArea, estimatePlayAreaIntermediate, CrossInfo
+from imageRecognition.positionEstimator import estimateGoals, estimateCross, estimatePlayArea, estimatePlayAreaIntermediate, analyze_point_with_polygon, CrossInfo
 from imageRecognition.positionEstimator import estimatePositionFromSquare
 import enum
+from robotMovement.tools import tuple_toint
 
 class DetectionMode(enum.Enum):
     CAMERA=0
@@ -79,7 +80,8 @@ class ObjectDetection():
         goals = estimateGoals(result, frame)
         crossinfo = estimateCross(result, frame)
         playarea = estimatePlayArea(result, frame)
-        playareaIntermediate = estimatePlayAreaIntermediate(result, playarea, frame)
+        pa_tl, pa_tr, pa_br, pa_bl = estimatePlayAreaIntermediate(result, playarea, frame) #pa_tl = playarea of top left... etc
+        
         
         
         for box in boxes:
@@ -89,6 +91,7 @@ class ObjectDetection():
 
             xyxy = box.xyxy[0].cpu().numpy().astype(int)
             x1, y1, x2, y2 = xyxy
+            mid = ((x1+x2)/2, (y1+y2)/2)
 
             # Draw box
             cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
@@ -101,6 +104,12 @@ class ObjectDetection():
                 whiteBalls.append(estimatePositionFromSquare(x1, y1, x2, y2))
             elif cls_id == 1:
                 orangeBalls.append(estimatePositionFromSquare(x1, y1, x2, y2))
+                inside, closest = analyze_point_with_polygon(mid, (pa_tl, pa_tr, pa_br, pa_bl))
+                print(f"Ball: {mid}")
+                print(f"Inside: {inside}")
+                if not inside:
+                    print(f"Closest Point: {closest}")
+                    cv2.line(frame, tuple_toint(mid), tuple_toint(closest), (0, 150, 150), 2)
             elif cls_id == 2:
                 egg = ((x1, y1), (x2, y2))
             elif cls_id == 3:

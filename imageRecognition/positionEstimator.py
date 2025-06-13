@@ -336,3 +336,59 @@ def estimatePlayAreaIntermediate(result, playarea, frame):
     cv2.line(frame, tuple_toint(br), tuple_toint(tr), (0, 255, 255), 2)
     cv2.line(frame, tuple_toint(br), tuple_toint(bl), (0, 255, 255), 2)
     
+    return (tl, tr, br, bl)
+
+
+
+
+def is_point_in_polygon(point, polygon):
+    """Ray casting algorithm to determine if the point is inside the polygon."""
+    x, y = point
+    n = len(polygon)
+    inside = False
+
+    px1, py1 = polygon[0]
+    for i in range(n+1):
+        px2, py2 = polygon[i % n]
+        if y > min(py1, py2):
+            if y <= max(py1, py2):
+                if x <= max(px1, px2):
+                    if py1 != py2:
+                        xints = (y - py1) * (px2 - px1) / (py2 - py1 + 1e-12) + px1
+                    if px1 == px2 or x <= xints:
+                        inside = not inside
+        px1, py1 = px2, py2
+    return inside
+
+def closest_point_on_segment(p, a, b):
+    """Returns the closest point on segment ab to point p."""
+    p, a, b = np.array(p), np.array(a), np.array(b)
+    ab = b - a
+    t = np.dot(p - a, ab) / np.dot(ab, ab)
+    t = np.clip(t, 0, 1)
+    return tuple(a + t * ab)
+
+def closest_point_to_polygon(point, polygon):
+    """Finds closest point on polygon edges to the given point."""
+    closest = None
+    min_dist = float('inf')
+    for i in range(len(polygon)):
+        a = polygon[i]
+        b = polygon[(i + 1) % len(polygon)]
+        cp = closest_point_on_segment(point, a, b)
+        dist = np.linalg.norm(np.array(cp) - np.array(point))
+        if dist < min_dist:
+            min_dist = dist
+            closest = cp
+    return closest
+
+def analyze_point_with_polygon(point, polygon):
+    """
+    Returns (inside: bool, closest_point: tuple)
+    """
+    inside = is_point_in_polygon(point, polygon)
+    if inside:
+        return True, point
+    else:
+        closest = closest_point_to_polygon(point, polygon)
+        return False, closest
