@@ -1,8 +1,9 @@
 import math
 
 # The heights of different things in cm
-camera_height = 170
-corner_height = 18
+camera_height = 165
+corner_height = 17.5
+target_height = 3
 
 # Camera resolution, really scuffed
 frame_w = 1920
@@ -77,7 +78,7 @@ def calculateRobotPositionFlexible(frontLeftCorner, frontRightCorner, backLeftCo
         #raise ValueError("Not enough information to calculate corners.")
 
 def correctPerspective(point):
-    factor = (camera_height - corner_height) / camera_height
+    factor = (camera_height - corner_height) / (camera_height - target_height)
     x, y = 1920 / 2, 1080 / 2
     return (factor * (point[0]  - x) + x, factor * (point[1]  - y) + y)
 
