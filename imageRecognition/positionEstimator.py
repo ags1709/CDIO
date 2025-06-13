@@ -305,78 +305,89 @@ def estimatePlayArea(result, cap) -> list[tuple[float, float]]:
     return corner_points
 
 
+
+import numpy as np
+import cv2
+
 def deltaTuple(t1, t2):
-    return (t2[0] - t1[0], t2[1]-t1[1])
+    return np.array(t2) - np.array(t1)
+
 def multTuple(t, d):
-    return (t[0]*d, t[1]*d)
+    return np.array(t) * d
+
 def addTuple(t1, t2):
-    return (t1[0]+t2[0], t1[1]+t2[1])
+    return np.array(t1) + np.array(t2)
+
+def tuple_toint(t):
+    return tuple(np.round(t).astype(int))
 
 def estimatePlayAreaIntermediate(result, playarea, frame):
-    
     interSize = 0.8
-    
+
     dbl = deltaTuple(playarea[0], playarea[3])
     dtr = deltaTuple(playarea[0], playarea[1])
     dbr = deltaTuple(playarea[0], playarea[2])
-    
+
     dbl_d = multTuple(dbl, interSize)
     dtr_d = multTuple(dtr, interSize)
     dbr_d = multTuple(dbr, interSize)
-    
+
     areaoffset_xy = multTuple(deltaTuple(dbr_d, dbr), 0.5)
-    
+
     tl = addTuple(playarea[0], areaoffset_xy)
     bl = addTuple(tl, dbl_d)
     tr = addTuple(tl, dtr_d)
     br = addTuple(tl, dbr_d)
-    
+
     cv2.line(frame, tuple_toint(tl), tuple_toint(bl), (0, 255, 255), 2)
     cv2.line(frame, tuple_toint(tl), tuple_toint(tr), (0, 255, 255), 2)
     cv2.line(frame, tuple_toint(br), tuple_toint(tr), (0, 255, 255), 2)
     cv2.line(frame, tuple_toint(br), tuple_toint(bl), (0, 255, 255), 2)
-    
+
     return (tl, tr, br, bl)
 
-
-
-
 def is_point_in_polygon(point, polygon):
-    """Ray casting algorithm to determine if the point is inside the polygon."""
+    """Ray casting algorithm using NumPy."""
+    point = np.array(point)
     x, y = point
-    n = len(polygon)
     inside = False
+    n = len(polygon)
 
-    px1, py1 = polygon[0]
-    for i in range(n+1):
-        px2, py2 = polygon[i % n]
-        if y > min(py1, py2):
-            if y <= max(py1, py2):
-                if x <= max(px1, px2):
-                    if py1 != py2:
-                        xints = (y - py1) * (px2 - px1) / (py2 - py1 + 1e-12) + px1
-                    if px1 == px2 or x <= xints:
+    for i in range(n):
+        p1 = polygon[i]
+        p2 = polygon[(i + 1) % n]
+        x1, y1 = p1
+        x2, y2 = p2
+
+        if y > min(y1, y2):
+            if y <= max(y1, y2):
+                if x <= max(x1, x2):
+                    if y1 != y2:
+                        xints = (y - y1) * (x2 - x1) / (y2 - y1 + 1e-12) + x1
+                    if x1 == x2 or x <= xints:
                         inside = not inside
-        px1, py1 = px2, py2
     return inside
 
 def closest_point_on_segment(p, a, b):
-    """Returns the closest point on segment ab to point p."""
-    p, a, b = np.array(p), np.array(a), np.array(b)
+    """Returns the closest point on segment ab to point p using NumPy."""
+    p = np.array(p)
+    a = np.array(a)
+    b = np.array(b)
     ab = b - a
-    t = np.dot(p - a, ab) / np.dot(ab, ab)
+    t = np.dot(p - a, ab) / (np.dot(ab, ab) + 1e-12)
     t = np.clip(t, 0, 1)
-    return tuple(a + t * ab)
+    return a + t * ab
 
 def closest_point_to_polygon(point, polygon):
-    """Finds closest point on polygon edges to the given point."""
+    """Finds closest point on polygon edges to the given point using NumPy."""
+    point = np.array(point)
     closest = None
     min_dist = float('inf')
     for i in range(len(polygon)):
         a = polygon[i]
         b = polygon[(i + 1) % len(polygon)]
         cp = closest_point_on_segment(point, a, b)
-        dist = np.linalg.norm(np.array(cp) - np.array(point))
+        dist = np.linalg.norm(cp - point)
         if dist < min_dist:
             min_dist = dist
             closest = cp
@@ -384,11 +395,11 @@ def closest_point_to_polygon(point, polygon):
 
 def analyze_point_with_polygon(point, polygon):
     """
-    Returns (inside: bool, closest_point: tuple)
+    Returns (inside: bool, closest_point: np.array)
     """
     inside = is_point_in_polygon(point, polygon)
     if inside:
-        return True, point
+        return True, np.array(point)
     else:
         closest = closest_point_to_polygon(point, polygon)
         return False, closest
