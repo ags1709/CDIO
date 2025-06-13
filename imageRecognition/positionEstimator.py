@@ -305,53 +305,42 @@ def estimatePlayArea(result, cap) -> list[tuple[float, float]]:
     return corner_points
 
 
-
-import numpy as np
-import cv2
-
-def deltaTuple(t1, t2):
-    return np.array(t2) - np.array(t1)
-
-def multTuple(t, d):
-    return np.array(t) * d
-
-def addTuple(t1, t2):
-    return np.array(t1) + np.array(t2)
-
-def tuple_toint(t):
-    return tuple(np.round(t).astype(int))
+def np_int(t):
+    return np.round(t).astype(int)
 
 def estimatePlayAreaIntermediate(result, playarea, frame):
     interSize = 0.8
 
-    dbl = deltaTuple(playarea[0], playarea[3])
-    dtr = deltaTuple(playarea[0], playarea[1])
-    dbr = deltaTuple(playarea[0], playarea[2])
+    playarea = np.array(playarea)
 
-    dbl_d = multTuple(dbl, interSize)
-    dtr_d = multTuple(dtr, interSize)
-    dbr_d = multTuple(dbr, interSize)
+    dbl = playarea[3] - playarea[0]
+    dtr = playarea[1] - playarea[0]
+    dbr = playarea[2] - playarea[0]
 
-    areaoffset_xy = multTuple(deltaTuple(dbr_d, dbr), 0.5)
+    dbl_d = dbl * interSize
+    dtr_d = dtr * interSize
+    dbr_d = dbr * interSize
 
-    tl = addTuple(playarea[0], areaoffset_xy)
-    bl = addTuple(tl, dbl_d)
-    tr = addTuple(tl, dtr_d)
-    br = addTuple(tl, dbr_d)
+    areaoffset_xy = (dbr - dbr_d) * 0.5
 
-    cv2.line(frame, tuple_toint(tl), tuple_toint(bl), (0, 255, 255), 2)
-    cv2.line(frame, tuple_toint(tl), tuple_toint(tr), (0, 255, 255), 2)
-    cv2.line(frame, tuple_toint(br), tuple_toint(tr), (0, 255, 255), 2)
-    cv2.line(frame, tuple_toint(br), tuple_toint(bl), (0, 255, 255), 2)
+    tl = playarea[0] + areaoffset_xy
+    bl = tl + dbl_d
+    tr = tl + dtr_d
+    br = tl + dbr_d
+
+    cv2.line(frame, np_int(tl), np_int(bl), (0, 255, 255), 2)
+    cv2.line(frame, np_int(tl), np_int(tr), (0, 255, 255), 2)
+    cv2.line(frame, np_int(br), np_int(tr), (0, 255, 255), 2)
+    cv2.line(frame, np_int(br), np_int(bl), (0, 255, 255), 2)
 
     return (tl, tr, br, bl)
 
 def is_point_in_polygon(point, polygon):
-    """Ray casting algorithm using NumPy."""
+    """Ray casting algorithm to determine if the point is inside the polygon."""
     point = np.array(point)
     x, y = point
-    inside = False
     n = len(polygon)
+    inside = False
 
     for i in range(n):
         p1 = polygon[i]
