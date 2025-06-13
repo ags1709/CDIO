@@ -309,24 +309,14 @@ def np_int(t):
     return np.round(t).astype(int)
 
 def estimatePlayAreaIntermediate(result, playarea, frame):
-    interSize = 0.8
+    margin = 200
 
     playarea = np.array(playarea)
 
-    dbl = playarea[3] - playarea[0]
-    dtr = playarea[1] - playarea[0]
-    dbr = playarea[2] - playarea[0]
-
-    dbl_d = dbl * interSize
-    dtr_d = dtr * interSize
-    dbr_d = dbr * interSize
-
-    areaoffset_xy = (dbr - dbr_d) * 0.5
-
-    tl = playarea[0] + areaoffset_xy
-    bl = tl + dbl_d
-    tr = tl + dtr_d
-    br = tl + dbr_d
+    tl = offset_vertex(playarea[0], playarea[1], playarea[3], margin)
+    tr = offset_vertex(playarea[1], playarea[2], playarea[0], margin)
+    br = offset_vertex(playarea[2], playarea[3], playarea[1], margin)
+    bl = offset_vertex(playarea[3], playarea[0], playarea[2], margin)
 
     cv2.line(frame, np_int(tl), np_int(bl), (0, 255, 255), 2)
     cv2.line(frame, np_int(tl), np_int(tr), (0, 255, 255), 2)
@@ -334,6 +324,17 @@ def estimatePlayAreaIntermediate(result, playarea, frame):
     cv2.line(frame, np_int(br), np_int(bl), (0, 255, 255), 2)
 
     return (tl, tr, br, bl)
+
+def offset_vertex(p1, p2, p3, distance):
+    """Offsets the vertex p1 by distance inwards. p2 is the adjacent vertex in the clockwise direction, and opposite for p3."""
+    # The vectors from the vertex to the adjacent vertices, rotated by 90°
+    v1 = np.array((p1[1] - p2[1], p2[0] - p1[0]), float)
+    v2 = np.array((p3[1] - p1[1], p1[0] - p3[0]), float)
+    v1 /= np.linalg.norm(v1)
+    v2 /= np.linalg.norm(v2)
+    v3 = v1 + v2
+    v3 *= distance / np.linalg.norm(v3) / np.sqrt((1 + np.dot(v1, v2)) / 2)
+    return p1 + v3
 
 def is_point_in_polygon(point, polygon):
     """Ray casting algorithm to determine if the point is inside the polygon."""
