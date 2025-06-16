@@ -31,7 +31,6 @@ def setAbort():
 
 def main():
     abortTimer()
-    print(abort)
     # Set connection to robot
     if ENABLE_SOCKET:
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -51,8 +50,6 @@ def main():
         # Calculate robots distance and angle to target, and set its state
         try:
             distanceToTarget, angleToTarget, robotState = calcDistAndAngleToTarget(detectedObjects, crossInfo, frame)
-            if abort and not (robotState == "TO_INTERMEDIARY" or robotState == "TO_GOAL"):
-                robotState = "TO_INTERMEDIARY"
 
             print(abort)
             cv2.putText(frame, f"State: {robotState}", (20, 60), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 0), 4)

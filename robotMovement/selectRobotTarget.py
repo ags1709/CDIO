@@ -8,7 +8,7 @@ from robotMovement.tools import tuple_toint
 import math
 import numpy as np
 from robotMovement.obstacleAvoidance import avoidObstacle
-
+from main import abort
 
 stateQueue = [ # Format: (State,variables)
     
@@ -20,6 +20,12 @@ targetBall = None
 #     with open(file_path, "a") as f:
 #         f.write(f"{state}\n")
 
+
+def goToIntermidararyPoint(detectedObjects):
+    intermediaryPoint = (detectedObjects["goals"][1][0] - 300, detectedObjects["goals"][1][1])
+    stateQueue.pop(0) 
+    stateQueue.append(("TO_INTERMEDIARY", intermediaryPoint))
+    stateQueue.append(("TO_GOAL",))  # Har sat et komma, pga at det er en tuple.
 
 def is_objectmiddle_in_circle(objectpos, center, radius):
     #middle = ( (objectpos[0][0] + objectpos[1][0])/2, (objectpos[0][1] + objectpos[1][1])/2 )
@@ -46,6 +52,9 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
     # TEMP!
     #state = SEARCH_BALLS
     #targetBall = None
+
+    if abort:
+        goToIntermidararyPoint(detectedObjects)
 
     # If no state has been set yet, put robot in ball searching state.
     if len(stateQueue) == 0:
@@ -93,10 +102,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
 
             elif not detectedObjects["whiteBalls"] and not detectedObjects["orangeBalls"]:
                 print("No white balls")
-                intermediaryPoint = (detectedObjects["goals"][1][0] - 300, detectedObjects["goals"][1][1])
-                stateQueue.pop(0) 
-                stateQueue.append((TO_INTERMEDIARY, intermediaryPoint))
-                stateQueue.append((TO_GOAL,))  # Har sat et komma, pga at det er en tuple.
+                goToIntermidararyPoint(detectedObjects)
 
 
         
