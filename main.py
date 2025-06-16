@@ -10,14 +10,27 @@ from ultralytics import YOLO
 import math
 from imageRecognition.detect import ObjectDetection, DetectionMode
 import traceback
-
+import time
 import logging
+
+import threading
 logging.getLogger('ultralytics').setLevel(logging.ERROR)
 
 ENABLE_SOCKET = True
 windowsize = (1280,720)
 
+
+abort = False
+
+def abortTimer():
+    timerThread = threading.Timer(interval=20, function=setAbort)
+
+def setAbort(): 
+    abort = True
+
 def main():
+    abortTimer()
+    print(abort)
     # Set connection to robot
     if ENABLE_SOCKET:
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -37,6 +50,10 @@ def main():
         # Calculate robots distance and angle to target, and set its state
         try:
             distanceToTarget, angleToTarget, robotState = calcDistAndAngleToTarget(detectedObjects, crossInfo, frame)
+            if abort and not (robotState == "TO_INTERMEDIARY" or robotState == "TO_GOAL"):
+                robotState = "TO_INTERMEDIARY"
+
+            print(abort)
             cv2.putText(frame, f"State: {robotState}", (20, 60), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 0), 4)
             
             # Determine whether to hand balls in or not
