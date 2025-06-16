@@ -55,10 +55,6 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         
     robotDistance = 0
     robotAngle = 0
-    
-    # TEMP!
-    #state = SEARCH_BALLS
-    #targetBall = None
 
     if abort:
         goToGoalIntermidararyPoint(detectedObjects)
@@ -148,13 +144,6 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         # If no balls are present, move to intermediary point in preperation for turning in balls.
 
     if state() == TO_INTERMEDIARY: # 
-        # log_state_transition(TO_INTERMEDIARY)
-
-        # if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
-        #     state = SEARCH_BALLS
-
-        #intermediaryPoint = (detectedObjects["goals"][1][0] - 300, detectedObjects["goals"][1][1])
-        # Have robots middle point reach the intermediary point as it makes for better arrival at goal.
         intermediaryPoint = stateVariables()[0]
 
         cv2.circle(frame, tuple_toint(intermediaryPoint), 11, (50,200,50), 6) # Mark intermediary
@@ -164,7 +153,6 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
 
         if robotDistance <= 75:# and -0.2 < robotAngle < 0.2:
             print("Reached intermediary point!")
-            #state = intermediaryFinishState if intermediaryFinishState is not None else TO_GOAL
             stateQueue.pop(0)
            
 
@@ -193,7 +181,6 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         robotAngle = add_angle(exactRotationTarget, -robotRotation)  # TODO: Check if this works lol
 
         if -0.2 < robotAngle < 0.2:
-            #state = intermediaryFinishState if intermediaryFinishState is not None else TO_GOAL
             stateQueue.pop(0)
             targetBall = None # TODO: TEMP!!!
     
