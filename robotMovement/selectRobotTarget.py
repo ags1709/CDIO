@@ -175,7 +175,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], targetBall)
         robotAngle = add_angle(robotToObjectAngle, -robotRotation)
 
-        if robotDistance <= 15:
+        if robotDistance <= 10:
             print("Ball collected!")
             stateQueue.pop(0)
             stateQueue.append((SEARCH_BALLS, {}))
