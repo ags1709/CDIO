@@ -12,21 +12,13 @@ class CrossInfo:
     angle_rad: float
     robot_intermediary_corners: list
 
-def estimateGoals(result, cap):
-    boxes = result.boxes
-    id_playfield = 3
-    playfield_box = [x for x in boxes if x.cls == id_playfield]
-    if len(playfield_box) > 1:
-        print("WARNING! ", len(playfield_box), " playfield_boxes detected, expected 1")
-    if (len(playfield_box) == 1):
-        box = playfield_box[0]
-        xyxy = box.xyxy[0].cpu().numpy().astype(int)
-        x1, y1, x2, y2 = xyxy
-        ymid = int(y1+(y2-y1)/2)
-        leftGoal = (x1,ymid)
-        rightGoal = (x2,ymid)
-        cv2.circle(cap, leftGoal, 30, (200, 150, 0), 3)
-        cv2.circle(cap, rightGoal, 30, (200, 150, 0), 3)
+def estimateGoals(playarea: list[np.ndarray], cap):
+    if playarea is not None:        
+        playarea
+        leftGoal = (playarea[0] + playarea[3]) / 2
+        rightGoal = (playarea[1] + playarea[2]) / 2
+        cv2.circle(cap, tuple(map(int, leftGoal)), 30, (200, 150, 0), 3)
+        cv2.circle(cap, tuple(map(int, rightGoal)), 30, (200, 150, 0), 3)
         return [leftGoal, rightGoal]
     else:
         print("WARNING! No playfield detected, no goal estimation done")
@@ -68,12 +60,14 @@ def estimateCross(result, cap) -> CrossInfo:
         g = crop_frame[:, :, 1].astype(np.float32)
         r = crop_frame[:, :, 2].astype(np.float32)
         # Create a mask where red is strong and green/blue are weak relative to red
-        condition = (r > 110) & (g < r / 1.6) & (b < r / 1.6)
-        red_thresh = condition.astype(np.uint8) * 255  # Convert to binary mask
+        red_mask = ((r > 115) & (g < r / 1.8) & (b < r / 1.8)).astype(np.uint8) * 255
+        red_thresh = cv2.GaussianBlur(red_mask, (5, 5), 0)
+        #condition = (r > 110) & (g < r / 1.6) & (b < r / 1.6)
+        #red_thresh = condition.astype(np.uint8) * 255  # Convert to binary mask
         # Apply the mask to keep only the red pixels
         # red_thresh = cv2.bitwise_and(crop_frame, crop_frame, mask=mask)
         # red_thresh = cv2.cvtColor(red_thresh, cv2.COLOR_BGR2GRAY)
-        red_thresh = cv2.GaussianBlur(red_thresh, (5, 5), 0)
+        #red_thresh = cv2.GaussianBlur(red_thresh, (5, 5), 0)
         
 
         edges = cv2.Canny(red_thresh, 60, 255) # Note: this is a 2d array of either 0 or 255 as an int
@@ -186,18 +180,19 @@ def intersection_from_2pts_np(p1, p2, p3, p4):
     try:
         t_s = np.linalg.solve(A, b)
         intersection = p1 + t_s[0] * d1
-        return tuple(map(int, intersection))
+        return intersection
+        #return tuple(map(int, intersection))
     except np.linalg.LinAlgError:
         return None
 
-def estimatePlayArea(result, cap) -> list[tuple[float, float]]:
+def estimatePlayArea(result, cap) -> list[np.ndarray]:
     h, w = cap.shape[:2]
     cx, cy = w // 2, h // 2
     w8, h8 = w // 8, h // 8
 
     # Red pixel mask
     b, g, r = cap[:, :, 0], cap[:, :, 1], cap[:, :, 2]
-    red_mask = ((r > 150) & (g < r / 1.8) & (b < r / 1.8)).astype(np.uint8) * 255
+    red_mask = ((r > 115) & (g < r / 1.8) & (b < r / 1.8)).astype(np.uint8) * 255
     red_mask = cv2.GaussianBlur(red_mask, (5, 5), 0)
 
     # Contours
@@ -260,7 +255,7 @@ def estimatePlayArea(result, cap) -> list[tuple[float, float]]:
             print("Error! missing corner_lines element")
             return None
         pt = intersection_from_2pts_np(*line1, *line2)
-        if pt:
+        if pt is not None:
             corner_points.append(pt)
 
     if any(p is None for p in extremities):
@@ -278,7 +273,7 @@ def estimatePlayArea(result, cap) -> list[tuple[float, float]]:
     corners = []
     for p1, p2, p3, p4 in pairs:
         pt = intersection_from_2pts_np(p1, p2, p3, p4)
-        if pt:
+        if pt is not None:
             corners.append(pt)
 
     # Draw result
@@ -292,6 +287,7 @@ def estimatePlayArea(result, cap) -> list[tuple[float, float]]:
     
     # Draw corners
     for i, pt in enumerate(corner_points):
+        pt = tuple(map(int, pt))
         cv2.circle(cap, pt, 10, (0, 255, 255), -1)
         cv2.putText(cap, f"Corner {i}", (pt[0] + 5, pt[1] - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
 
@@ -309,9 +305,9 @@ def np_int(t):
     return np.round(t).astype(int)
 
 def estimatePlayAreaIntermediate(result, playarea, frame):
-    margin = 200
+    margin = 150
 
-    playarea = np.array(playarea)
+    #playarea = np.array(playarea)
 
     tl = offset_vertex(playarea[0], playarea[1], playarea[3], margin)
     tr = offset_vertex(playarea[1], playarea[2], playarea[0], margin)

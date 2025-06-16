@@ -77,9 +77,9 @@ class ObjectDetection():
         frontRightCorner = None
         frontLeftCorner = None
         backLeftCorner = None
-        goals = estimateGoals(result, frame)
         crossinfo = estimateCross(result, frame)
         playarea = estimatePlayArea(result, frame)
+        goals = estimateGoals(playarea, frame)
         pa_tl, pa_tr, pa_br, pa_bl = estimatePlayAreaIntermediate(result, playarea, frame) #pa_tl = playarea of top left... etc
         
         
