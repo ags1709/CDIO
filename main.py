@@ -14,18 +14,18 @@ import traceback
 import logging
 logging.getLogger('ultralytics').setLevel(logging.ERROR)
 
-ENABLE_SOCKET = False
+ENABLE_SOCKET = True
 windowsize = (1280,720)
 
 def main():
     # Set connection to robot
     if ENABLE_SOCKET:
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_socket.connect(("192.168.137.112", 12358))
+        client_socket.connect(("192.168.137.112", 12355))
 
     # Set image detection model
-    #od = ObjectDetection(model="imageRecognition/imageModels/best.pt", detection_mode=DetectionMode.CAMERA, capture_index=2)
-    od = ObjectDetection(model="imageRecognition/imageModels/best.pt", detection_mode=DetectionMode.IMAGE, image="test/NPJ3.png")
+    od = ObjectDetection(model="imageRecognition/imageModels/best.pt", detection_mode=DetectionMode.CAMERA, capture_index=2)
+    #od = ObjectDetection(model="imageRecognition/imageModels/best.pt", detection_mode=DetectionMode.IMAGE, image="test/NPJ3.png")
     
     # Set initial robot state. State machine can be found in robotMovement/selectRobotTarget.py
 
