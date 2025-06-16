@@ -22,7 +22,7 @@ windowsize = (1280,720)
 
 
 def abortTimer():
-    threading.Timer(interval=5, function=setAbort).start()
+    threading.Timer(interval=30, function=setAbort).start()
 
 
 def main():
@@ -30,7 +30,7 @@ def main():
     # Set connection to robot
     if ENABLE_SOCKET:
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_socket.connect(("192.168.137.112", 12358))
+        client_socket.connect(("192.168.137.112", 12356))
 
     # Set image detection model
     od = ObjectDetection(model="imageRecognition/imageModels/best.pt", detection_mode=DetectionMode.CAMERA, capture_index=3)
