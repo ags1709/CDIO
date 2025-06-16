@@ -71,8 +71,8 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
     
     elif state == "TO_EXACT_ROTATION":
         forwardSpeed = np.abs(getTurnSpeed(angleToTarget)/8)
-        np.clip(forwardSpeed + 3, a_min=0, a_max=100)
-        turnSpeed = -100 if angleToTarget > 0 else 100
+        np.clip(forwardSpeed + 2, a_min=0, a_max=100)
+        turnSpeed = 100 if angleToTarget > 0 else -100
         
     elif state == "BACKOFF":
         kp_speed = -0.15
