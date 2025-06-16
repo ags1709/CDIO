@@ -41,10 +41,10 @@ def main():
     # Main loop. Runs entire competition program.
     while True:
         # use model to detect objects
-        frame, detectedObjects, crossInfo = od.detectAll()
 
         # Calculate robots distance and angle to target, and set its state
         try:
+            frame, detectedObjects, crossInfo = od.detectAll()
             distanceToTarget, angleToTarget, robotState = calcDistAndAngleToTarget(detectedObjects, crossInfo, frame)
 
             print(abort)
@@ -73,6 +73,8 @@ def main():
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 od.close()
                 exit(0)
+            if cv2.waitKey(1) &  0xFF == ord('n'):
+                break
         
         
         if cv2.waitKey(1) & 0xFF == ord('q'):
