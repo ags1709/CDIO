@@ -25,7 +25,7 @@ targetBall = None
 
 def goToIntermidararyPoint(detectedObjects):
     intermediaryPoint = (detectedObjects["goals"][1][0] - 300, detectedObjects["goals"][1][1])
-    stateQueue.pop(0) 
+    stateQueue.clear()
     stateQueue.append(("TO_INTERMEDIARY", intermediaryPoint))
     stateQueue.append(("TO_GOAL",))  # Har sat et komma, pga at det er en tuple.
 
@@ -46,7 +46,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
     TO_GOAL = "TO_GOAL"
     TO_EXACT_ROTATION = "TO_EXACT_ROTATION"
 
-    global targetBall; global stateQueue
+    global targetBall; global stateQueue; global abort
         
     robotDistance = 0
     robotAngle = 0
@@ -55,9 +55,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
     #state = SEARCH_BALLS
     #targetBall = None
 
-    global abort
     if abort:
-        stateQueue.clear()
         goToIntermidararyPoint(detectedObjects)
         abort = False
 
