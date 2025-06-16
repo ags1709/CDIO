@@ -22,7 +22,7 @@ windowsize = (1280,720)
 
 
 def abortTimer():
-    threading.Timer(interval=30, function=setAbort).start()
+    threading.Timer(interval=20, function=setAbort).start()
 
 
 def main():
@@ -30,7 +30,7 @@ def main():
     # Set connection to robot
     if ENABLE_SOCKET:
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_socket.connect(("192.168.137.112", 12356))
+        client_socket.connect(("192.168.137.112", 12355))
 
     # Set image detection model
     od = ObjectDetection(model="imageRecognition/imageModels/best.pt", detection_mode=DetectionMode.CAMERA, capture_index=3)
@@ -47,12 +47,13 @@ def main():
             frame, detectedObjects, crossInfo = od.detectAll()
             distanceToTarget, angleToTarget, robotState = calcDistAndAngleToTarget(detectedObjects, crossInfo, frame)
 
-            print(abort)
+            # print(abort)
             cv2.putText(frame, f"State: {robotState}", (20, 60), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 0), 4)
             
             # Determine whether to hand balls in or not
             vomit = determineAuxiliaryActions(distanceToTarget, angleToTarget, robotState)
 
+            print(f"vomit", vomit, "disdence", distanceToTarget)
             # Calculate the engine speeds determining the robots movement based on distance and angle to target.
             robotMovement = calculateSpeedAndRotation(distanceToTarget, angleToTarget, robotState)
             # Send data to robot

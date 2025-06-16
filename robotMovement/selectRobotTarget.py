@@ -10,7 +10,7 @@ import numpy as np
 from robotMovement.obstacleAvoidance import avoidObstacle
 
 abort = False
-
+skipFinalCheck = True
 def setAbort(): 
     global abort
     abort = True
@@ -50,7 +50,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
     TO_EXACT_ROTATION = "TO_EXACT_ROTATION"
     BACKOFF = "BACKOFF"
 
-    global targetBall; global stateQueue; global abort
+    global targetBall; global stateQueue; global abort; global skipFinalCheck
         
     robotDistance = 0
     robotAngle = 0
@@ -61,6 +61,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
 
     if abort:
         goToGoalIntermidararyPoint(detectedObjects)
+        skipFinalCheck = False
         abort = False
 
     # If no state has been set yet, put robot in ball searching state.
@@ -146,7 +147,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], intermediaryPoint)
         robotAngle = add_angle(robotToObjectAngle, -robotRotation)
 
-        if robotDistance <= 50:# and -0.2 < robotAngle < 0.2:
+        if robotDistance <= 75:# and -0.2 < robotAngle < 0.2:
             print("Reached intermediary point!")
             #state = intermediaryFinishState if intermediaryFinishState is not None else TO_GOAL
             stateQueue.pop(0)
@@ -154,10 +155,10 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
 
     elif state == TO_GOAL:
         # log_state_transition(TO_GOAL)
-		
-        if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
-            stateQueue.append((SEARCH_BALLS, {}))
-            stateQueue.pop(0)
+        if skipFinalCheck:
+            if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
+                stateQueue.append((SEARCH_BALLS, {}))
+                stateQueue.pop(0)
         #print("TO_GOAL")
         # If no balls are present, move to goal.
         goalPos = detectedObjects["goals"][1]
