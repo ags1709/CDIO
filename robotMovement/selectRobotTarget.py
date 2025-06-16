@@ -79,7 +79,9 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
                     exactRotationTarget = calculateAngleOfTwoPoints(intermediaryPoint, targetBall) # TODO: Suboptimal with intermediary point and not robot point used after reaching target but whatever.
                     stateQueue.append((TO_EXACT_ROTATION, exactRotationTarget))
                     stateQueue.append((SEARCH_BALLS, ""))
-            if not detectedObjects["whiteBalls"] and not detectedObjects["orangeBalls"]:
+                else:
+                    targetBall = min(detectedObjects["orangeBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
+            elif not detectedObjects["whiteBalls"] and not detectedObjects["orangeBalls"]:
                 print("No white balls")
                 intermediaryPoint = (detectedObjects["goals"][1][0] - 300, detectedObjects["goals"][1][1])
                 stateQueue.pop(0) 
@@ -126,7 +128,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
     elif state == TO_GOAL:
         # log_state_transition(TO_GOAL)
 
-        print("TO_GOAL")
+        #print("TO_GOAL")
         # If no balls are present, move to goal.
         goalPos = detectedObjects["goals"][1]
         robotDistance = calculateDistance(robotPos[0], goalPos)

@@ -28,7 +28,8 @@ def estimateGoals(result, cap):
         cv2.circle(cap, rightGoal, 30, (200, 150, 0), 3)
         return [leftGoal, rightGoal]
     else:
-        print("WARNING! No playfield detected, no goal estimation done")
+        pass
+        # print("WARNING! No playfield detected, no goal estimation done")
     
 def estimatePositionFromSquare(x1,y1,x2,y2):
     xCoordinate = (x1 + x2) / 2
@@ -161,7 +162,8 @@ def estimateCross(result, cap) -> CrossInfo:
         
         return info
     else:
-        print("WARNING! No cross detected, no angle detection done")
+        pass
+        # print("WARNING! No cross detected, no angle detection done")
         
         
 def findIntermediatyCrossPoint(ball, cross_middle_point, robot_gap, cross_int_corners):
