@@ -18,8 +18,24 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
 
         goalDistanceFromBall = 10
         # Assuming that we use MoveSteering().on(steering, speed), the values range from -100 to 100, adjust below values accordingly
-        forwardSpeed = max(5, min(80, kp_speed * (distanceFromTarget - goalDistanceFromBall)))
-        turnSpeed = getTurnSpeed(angleToTarget) 
+        # forwardSpeed = max(5, min(80, kp_speed * (distanceFromTarget - goalDistanceFromBall)))
+        # turnSpeed = getTurnSpeed(angleToTarget) 
+
+        # New approach to movement: Turn before moving
+        if angleToTarget < -0.0872665:
+            turnSpeed = -100
+            forwardSpeed = 2
+            if angleToTarget < -0.52:
+                forwardSpeed = 15
+        elif angleToTarget >= 0.0872665:
+            turnSpeed = 100
+            forwardSpeed = 2
+            if angleToTarget > 0.52:
+                forwardSpeed = 15
+        else: 
+            turnSpeed = 0
+            forwardSpeed = 40
+
 
     elif state == "TO_INTERMEDIARY":
         kp_speed = 0.15
