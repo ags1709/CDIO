@@ -57,6 +57,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
 
     global abort
     if abort:
+        stateQueue.clear()
         goToIntermidararyPoint(detectedObjects)
         abort = False
 
