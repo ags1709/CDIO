@@ -1,6 +1,6 @@
 import cv2
 from ultralytics import YOLO
-from imageRecognition.positionEstimator import estimateGoals, estimateCross, CrossInfo
+from imageRecognition.positionEstimator import (estimateGoals, estimateCross, CrossInfo)
 from imageRecognition.positionEstimator import estimatePositionFromSquare
 import enum
 from robotMovement.tools import tuple_toint
@@ -79,8 +79,8 @@ class ObjectDetection():
         backLeftCorner = None
         goals = estimateGoals(result, frame)
         crossinfo = estimateCross(result, frame)
-        playarea = estimatePlayArea(result, frame)
-        pa_tl, pa_tr, pa_br, pa_bl = estimatePlayAreaIntermediate(result, playarea, frame) #pa_tl = playarea of top left... etc
+        #playarea = estimatePlayArea(result, frame)
+        #pa_tl, pa_tr, pa_br, pa_bl = estimatePlayAreaIntermediate(result, playarea, frame) #pa_tl = playarea of top left... etc
         
         
         
