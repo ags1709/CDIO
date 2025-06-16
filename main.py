@@ -23,9 +23,10 @@ windowsize = (1280,720)
 abort = False
 
 def abortTimer():
-    timerThread = threading.Timer(interval=20, function=setAbort)
+    timerThread = threading.Timer(interval=10, function=setAbort)
 
 def setAbort(): 
+    global abort
     abort = True
 
 def main():
