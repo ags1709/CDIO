@@ -62,6 +62,7 @@ class ObjectDetection():
         # Run YOLO detection on the frame
         # results = self.model(frame, conf=0.5)
         result = self.model(frame, conf=0.5)[0]
+        cap = frame.copy() # RAW CAPTURE! unedited
 
         # Draw detections
         boxes = result.boxes
@@ -77,10 +78,17 @@ class ObjectDetection():
         frontRightCorner = None
         frontLeftCorner = None
         backLeftCorner = None
+<<<<<<< HEAD
         goals = estimateGoals(result, frame)
         crossinfo = estimateCross(result, frame)
         #playarea = estimatePlayArea(result, frame)
         #pa_tl, pa_tr, pa_br, pa_bl = estimatePlayAreaIntermediate(result, playarea, frame) #pa_tl = playarea of top left... etc
+=======
+        crossinfo = estimateCross(result, cap, frame)
+        playarea = estimatePlayArea(result, cap, frame)
+        goals = estimateGoals(playarea, cap, frame)
+        pa_tl, pa_tr, pa_br, pa_bl = estimatePlayAreaIntermediate(result, playarea, frame) #pa_tl = playarea of top left... etc
+>>>>>>> d73925c77efa822732d2633400aeb390c2302a12
         
         
         
@@ -104,12 +112,13 @@ class ObjectDetection():
                 whiteBalls.append(estimatePositionFromSquare(x1, y1, x2, y2))
             elif cls_id == 1:
                 orangeBalls.append(estimatePositionFromSquare(x1, y1, x2, y2))
-                inside, closest = analyze_point_with_polygon(mid, (pa_tl, pa_tr, pa_br, pa_bl))
-                print(f"Ball: {mid}")
-                print(f"Inside: {inside}")
-                if not inside:
-                    print(f"Closest Point: {closest}")
-                    cv2.line(frame, tuple_toint(mid), tuple_toint(closest), (0, 150, 150), 2)
+                if pa_tl is not None:
+                    inside, closest = analyze_point_with_polygon(mid, (pa_tl, pa_tr, pa_br, pa_bl))
+                    print(f"Ball: {mid}")
+                    print(f"Inside: {inside}")
+                    if not inside:
+                        print(f"Closest Point: {closest}")
+                        cv2.line(frame, tuple_toint(mid), tuple_toint(closest), (0, 150, 150), 2)
             elif cls_id == 2:
                 egg = ((x1, y1), (x2, y2))
             elif cls_id == 3:
