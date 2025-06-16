@@ -155,7 +155,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         nearestBall = min(allBalls, key=lambda b: calculateDistance(b, targetBall))
         drift = calculateDistance(nearestBall, targetBall)
 
-        if drift > 30:
+        if drift > 50:
             print("Ball drifted too far — restarting search")
             stateQueue.pop(0)
             stateQueue.append((SEARCH_BALLS, {}))
