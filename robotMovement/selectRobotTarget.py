@@ -7,6 +7,7 @@ import cv2
 from robotMovement.tools import tuple_toint
 import math
 import numpy as np
+from robotMovement.obstacleAvoidance import avoidObstacle
 
 
 stateQueue = [ # Format: (State,variables)
@@ -15,6 +16,10 @@ stateQueue = [ # Format: (State,variables)
 
 # SEARCH_BALLS
 targetBall = None
+# def log_state_transition(state: str, file_path: str = "state_transitions.txt"):
+#     with open(file_path, "a") as f:
+#         f.write(f"{state}\n")
+
 
 def is_objectmiddle_in_circle(objectpos, center, radius):
     #middle = ( (objectpos[0][0] + objectpos[1][0])/2, (objectpos[0][1] + objectpos[1][1])/2 )
@@ -58,6 +63,8 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
     # Use state machine to dictate robots target based on its state
     if state == SEARCH_BALLS:
         # TODO: WARNING! CHECK THAT THE TARGET BALL HAS NOT MOVED TOO MUCH!!!! HERE WE ASSUME IT IS STATIONARY WHICH IS BAAAAD
+        # log_state_transition(SEARCH_BALLS)
+
         if targetBall == None:
             stateJson = stateVariables[0]
             if 'target' in stateJson:
@@ -67,6 +74,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
                 # TODO: Apply cross logic to white also
             elif detectedObjects.get("orangeBalls") and len(detectedObjects["orangeBalls"]) > 0:
                 targetBall = min(detectedObjects["orangeBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
+                print("ORANGE BALL DETECTED!")
                 if is_objectmiddle_in_circle(targetBall, crossInfo.middle_point, crossInfo.size):
                     print("ORANGE BALL IN CROSS!")
                     intermediaryPoint = findIntermediatyCrossPoint(targetBall, crossInfo.middle_point, crossInfo.robot_gap, crossInfo.robot_intermediary_corners)
@@ -75,12 +83,26 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
                     #exactRotationTarget = (crossInfo.angle_rad + np.pi + np.pi) % (2*np.pi) - np.pi
                     exactRotationTarget = calculateAngleOfTwoPoints(intermediaryPoint, targetBall) # TODO: Suboptimal with intermediary point and not robot point used after reaching target but whatever.
                     stateQueue.append((TO_EXACT_ROTATION, exactRotationTarget))
-                    stateQueue.append((SEARCH_BALLS, { 'target': targetBall}))
+                    stateQueue.append((SEARCH_BALLS, ""))
                     stateQueue.append((BACKOFF, intermediaryPoint))
+                
+                else:
+                    targetBall = min(detectedObjects["orangeBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
+
+                # Obstacle avoidance. Checks if obstacle is in the way, and if so, navigate to intermediate point first.
+                if avoidObstacle(robotPos[0], targetBall, detectedObjects["cross"], robotWidth=119) is not None:
+                    print("Obstacle in the way, navigating to intermediary point")
+                    intermediaryPoint = avoidObstacle(robotPos[0], targetBall, detectedObjects["cross"], robotWidth=119)
+                    stateQueue.pop(0)   
+                    stateQueue.append((TO_INTERMEDIARY, intermediaryPoint))
+
             elif not detectedObjects["whiteBalls"] and not detectedObjects["orangeBalls"]:
+                print("No white balls")
                 intermediaryPoint = (detectedObjects["goals"][1][0] - 300, detectedObjects["goals"][1][1])
+                stateQueue.pop(0) 
                 stateQueue.append((TO_INTERMEDIARY, intermediaryPoint))
-                stateQueue.append((TO_GOAL))
+                stateQueue.append((TO_GOAL,))  # Har sat et komma, pga at det er en tuple.
+
 
         
 
@@ -92,10 +114,13 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
             if robotDistance < 25:
                 print("Found ball")
                 stateQueue.pop(0)
+                targetBall = None # Reset target ball
+
 
         # If no balls are present, move to intermediary point in preperation for turning in balls.
 
     if state == TO_INTERMEDIARY: # 
+        # log_state_transition(TO_INTERMEDIARY)
 
         # if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
         #     state = SEARCH_BALLS
@@ -107,24 +132,35 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         cv2.circle(frame, tuple_toint(intermediaryPoint), 11, (50,200,50), 6) # Mark intermediary
         robotDistance = calculateDistance(robotMiddle, intermediaryPoint)
         robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], intermediaryPoint)
-        robotAngle = add_angle(robotToObjectAngle, -robotRotation)   
+        robotAngle = add_angle(robotToObjectAngle, -robotRotation)
 
         if robotDistance <= 50:# and -0.2 < robotAngle < 0.2:
+            print("Reached intermediary point!")
             #state = intermediaryFinishState if intermediaryFinishState is not None else TO_GOAL
             stateQueue.pop(0)
-    
+           
+
     elif state == TO_GOAL:
+        # log_state_transition(TO_GOAL)
+		
         if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
             stateQueue.append((SEARCH_BALLS, {}))
             stateQueue.pop(0)
-        # NOTE: This turns in balls in the small goal. This assumes that the small goal is on the right side of the camera
+        #print("TO_GOAL")
+        # If no balls are present, move to goal.
         goalPos = detectedObjects["goals"][1]
-
         robotDistance = calculateDistance(robotPos[0], goalPos)
         robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], goalPos)
         robotAngle = add_angle(robotToObjectAngle, -robotRotation)
+
+    # Add a condition for arrival if needed
+        if robotDistance <= 50:
+            print("Reached the goal!")
+            stateQueue.pop(0)
         
     elif state == TO_EXACT_ROTATION:
+        # log_state_transition(TO_EXACT_ROTATION)
+
         exactRotationTarget = stateVariables[0]
         robotAngle = add_angle(exactRotationTarget, -robotRotation)  # TODO: Check if this works lol
 
