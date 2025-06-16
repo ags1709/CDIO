@@ -36,7 +36,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
     TO_INTERMEDIARY = "TO_INTERMEDIARY"
     TO_GOAL = "TO_GOAL"
     TO_EXACT_ROTATION = "TO_EXACT_ROTATION"
-
+    COLLECT_BALL = "COLLECT_BALL"
     global targetBall; global stateQueue
         
     robotDistance = 0
@@ -78,13 +78,13 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
                     #exactRotationTarget = (crossInfo.angle_rad + np.pi + np.pi) % (2*np.pi) - np.pi
                     exactRotationTarget = calculateAngleOfTwoPoints(intermediaryPoint, targetBall) # TODO: Suboptimal with intermediary point and not robot point used after reaching target but whatever.
                     stateQueue.append((TO_EXACT_ROTATION, exactRotationTarget))
-                    stateQueue.append((SEARCH_BALLS, ""))
+                    stateQueue.append((COLLECT_BALL, ""))
             if not detectedObjects["whiteBalls"] and not detectedObjects["orangeBalls"]:
                 print("No white balls")
                 intermediaryPoint = (detectedObjects["goals"][1][0] - 300, detectedObjects["goals"][1][1])
                 stateQueue.pop(0) 
                 stateQueue.append((TO_INTERMEDIARY, intermediaryPoint))
-                stateQueue.append((TO_GOAL,))  # Har sat et komma, pga at det er en tuple.
+                stateQueue.append((TO_GOAL, None))
 
 
         
@@ -97,7 +97,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
             if robotDistance < 25:
                 print("Found ball")
                 stateQueue.pop(0)
-                targetBall = None # Reset target ball
+                stateQueue.append((COLLECT_BALL, ""))  # Go to collect ball state
 
 
         # If no balls are present, move to intermediary point in preperation for turning in balls.
@@ -121,7 +121,39 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
             print("Reached intermediary point!")
             #state = intermediaryFinishState if intermediaryFinishState is not None else TO_GOAL
             stateQueue.pop(0)
-           
+
+
+    if state == COLLECT_BALL:
+        allBalls = detectedObjects.get("whiteBalls", []) + detectedObjects.get("orangeBalls", [])
+
+        if targetBall is None:
+            print("No target ball, going to search balls")
+            stateQueue.pop(0)
+            stateQueue.append((SEARCH_BALLS, ""))
+            return robotDistance, robotAngle, state
+        
+        nearestBall = min(allBalls, key=lambda b: calculateDistance(b, targetBall))
+        drift = calculateDistance(nearestBall, targetBall)
+        if drift > 30:
+            targetBall = nearestBall
+            stateQueue.pop(0)
+            stateQueue.append((SEARCH_BALLS, ""))  # Go back to searching for balls
+            return robotDistance, robotAngle, state
+        
+        elif drift < 10:
+            targetBall = nearestBall
+
+        # Calculate distance and angle to the selected ball
+        robotDistance = calculateDistance(robotPos[0], targetBall)
+        robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], targetBall)
+        robotAngle = add_angle(robotToObjectAngle, -robotRotation)
+            
+        if robotDistance <= 25:
+            print("Collected ball!")
+            targetBall = None
+            stateQueue.pop(0)
+            stateQueue.append((SEARCH_BALLS, ""))  # Go back to searching for balls
+
 
     elif state == TO_GOAL:
         # log_state_transition(TO_GOAL)
