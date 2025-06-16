@@ -79,7 +79,7 @@ def calculateRobotPositionFlexible(frontLeftCorner, frontRightCorner, backLeftCo
 
 def correctPerspective(point):
     factor = (camera_height - corner_height) / (camera_height - target_height)
-    x, y = 1920 / 2, 1080 / 2
+    x, y = frame_w / 2, frame_h / 2
     return (factor * (point[0]  - x) + x, factor * (point[1]  - y) + y)
 
 # Help from ChatGPT

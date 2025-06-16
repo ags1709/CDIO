@@ -7,6 +7,7 @@ import cv2
 from robotMovement.tools import tuple_toint
 import math
 import numpy as np
+from robotMovement.obstacleAvoidance import avoidObstacle
 
 
 stateQueue = [ # Format: (State,variables)
@@ -79,8 +80,17 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
                     exactRotationTarget = calculateAngleOfTwoPoints(intermediaryPoint, targetBall) # TODO: Suboptimal with intermediary point and not robot point used after reaching target but whatever.
                     stateQueue.append((TO_EXACT_ROTATION, exactRotationTarget))
                     stateQueue.append((SEARCH_BALLS, ""))
+                
                 else:
                     targetBall = min(detectedObjects["orangeBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
+
+                # Obstacle avoidance. Checks if obstacle is in the way, and if so, navigate to intermediate point first.
+                if avoidObstacle(robotPos[0], targetBall, detectedObjects["cross"], robotWidth=119) is not None:
+                    print("Obstacle in the way, navigating to intermediary point")
+                    intermediaryPoint = avoidObstacle(robotPos[0], targetBall, detectedObjects["cross"], robotWidth=119)
+                    stateQueue.pop(0)   
+                    stateQueue.append((TO_INTERMEDIARY, intermediaryPoint))
+
             elif not detectedObjects["whiteBalls"] and not detectedObjects["orangeBalls"]:
                 print("No white balls")
                 intermediaryPoint = (detectedObjects["goals"][1][0] - 300, detectedObjects["goals"][1][1])
@@ -117,7 +127,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         cv2.circle(frame, tuple_toint(intermediaryPoint), 11, (50,200,50), 6) # Mark intermediary
         robotDistance = calculateDistance(robotMiddle, intermediaryPoint)
         robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], intermediaryPoint)
-        robotAngle = add_angle(robotToObjectAngle, -robotRotation)   
+        robotAngle = add_angle(robotToObjectAngle, -robotRotation)
 
         if robotDistance <= 50:# and -0.2 < robotAngle < 0.2:
             print("Reached intermediary point!")
