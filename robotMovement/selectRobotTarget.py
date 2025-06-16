@@ -36,7 +36,8 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
     TO_INTERMEDIARY = "TO_INTERMEDIARY"
     TO_GOAL = "TO_GOAL"
     TO_EXACT_ROTATION = "TO_EXACT_ROTATION"
-    COLLECT_BALL = "COLLECT_BALL"    BACKOFF = "BACKOFF"
+    COLLECT_BALL = "COLLECT_BALL"    
+    BACKOFF = "BACKOFF"
 
     global targetBall; global stateQueue
         
@@ -102,7 +103,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
             if robotDistance < 25:
                 print("Found ball")
                 stateQueue.pop(0)
-                stateQueue.append((COLLECT_BALL, ""))  # Go to collect ball state
+                stateQueue.append((COLLECT_BALL, {'target': targetBall}))   # Go to collect ball state
 
 
         # If no balls are present, move to intermediary point in preperation for turning in balls.
@@ -134,19 +135,26 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         if targetBall is None:
             print("No target ball, going to search balls")
             stateQueue.pop(0)
-            stateQueue.append((SEARCH_BALLS, ""))
+            stateQueue.append((SEARCH_BALLS, {'target': None}))  # Go back to searching for balls
             return robotDistance, robotAngle, state
         
+        stateVars = stateVariables[0]
+        targetBall = stateVars.get("target", None)
+
         nearestBall = min(allBalls, key=lambda b: calculateDistance(b, targetBall))
         drift = calculateDistance(nearestBall, targetBall)
+
         if drift > 30:
-            targetBall = nearestBall
+            print("Ball drifted too far – resetting")
             stateQueue.pop(0)
-            stateQueue.append((SEARCH_BALLS, ""))  # Go back to searching for balls
+            stateQueue.append((SEARCH_BALLS, {}))
             return robotDistance, robotAngle, state
-        
+
         elif drift < 10:
+            # Accept updated position of the same ball
+            stateVars["target"] = nearestBall
             targetBall = nearestBall
+
 
         # Calculate distance and angle to the selected ball
         robotDistance = calculateDistance(robotPos[0], targetBall)
