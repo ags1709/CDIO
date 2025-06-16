@@ -2,7 +2,7 @@ import cv2
 import socket
 from robotMovement.distanceBetweenObjects import calculateDistance
 from robotMovement.angleOfRotationCalculator import calculateAngleOfRotation
-from robotMovement.selectRobotTarget import calcDistAndAngleToTarget, abort
+from robotMovement.selectRobotTarget import calcDistAndAngleToTarget, abort, setAbort
 from robotMovement.movementController import calculateSpeedAndRotation
 from robotMovement.determineAuxiliaryActions import determineAuxiliaryActions
 from robotMovement.calculateRobotPosition import calculateRobotPositionFlexible
@@ -22,11 +22,8 @@ windowsize = (1280,720)
 
 
 def abortTimer():
-    threading.Timer(interval=10, function=setAbort).start()
-    
-def setAbort(): 
-    global abort
-    abort = True
+    threading.Timer(interval=5, function=setAbort).start()
+
 
 def main():
     abortTimer()
@@ -36,7 +33,7 @@ def main():
         client_socket.connect(("192.168.137.112", 12358))
 
     # Set image detection model
-    od = ObjectDetection(model="imageRecognition/imageModels/best.pt", detection_mode=DetectionMode.CAMERA, capture_index=2)
+    od = ObjectDetection(model="imageRecognition/imageModels/best.pt", detection_mode=DetectionMode.CAMERA, capture_index=3)
     #od = ObjectDetection(model="imageRecognition/yolov8s_060625.pt", detection_mode=DetectionMode.IMAGE, image="test/batch5_picture1.png")
     
     # Set initial robot state. State machine can be found in robotMovement/selectRobotTarget.py

@@ -11,6 +11,9 @@ from robotMovement.obstacleAvoidance import avoidObstacle
 
 abort = False
 
+def setAbort(): 
+    global abort
+    abort = True
 
 stateQueue = [ # Format: (State,variables)
     
