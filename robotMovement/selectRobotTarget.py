@@ -146,35 +146,35 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         targetBall = stateVars.get("target", None)
         allBalls = detectedObjects.get("whiteBalls", []) + detectedObjects.get("orangeBalls", [])
 
-    if targetBall is None or not allBalls:
-        print("No target ball or no balls visible — reset")
-        stateQueue.pop(0)
-        stateQueue.append((SEARCH_BALLS, {}))
-        return robotDistance, robotAngle, state
+        if targetBall is None or not allBalls:
+            print("No target ball or no balls visible — reset")
+            stateQueue.pop(0)
+            stateQueue.append((SEARCH_BALLS, {}))
+            return robotDistance, robotAngle, state
 
-    nearestBall = min(allBalls, key=lambda b: calculateDistance(b, targetBall))
-    drift = calculateDistance(nearestBall, targetBall)
+        nearestBall = min(allBalls, key=lambda b: calculateDistance(b, targetBall))
+        drift = calculateDistance(nearestBall, targetBall)
 
-    if drift > 30:
-        print("Ball drifted too far — restarting search")
-        stateQueue.pop(0)
-        stateQueue.append((SEARCH_BALLS, {}))
-        return robotDistance, robotAngle, state
-    elif drift < 10:
-        # Accept new nearest position as the true ball
-        stateVars["target"] = nearestBall
-        targetBall = nearestBall
+        if drift > 30:
+            print("Ball drifted too far — restarting search")
+            stateQueue.pop(0)
+            stateQueue.append((SEARCH_BALLS, {}))
+            return robotDistance, robotAngle, state
+        elif drift < 10:
+            # Accept new nearest position as the true ball
+            stateVars["target"] = nearestBall
+            targetBall = nearestBall
 
-    # Calculate movement toward the ball
-    robotDistance = calculateDistance(robotPos[0], targetBall)
-    robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], targetBall)
-    robotAngle = add_angle(robotToObjectAngle, -robotRotation)
+        # Calculate movement toward the ball
+        robotDistance = calculateDistance(robotPos[0], targetBall)
+        robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], targetBall)
+        robotAngle = add_angle(robotToObjectAngle, -robotRotation)
 
-    if robotDistance <= 25:
-        print("Ball collected!")
-        stateQueue.pop(0)
-        stateQueue.append((SEARCH_BALLS, {}))
-        return robotDistance, robotAngle, state
+        if robotDistance <= 25:
+            print("Ball collected!")
+            stateQueue.pop(0)
+            stateQueue.append((SEARCH_BALLS, {}))
+            return robotDistance, robotAngle, state
 
     elif state == TO_GOAL:
         # log_state_transition(TO_GOAL)
