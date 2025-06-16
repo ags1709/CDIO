@@ -8,6 +8,7 @@ from robotMovement.tools import tuple_toint
 import math
 import numpy as np
 from robotMovement.obstacleAvoidance import avoidObstacle
+import time
 
 
 stateQueue = [ # Format: (State,variables)
@@ -121,12 +122,14 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         # Calculate distance and angle to the selected ball
         if state() is SEARCH_BALLS and targetBall and robotPos[0] is not None and robotPos[1] is not None:
             robotDistance = calculateDistance(robotPos[0], targetBall)
+            print(robotDistance)
             robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], targetBall)
             robotAngle = add_angle(robotToObjectAngle, -robotRotation)
-            if robotDistance < 25:
+            if robotDistance < 64:
                 print("Found ball")
                 stateQueue.pop(0)
                 targetBall = None # Reset target ball
+                #time.sleep(0.5)
 
 
         # If no balls are present, move to intermediary point in preperation for turning in balls.
@@ -184,13 +187,14 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
     elif state() == BACKOFF:
         # Backoff to point
         pixelBackoffPoint = stateVariables()[0]
-        robotDistance = calculateDistance(robotPos[1], pixelBackoffPoint)
+        robotDistance = calculateDistance(robotPos[0], pixelBackoffPoint)
         #robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[1], pixelBackoffPoint)
         #robotAngle = add_angle(robotToObjectAngle, -robotRotation)
         #robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], pixelBackoffPoint)
         #robotAngle = add_angle(robotToObjectAngle, -robotRotation) 
         # TODO: Readd robot angle so it does not fuck with the distance and shit
-        if robotDistance <= 30:
+        if robotDistance <= 20:
+            print("Reached BACKOFF point")
             stateQueue.pop(0)
             
     

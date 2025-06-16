@@ -77,7 +77,7 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
     elif state == "BACKOFF":
         kp_speed = -0.15
 
-        goalDistanceFromBall = 10
+        goalDistanceFromBall = 0
         forwardSpeed = min(-5, max(-80, kp_speed * (distanceFromTarget - goalDistanceFromBall)))
         turnSpeed = 0#getTurnSpeed(angleToTarget)
     
