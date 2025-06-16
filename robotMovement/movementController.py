@@ -5,7 +5,7 @@ def getTurnSpeed(angleToTarget: float):
     # turn = max(-100, min(100, angleToTarget**5*2+angleToTarget*40)) # x^(3)*40+x*50
     #turn += 2 if turn>0 else -2
     #turn = np.clip(turn, -100, 100)
-    turn = angleToTarget * kpTurn
+    turn = np.clip(angleToTarget * kpTurn, min=-100, max=100)
     return turn
 
 # PID controller
@@ -73,6 +73,13 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
         forwardSpeed = getTurnSpeed(angleToTarget)/8
         forwardSpeed += 3 if forwardSpeed>0 else -3
         turnSpeed = -100 if angleToTarget > 0 else 100
+        
+    elif state == "BACKOFF":
+        kp_speed = -0.15
+
+        goalDistanceFromBall = 10
+        forwardSpeed = min(-5, max(-80, kp_speed * (distanceFromTarget - goalDistanceFromBall)))
+        turnSpeed = 0#getTurnSpeed(angleToTarget)
     
 
     return (turnSpeed, forwardSpeed)
