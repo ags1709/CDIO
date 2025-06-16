@@ -1,5 +1,4 @@
 import cv2
-from ultralytics import YOLO
 import numpy as np
 import math
 from robotMovement.tools import tuple_toint
