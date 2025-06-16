@@ -1,9 +1,11 @@
 import numpy as np
 
 def getTurnSpeed(angleToTarget: float):
-    turn = max(-100, min(100, angleToTarget**5*2+angleToTarget*30)) # x^(3)*40+x*50
+    kpTurn = 50
+    # turn = max(-100, min(100, angleToTarget**5*2+angleToTarget*40)) # x^(3)*40+x*50
     #turn += 2 if turn>0 else -2
     #turn = np.clip(turn, -100, 100)
+    turn = angleToTarget * kpTurn
     return turn
 
 # PID controller
@@ -22,6 +24,30 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
         # turnSpeed = getTurnSpeed(angleToTarget) 
 
         # New approach to movement: Turn before moving
+        if angleToTarget < -0.0872665: # 5 degrees
+            turnSpeed = -100
+            forwardSpeed = 2
+            if angleToTarget < -0.52: # 30 degrees
+                forwardSpeed = 15
+        elif angleToTarget >= 0.0872665:
+            turnSpeed = 100
+            forwardSpeed = 2
+            if angleToTarget > 0.52:
+                forwardSpeed = 15
+        else: 
+            # turnSpeed = 0
+            turnSpeed = getTurnSpeed(angleToTarget)
+            forwardSpeed = 40
+
+
+    elif state == "TO_INTERMEDIARY":
+        kp_speed = 0.15
+
+        goalDistanceFromBall = 10
+        # forwardSpeed = max(5, min(80, kp_speed * (distanceFromTarget - goalDistanceFromBall)))
+        # turnSpeed = getTurnSpeed(angleToTarget)
+
+        # New approach to movement
         if angleToTarget < -0.0872665:
             turnSpeed = -100
             forwardSpeed = 2
@@ -34,15 +60,7 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
                 forwardSpeed = 15
         else: 
             turnSpeed = 0
-            forwardSpeed = 40
-
-
-    elif state == "TO_INTERMEDIARY":
-        kp_speed = 0.15
-
-        goalDistanceFromBall = 10
-        forwardSpeed = max(5, min(80, kp_speed * (distanceFromTarget - goalDistanceFromBall)))
-        turnSpeed = getTurnSpeed(angleToTarget)
+            forwardSpeed = 20
 
     elif state == "TO_GOAL":
         kp_speed = 0.15

@@ -2,6 +2,8 @@ import cv2
 from ultralytics import YOLO
 from imageRecognition.positionEstimator import estimateGoals, estimateCross, estimatePlayArea, estimatePlayAreaIntermediate, analyze_point_with_polygon, CrossInfo
 from imageRecognition.positionEstimator import estimatePositionFromSquare
+from imageRecognition.positionEstimator import tuple_toint
+from robotMovement.calculateRobotPosition import correctPerspective
 import enum
 from robotMovement.tools import tuple_toint
 
@@ -120,13 +122,16 @@ class ObjectDetection():
                 cross = ((x1, y1), (x2, y2))
             elif cls_id == 5:
                 backRightCorner = estimatePositionFromSquare(x1, y1, x2, y2)
+                cv2.circle(frame, tuple_toint(correctPerspective(backRightCorner)), 10, (0,0,255), 10)
             elif cls_id == 6:
                 frontRightCorner = estimatePositionFromSquare(x1, y1, x2, y2)
+                cv2.circle(frame, tuple_toint(correctPerspective(frontRightCorner)), 10, (0,0,255), 10)
             elif cls_id == 7:
                 frontLeftCorner = estimatePositionFromSquare(x1, y1, x2, y2)
+                cv2.circle(frame, tuple_toint(correctPerspective(frontLeftCorner)), 10, (0,0,255), 10)
             elif cls_id == 8:
                 backLeftCorner = estimatePositionFromSquare(x1, y1, x2, y2)
-
+                cv2.circle(frame, tuple_toint(correctPerspective(backLeftCorner)), 10, (0,0,255), 10)
 
         # A dictionary mapping names of objects we want to a list of their positions, each position being a tuple with 2 points
         # The points being respectively the upperleft and bottomright corner of their bounding box. Each point is itself a tuple of 2 integers.
