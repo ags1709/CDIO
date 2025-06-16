@@ -81,6 +81,9 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
                     stateQueue.append((TO_EXACT_ROTATION, exactRotationTarget))
                     stateQueue.append((SEARCH_BALLS, ""))
                 
+                else:
+                    targetBall = min(detectedObjects["orangeBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
+
                 # Obstacle avoidance. Checks if obstacle is in the way, and if so, navigate to intermediate point first.
                 if avoidObstacle(robotPos[0], targetBall, detectedObjects["cross"], robotWidth=119) is not None:
                     print("Obstacle in the way, navigating to intermediary point")
@@ -88,7 +91,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
                     stateQueue.pop(0)   
                     stateQueue.append((TO_INTERMEDIARY, intermediaryPoint))
 
-            if not detectedObjects["whiteBalls"] and not detectedObjects["orangeBalls"]:
+            elif not detectedObjects["whiteBalls"] and not detectedObjects["orangeBalls"]:
                 print("No white balls")
                 intermediaryPoint = (detectedObjects["goals"][1][0] - 300, detectedObjects["goals"][1][1])
                 stateQueue.pop(0) 
