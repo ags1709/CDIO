@@ -12,13 +12,13 @@ class CrossInfo:
     angle_rad: float
     robot_intermediary_corners: list
 
-def estimateGoals(playarea: list[np.ndarray], cap):
+def estimateGoals(playarea: list[np.ndarray], cap, frame):
     if playarea is not None:        
         playarea
         leftGoal = (playarea[0] + playarea[3]) / 2
         rightGoal = (playarea[1] + playarea[2]) / 2
-        cv2.circle(cap, tuple(map(int, leftGoal)), 30, (200, 150, 0), 3)
-        cv2.circle(cap, tuple(map(int, rightGoal)), 30, (200, 150, 0), 3)
+        cv2.circle(frame, tuple(map(int, leftGoal)), 30, (200, 150, 0), 3)
+        cv2.circle(frame, tuple(map(int, rightGoal)), 30, (200, 150, 0), 3)
         return [leftGoal, rightGoal]
     else:
         print("WARNING! No playfield detected, no goal estimation done")
@@ -30,7 +30,7 @@ def estimatePositionFromSquare(x1,y1,x2,y2):
     return (xCoordinate, yCoordinate)
 
 
-def estimateCross(result, cap) -> CrossInfo:
+def estimateCross(result, cap, frame) -> CrossInfo:
     boxes = result.boxes
     id_cross = 4
     cross_box = [x for x in boxes if x.cls == id_cross]
@@ -52,22 +52,17 @@ def estimateCross(result, cap) -> CrossInfo:
         x2_abs = int(x2_abs/100*(100+scalepct))
         
         
-        crop_frame = cap[y1_abs:y2_abs,x1_abs:x2_abs]
+        crop_cap = cap[y1_abs:y2_abs,x1_abs:x2_abs]
+        crop_frame = frame[y1_abs:y2_abs,x1_abs:x2_abs]
         #cv2.imshow("crop frame", crop_frame)
         
         #gray = cv2.cvtColor(crop_frame, cv2.COLOR_BGR2GRAY)
-        b = crop_frame[:, :, 0].astype(np.float32)
-        g = crop_frame[:, :, 1].astype(np.float32)
-        r = crop_frame[:, :, 2].astype(np.float32)
+        b = crop_cap[:, :, 0].astype(np.float32)
+        g = crop_cap[:, :, 1].astype(np.float32)
+        r = crop_cap[:, :, 2].astype(np.float32)
         # Create a mask where red is strong and green/blue are weak relative to red
         red_mask = ((r > 115) & (g < r / 1.8) & (b < r / 1.8)).astype(np.uint8) * 255
         red_thresh = cv2.GaussianBlur(red_mask, (5, 5), 0)
-        #condition = (r > 110) & (g < r / 1.6) & (b < r / 1.6)
-        #red_thresh = condition.astype(np.uint8) * 255  # Convert to binary mask
-        # Apply the mask to keep only the red pixels
-        # red_thresh = cv2.bitwise_and(crop_frame, crop_frame, mask=mask)
-        # red_thresh = cv2.cvtColor(red_thresh, cv2.COLOR_BGR2GRAY)
-        #red_thresh = cv2.GaussianBlur(red_thresh, (5, 5), 0)
         
 
         edges = cv2.Canny(red_thresh, 60, 255) # Note: this is a 2d array of either 0 or 255 as an int
@@ -84,25 +79,6 @@ def estimateCross(result, cap) -> CrossInfo:
             mask[b_y1:b_y2, b_x1:b_x2] = 0
             # Apply the mask
             edges = cv2.bitwise_and(edges, mask)
-        
-        #contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-        #all_points = np.vstack([cnt.reshape(-1, 2) for cnt in contours])
-
-        # # Apply PCA to the contour points
-        # mean, eigenvectors = cv2.PCACompute(all_points.astype(np.float32), mean=np.array([]))
-        
-        # # The angle of the first principal component
-        # dx, dy = eigenvectors[0]
-        # angle_rad = math.atan2(dy, dx)
-        # angle_deg = math.degrees(angle_rad)
-
-        # # Normalize angle to [0, 180)
-        # angle_deg = (angle_deg+45) % 90
-        
-        # # Optional: Draw PCA direction
-        # center = tuple(mean[0].astype(int))
-        # direction = (int(center[0] + dx*100), int(center[1] + dy*100))
-        # cv2.arrowedLine(crop_frame, center, direction, (0, 255, 0), 3)
         
         contours, _ = cv2.findContours(red_thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) # WARNING: Perhaps use red_thresh instead of edges here?
         if contours == None:
@@ -140,10 +116,10 @@ def estimateCross(result, cap) -> CrossInfo:
         # Draw circle in cross
         info.middle_point = ( int(mid_x), int(mid_y) )
         info.size = int((x2_abs-x1_abs)/2)
-        cv2.circle(cap, info.middle_point, info.size, (100,100,100), 2)
-        cv2.circle(cap, info.middle_point, info.robot_gap, (130,130,130), 2)
+        cv2.circle(frame, info.middle_point, info.size, (100,100,100), 2)
+        cv2.circle(frame, info.middle_point, info.robot_gap, (130,130,130), 2)
         for im in info.robot_intermediary_corners:
-            cv2.circle(cap, tuple_toint(im[1]), 2, (200,50,500), 2)
+            cv2.circle(frame, tuple_toint(im[1]), 2, (200,50,500), 2)
         #cv2.putText(cap, "Obstacle", (x1_abs, y1_abs), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (100,100,100), 2, cv2.LINE_AA)
     
         # Show
@@ -185,7 +161,7 @@ def intersection_from_2pts_np(p1, p2, p3, p4):
     except np.linalg.LinAlgError:
         return None
 
-def estimatePlayArea(result, cap) -> list[np.ndarray]:
+def estimatePlayArea(result, cap, frame) -> list[np.ndarray]:
     h, w = cap.shape[:2]
     cx, cy = w // 2, h // 2
     w8, h8 = w // 8, h // 8
@@ -194,6 +170,9 @@ def estimatePlayArea(result, cap) -> list[np.ndarray]:
     b, g, r = cap[:, :, 0], cap[:, :, 1], cap[:, :, 2]
     red_mask = ((r > 115) & (g < r / 1.8) & (b < r / 1.8)).astype(np.uint8) * 255
     red_mask = cv2.GaussianBlur(red_mask, (5, 5), 0)
+    
+    # Show
+    cv2.imshow("Red channel", red_mask)
 
     # Contours
     contours, _ = cv2.findContours(red_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -226,7 +205,7 @@ def estimatePlayArea(result, cap) -> list[np.ndarray]:
     bl_bottom = filter_and_pick(lambda p: p[0] < w8*2 and p[1] > h*6//8, lambda p: p[1], reverse=True)
     bl_left   = filter_and_pick(lambda p: p[0] < w8*2 and p[1] > h*6//8, lambda p: p[0])
 
-    extremities = [tl_top, tl_left, tr_top, tr_right, br_bottom, br_right, bl_bottom, bl_left]
+
     
     # Unpack for clarity
     # tl_top, tl_left, tr_top, tr_right, br_bottom, br_right, bl_bottom, bl_left = extremities
@@ -246,6 +225,19 @@ def estimatePlayArea(result, cap) -> list[np.ndarray]:
         ((bl_left, br_right), (bl_bottom, tl_top)),
     ]
     #print(corner_lines)
+    
+    extremities = [tl_top, tl_left, tr_top, tr_right, br_bottom, br_right, bl_bottom, bl_left]
+    # Draw points before checking for none (with try catch)
+    for i, pt in enumerate(extremities):
+        try:
+            pt = tuple(map(int, pt))
+            cv2.circle(frame, pt, 3, (0, 255, 255), -1)
+        except:
+            pass
+    
+    if any([extremitie is None for extremitie in extremities]):
+        print("WARNING! at least one point in play area not found (est playarea)")
+        return None
 
 
     # Compute actual corner points
@@ -288,8 +280,8 @@ def estimatePlayArea(result, cap) -> list[np.ndarray]:
     # Draw corners
     for i, pt in enumerate(corner_points):
         pt = tuple(map(int, pt))
-        cv2.circle(cap, pt, 10, (0, 255, 255), -1)
-        cv2.putText(cap, f"Corner {i}", (pt[0] + 5, pt[1] - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+        cv2.circle(frame, pt, 10, (0, 255, 255), -1)
+        cv2.putText(frame, f"Corner {i}", (pt[0] + 5, pt[1] - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
 
     # # Draw lines
     # print(corner_points)
@@ -308,7 +300,10 @@ def estimatePlayAreaIntermediate(result, playarea, frame):
     margin = 150
 
     #playarea = np.array(playarea)
-
+    if playarea is None:
+        print("WARNING! Play area is none, returning (est intermediate)")
+        return None,None,None,None 
+    
     tl = offset_vertex(playarea[0], playarea[1], playarea[3], margin)
     tr = offset_vertex(playarea[1], playarea[2], playarea[0], margin)
     br = offset_vertex(playarea[2], playarea[3], playarea[1], margin)
