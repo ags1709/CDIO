@@ -55,8 +55,10 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
     #state = SEARCH_BALLS
     #targetBall = None
 
+    global abort
     if abort:
         goToIntermidararyPoint(detectedObjects)
+        abort = False
 
     # If no state has been set yet, put robot in ball searching state.
     if len(stateQueue) == 0:
