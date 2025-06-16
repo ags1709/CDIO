@@ -8,7 +8,9 @@ from robotMovement.tools import tuple_toint
 import math
 import numpy as np
 from robotMovement.obstacleAvoidance import avoidObstacle
-from main import abort
+
+abort = False
+
 
 stateQueue = [ # Format: (State,variables)
     

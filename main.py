@@ -2,7 +2,7 @@ import cv2
 import socket
 from robotMovement.distanceBetweenObjects import calculateDistance
 from robotMovement.angleOfRotationCalculator import calculateAngleOfRotation
-from robotMovement.selectRobotTarget import calcDistAndAngleToTarget
+from robotMovement.selectRobotTarget import calcDistAndAngleToTarget, abort
 from robotMovement.movementController import calculateSpeedAndRotation
 from robotMovement.determineAuxiliaryActions import determineAuxiliaryActions
 from robotMovement.calculateRobotPosition import calculateRobotPositionFlexible
@@ -20,7 +20,6 @@ ENABLE_SOCKET = True
 windowsize = (1280,720)
 
 
-abort = False
 
 def abortTimer():
     threading.Timer(interval=10, function=setAbort).start()
