@@ -304,7 +304,7 @@ def estimatePlayAreaIntermediate(result, playarea, frame):
     #playarea = np.array(playarea)
     if playarea is None:
         print("WARNING! Play area is none, returning (est intermediate)")
-        return None,None,None,None 
+        return None
     
     tl = offset_vertex(playarea[0], playarea[1], playarea[3], margin)
     tr = offset_vertex(playarea[1], playarea[2], playarea[0], margin)

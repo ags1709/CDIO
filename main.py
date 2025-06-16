@@ -14,7 +14,7 @@ import traceback
 import logging
 logging.getLogger('ultralytics').setLevel(logging.ERROR)
 
-ENABLE_SOCKET = True
+ENABLE_SOCKET = False
 windowsize = (1280,720)
 
 def main():
@@ -24,8 +24,8 @@ def main():
         client_socket.connect(("192.168.137.112", 12358))
 
     # Set image detection model
-    od = ObjectDetection(model="imageRecognition/imageModels/best.pt", detection_mode=DetectionMode.CAMERA, capture_index=2)
-    #od = ObjectDetection(model="imageRecognition/yolov8s_060625.pt", detection_mode=DetectionMode.IMAGE, image="test/batch5_picture1.png")
+    #od = ObjectDetection(model="imageRecognition/imageModels/best.pt", detection_mode=DetectionMode.CAMERA, capture_index=2)
+    od = ObjectDetection(model="imageRecognition/imageModels/best.pt", detection_mode=DetectionMode.IMAGE, image="test/NPJ3.png")
     
     # Set initial robot state. State machine can be found in robotMovement/selectRobotTarget.py
 
@@ -35,8 +35,8 @@ def main():
 
         # Calculate robots distance and angle to target, and set its state
         try:
-            frame, detectedObjects, crossInfo = od.detectAll()
-            distanceToTarget, angleToTarget, robotState = calcDistAndAngleToTarget(detectedObjects, crossInfo, frame)
+            frame, detectedObjects, crossInfo, playAreaIntermediate = od.detectAll()
+            distanceToTarget, angleToTarget, robotState = calcDistAndAngleToTarget(detectedObjects, crossInfo, playAreaIntermediate, frame)
             cv2.putText(frame, f"State: {robotState}", (20, 60), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 0), 4)
             
             # Determine whether to hand balls in or not
@@ -59,10 +59,11 @@ def main():
         frame = cv2.resize(frame, windowsize)
         cv2.imshow("YOLOv8 Live Detection", frame)
         while od.mode == DetectionMode.IMAGE:
-            if cv2.waitKey(1) & 0xFF == ord('q'):
+            k = cv2.waitKey(1) & 0xFF
+            if k == ord('q'):
                 od.close()
                 exit(0)
-            if cv2.waitKey(1) &  0xFF == ord('n'):
+            elif k == ord('n'):
                 break
         
         
