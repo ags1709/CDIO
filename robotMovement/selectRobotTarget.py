@@ -23,7 +23,7 @@ targetBall = None
 #         f.write(f"{state}\n")
 
 
-def goToIntermidararyPoint(detectedObjects):
+def goToGoalIntermidararyPoint(detectedObjects):
     intermediaryPoint = (detectedObjects["goals"][1][0] - 300, detectedObjects["goals"][1][1])
     stateQueue.clear()
     stateQueue.append(("TO_INTERMEDIARY", intermediaryPoint))
@@ -56,7 +56,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
     #targetBall = None
 
     if abort:
-        goToIntermidararyPoint(detectedObjects)
+        goToGoalIntermidararyPoint(detectedObjects)
         abort = False
 
     # If no state has been set yet, put robot in ball searching state.
@@ -105,7 +105,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
 
             elif not detectedObjects["whiteBalls"] and not detectedObjects["orangeBalls"]:
                 print("No white balls")
-                goToIntermidararyPoint(detectedObjects)
+                goToGoalIntermidararyPoint(detectedObjects)
 
 
         
