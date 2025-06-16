@@ -40,14 +40,15 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
     COLLECT_BALL = "COLLECT_BALL"    
     BACKOFF = "BACKOFF"
 
-    global targetBall; global stateQueue
+    #global targetBall;
+    global stateQueue
         
     robotDistance = 0
     robotAngle = 0
     
     # TEMP!
     #state = SEARCH_BALLS
-    #targetBall = None
+    targetBall = None
 
     # If no state has been set yet, put robot in ball searching state.
     if len(stateQueue) == 0:
@@ -99,7 +100,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
 
             elif not detectedObjects["whiteBalls"] and not detectedObjects["orangeBalls"]:
                 print("No white balls")
-                intermediaryPoint = (detectedObjects["goals"][1][0] - 300, detectedObjects["goals"][1][1])
+                intermediaryPoint = (detectedObjects["goals"][0][0] + 300, detectedObjects["goals"][0][1])
                 stateQueue.pop(0) 
                 stateQueue.append((TO_INTERMEDIARY, intermediaryPoint))
                 stateQueue.append((TO_GOAL, None))
@@ -145,10 +146,14 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         
         allBalls = detectedObjects.get("whiteBalls", []) + detectedObjects.get("orangeBalls", [])
 
+        stateJson = stateVariables[0]
+        if 'target' in stateJson:
+            targetBall = stateJson['target']
+
         if targetBall is None or not allBalls:
             print("No target ball or no balls visible — reset")
             stateQueue.pop(0)
-            targetBall = None
+            #targetBall = None
             stateQueue.append((SEARCH_BALLS, {}))
             return robotDistance, robotAngle, state
 
@@ -163,13 +168,14 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         elif drift < 15:
             # Accept new nearest position as the true ball
             targetBall = nearestBall
+            stateJson['target'] = nearestBall
 
         # Calculate movement toward the ball
         robotDistance = calculateDistance(robotPos[0], targetBall)
         robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], targetBall)
         robotAngle = add_angle(robotToObjectAngle, -robotRotation)
 
-        if robotDistance <= 25:
+        if robotDistance <= 15:
             print("Ball collected!")
             stateQueue.pop(0)
             stateQueue.append((SEARCH_BALLS, {}))
@@ -183,7 +189,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
             stateQueue.pop(0)
         #print("TO_GOAL")
         # If no balls are present, move to goal.
-        goalPos = detectedObjects["goals"][1]
+        goalPos = detectedObjects["goals"][0]
         robotDistance = calculateDistance(robotPos[0], goalPos)
         robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], goalPos)
         robotAngle = add_angle(robotToObjectAngle, -robotRotation)
