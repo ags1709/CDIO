@@ -22,7 +22,7 @@ windowsize = (1280,720)
 
 
 def abortTimer():
-    threading.Timer(interval=20, function=setAbort).start()
+    threading.Timer(interval=420, function=setAbort).start()
 
 
 def main():
