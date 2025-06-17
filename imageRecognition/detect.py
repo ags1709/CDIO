@@ -50,7 +50,7 @@ class ObjectDetection():
             cv2.destroyAllWindows()
 
     # Detection loop
-    def detectAll(self) -> tuple[cv2.typing.MatLike, dict[str, any], CrossInfo]:
+    def detectAll(self) -> tuple[cv2.typing.MatLike, dict[str, any], CrossInfo, tuple]:
         if self.mode == DetectionMode.CAMERA:
             ret, frame = self.cap.read()
             if not ret:

@@ -174,7 +174,7 @@ def estimatePlayArea(result, cap, frame) -> list[np.ndarray]:
     red_mask = cv2.GaussianBlur(red_mask, (5, 5), 0)
     
     # Show
-    #cv2.imshow("Red channel", red_mask)
+    cv2.imshow("Red channel", cv2.resize(red_mask, (1280,720)))
 
     # Contours
     contours, _ = cv2.findContours(red_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
