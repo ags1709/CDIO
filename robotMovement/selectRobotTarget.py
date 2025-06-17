@@ -9,6 +9,11 @@ import math
 import numpy as np
 from robotMovement.obstacleAvoidance import avoidObstacle
 
+abort = False
+skipFinalCheck = True
+def setAbort(): 
+    global abort
+    abort = True
 
 stateQueue = [ # Format: (State,variables)
     
@@ -21,6 +26,12 @@ targetBallMemory = None # Used to remember the target ball when collecting it, s
 #     with open(file_path, "a") as f:
 #         f.write(f"{state}\n")
 
+
+def goToGoalIntermidararyPoint(detectedObjects):
+    intermediaryPoint = (detectedObjects["goals"][1][0] - 300, detectedObjects["goals"][1][1])
+    stateQueue.clear()
+    stateQueue.append(("TO_INTERMEDIARY", intermediaryPoint))
+    stateQueue.append(("TO_GOAL",))  # Har sat et komma, pga at det er en tuple.
 
 def is_objectmiddle_in_circle(objectpos, center, radius):
     #middle = ( (objectpos[0][0] + objectpos[1][0])/2, (objectpos[0][1] + objectpos[1][1])/2 )
@@ -41,16 +52,19 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
     COLLECT_BALL = "COLLECT_BALL"    
     BACKOFF = "BACKOFF"
 
-    #global targetBall;
-    global stateQueue
-    global targetBall, targetBallMemory
+    global targetBall; global stateQueue; global abort; global skipFinalCheck
         
     robotDistance = 0
     robotAngle = 0
     
     # TEMP!
     #state = SEARCH_BALLS
-    targetBall = None
+    #targetBall = None
+
+    if abort:
+        goToGoalIntermidararyPoint(detectedObjects)
+        skipFinalCheck = False
+        abort = False
 
     # If no state has been set yet, put robot in ball searching state.
     if len(stateQueue) == 0:
@@ -104,10 +118,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
 
             elif not detectedObjects["whiteBalls"] and not detectedObjects["orangeBalls"]:
                 print("No white balls")
-                intermediaryPoint = (detectedObjects["goals"][0][0] + 300, detectedObjects["goals"][0][1])
-                stateQueue.pop(0) 
-                stateQueue.append((TO_INTERMEDIARY, intermediaryPoint))
-                stateQueue.append((TO_GOAL, None))
+                goToGoalIntermidararyPoint(detectedObjects)
 
 
         
@@ -140,7 +151,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], intermediaryPoint)
         robotAngle = add_angle(robotToObjectAngle, -robotRotation)
 
-        if robotDistance <= 50:# and -0.2 < robotAngle < 0.2:
+        if robotDistance <= 75:# and -0.2 < robotAngle < 0.2:
             print("Reached intermediary point!")
             #state = intermediaryFinishState if intermediaryFinishState is not None else TO_GOAL
             stateQueue.pop(0)
@@ -203,10 +214,10 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
     
     elif state == TO_GOAL:
         # log_state_transition(TO_GOAL)
-		
-        if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
-            stateQueue.append((SEARCH_BALLS, {}))
-            stateQueue.pop(0)
+        if skipFinalCheck:
+            if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
+                stateQueue.append((SEARCH_BALLS, {}))
+                stateQueue.pop(0)
         #print("TO_GOAL")
         # If no balls are present, move to goal.
         goalPos = detectedObjects["goals"][0]
