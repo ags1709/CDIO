@@ -82,9 +82,9 @@ def estimateCross(result, cap, frame) -> CrossInfo:
             edges = cv2.bitwise_and(edges, mask)
         
         contours, _ = cv2.findContours(red_thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) # WARNING: Perhaps use red_thresh instead of edges here?
-        if contours == None:
+        if contours == None or contours == ():
             print("No contours found for cross")
-            return
+            return None
         largest_contour = max(contours, key=cv2.contourArea)
         rect = cv2.minAreaRect(largest_contour)
         angle_deg = rect[2]+45 # Always 45 degrees rotatated?
@@ -253,7 +253,7 @@ def np_int(t):
     return np.round(t).astype(int)
 
 def estimatePlayAreaIntermediate(result, playarea, frame):
-    margin = 150
+    margin = 165
 
     #playarea = np.array(playarea)
     if playarea is None:

@@ -104,7 +104,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
             #print(robotDistance)
             robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], targetBall)
             robotAngle = add_angle(robotToObjectAngle, -robotRotation)
-            if robotDistance < 64:
+            if robotDistance < 50:
                 print("Found ball")
                 stateQueue.pop(0)
                 targetBall = None # Reset target ball
@@ -163,7 +163,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         #robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], pixelBackoffPoint)
         #robotAngle = add_angle(robotToObjectAngle, -robotRotation) 
         # TODO: Readd robot angle so it does not fuck with the distance and shit
-        if robotDistance <= 20:
+        if robotDistance <= 35:
             print("Reached BACKOFF point")
             stateQueue.pop(0)
             
@@ -177,7 +177,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
 
 def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObjects, robotPos, frame):
     global stateQueue; global targetBall
-    if is_objectmiddle_in_circle(targetBall, crossInfo.middle_point, crossInfo.size):
+    if crossInfo is not None and is_objectmiddle_in_circle(targetBall, crossInfo.middle_point, crossInfo.size):
         print("BALL IN CROSS!")
         intermediaryPoint = findIntermediatyCrossPoint(targetBall, crossInfo.middle_point, crossInfo.robot_gap, crossInfo.robot_intermediary_corners)
         stateQueue.pop(0)
