@@ -75,14 +75,14 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
     
 
     state = stateQueue[0][0] # State
-    stateVariables = lambda: stateQueue[0][1:] # Variables for state
+    stateVariables = stateQueue[0][1:] # Variables for state
     # Use state machine to dictate robots target based on its state
     if state == SEARCH_BALLS:
         # TODO: WARNING! CHECK THAT THE TARGET BALL HAS NOT MOVED TOO MUCH!!!! HERE WE ASSUME IT IS STATIONARY WHICH IS BAAAAD
         # log_state_transition(SEARCH_BALLS)
 
         if targetBall == None:
-            stateJson = stateVariables()[0]
+            stateJson = stateVariables[0]
             if 'target' in stateJson:
                 targetBall = stateJson['target']
             elif detectedObjects.get("whiteBalls") and len(detectedObjects["whiteBalls"]) > 0:
@@ -115,7 +115,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         # If no balls are present, move to intermediary point in preperation for turning in balls.
 
     if state == TO_INTERMEDIARY: # 
-        intermediaryPoint = stateVariables()[0]
+        intermediaryPoint = stateVariables[0]
 
         cv2.circle(frame, tuple_toint(intermediaryPoint), 11, (50,200,50), 6) # Mark intermediary
         robotDistance = calculateDistance(robotMiddle, intermediaryPoint)
@@ -148,7 +148,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
     elif state == TO_EXACT_ROTATION:
         # log_state_transition(TO_EXACT_ROTATION)
 
-        exactRotationTarget = stateVariables()[0]
+        exactRotationTarget = stateVariables[0]
         robotAngle = add_angle(exactRotationTarget, -robotRotation)  # TODO: Check if this works lol
 
         if -0.2 < robotAngle < 0.2:
@@ -157,7 +157,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
     
     elif state == BACKOFF:
         # Backoff to point
-        pixelBackoffPoint = stateVariables()[0]
+        pixelBackoffPoint = stateVariables[0]
         robotDistance = calculateDistance(robotPos[0], pixelBackoffPoint)
         #robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[1], pixelBackoffPoint)
         #robotAngle = add_angle(robotToObjectAngle, -robotRotation)
