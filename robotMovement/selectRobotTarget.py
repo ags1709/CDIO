@@ -101,7 +101,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         # Calculate distance and angle to the selected ball
         if state() is SEARCH_BALLS and targetBall and robotPos[0] is not None and robotPos[1] is not None:
             robotDistance = calculateDistance(robotPos[0], targetBall)
-            print(robotDistance)
+            #print(robotDistance)
             robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], targetBall)
             robotAngle = add_angle(robotToObjectAngle, -robotRotation)
             if robotDistance < 64:
@@ -176,6 +176,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
     return robotDistance, robotAngle, state()
 
 def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObjects, robotPos, frame):
+    global stateQueue; global targetBall
     if is_objectmiddle_in_circle(targetBall, crossInfo.middle_point, crossInfo.size):
         print("BALL IN CROSS!")
         intermediaryPoint = findIntermediatyCrossPoint(targetBall, crossInfo.middle_point, crossInfo.robot_gap, crossInfo.robot_intermediary_corners)
@@ -206,5 +207,5 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
     if avoidObstacle(robotPos[0], targetBall, detectedObjects["cross"], robotWidth=119) is not None:
         print("Obstacle in the way, navigating to intermediary point")
         intermediaryPoint = avoidObstacle(robotPos[0], targetBall, detectedObjects["cross"], robotWidth=119)
-        stateQueue.pop(0)   
-        stateQueue.append((TO_INTERMEDIARY, intermediaryPoint))
+        #stateQueue.pop(0)   
+        stateQueue.insert(0, (TO_INTERMEDIARY, intermediaryPoint))
