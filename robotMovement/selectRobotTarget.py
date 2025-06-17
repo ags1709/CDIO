@@ -192,13 +192,14 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
 
         if nearestBall:
             drift = calculateDistance(nearestBall, targetBall)
-            if drift < 15:
+            if drift < 30:
             # Accept updated ball
+                print('Drifting like a mofo')
                 targetBall = nearestBall
                 targetBallMemory = nearestBall
                 stateJson['target'] = nearestBall
                 stateJson['memoryAge'] = 0  # Reset memory age
-            elif drift > 50:
+            elif drift > 60:
                 print("Ball drifted too far — restarting search")
                 stateQueue.pop(0)
                 targetBallMemory = None
@@ -214,7 +215,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], targetBall)
         robotAngle = add_angle(robotToObjectAngle, -robotRotation)
 
-        if robotDistance <= 15:
+        if robotDistance <= 20:
             print("Ball collected!")
             stateQueue.pop(0)
             targetBall = None
