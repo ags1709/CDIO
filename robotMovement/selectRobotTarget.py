@@ -16,7 +16,7 @@ skipFinalCheck = True
 def setAbort(): 
     global abort
     abort = True
-
+    
 firstDev = True
 
 
@@ -24,6 +24,13 @@ firstDev = True
 def getBallCount(detectedObjects):
     return len(detectedObjects["whiteBalls"]) + len(detectedObjects["orangeBalls"])
 
+
+# States for state machine. Can be expanded later to handle situations calling for specific behaviour like getting ball from corner/cross.
+SEARCH_BALLS = "SEARCH_BALLS"
+TO_INTERMEDIARY = "TO_INTERMEDIARY"
+TO_GOAL = "TO_GOAL"
+TO_EXACT_ROTATION = "TO_EXACT_ROTATION"
+BACKOFF = "BACKOFF"
 
 stateQueue = [ # Format: (State,variables)
     
@@ -60,13 +67,7 @@ def appendSearchBalls():
         
 
 def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaIntermediate: list[tuple[float, float]], frame):
-    
-    # States for state machine. Can be expanded later to handle situations calling for specific behaviour like getting ball from corner/cross.
-    SEARCH_BALLS = "SEARCH_BALLS"
-    TO_INTERMEDIARY = "TO_INTERMEDIARY"
-    TO_GOAL = "TO_GOAL"
-    TO_EXACT_ROTATION = "TO_EXACT_ROTATION"
-    BACKOFF = "BACKOFF"
+
 
     global targetBall; global stateQueue; global abort; global skipFinalCheck; global firstDev
 
@@ -104,44 +105,12 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
             stateJson = stateVariables()[0]
             if 'target' in stateJson:
                 targetBall = stateJson['target']
-            elif detectedObjects.get("orangeBalls") and len(detectedObjects["orangeBalls"]) > 0 and 11 - tempBallCount == 5:
-                targetBall = min(detectedObjects["orangeBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
-                print("ORANGE BALL DETECTED!")
-                if is_objectmiddle_in_circle(targetBall, crossInfo.middle_point, crossInfo.size):
-                    print("ORANGE BALL IN CROSS!")
-                    intermediaryPoint = findIntermediatyCrossPoint(targetBall, crossInfo.middle_point, crossInfo.robot_gap, crossInfo.robot_intermediary_corners)
-                    stateQueue.pop(0)
-                    stateQueue.append((TO_INTERMEDIARY, intermediaryPoint))
-                    #exactRotationTarget = (crossInfo.angle_rad + np.pi + np.pi) % (2*np.pi) - np.pi
-                    exactRotationTarget = calculateAngleOfTwoPoints(intermediaryPoint, targetBall) # TODO: Suboptimal with intermediary point and not robot point used after reaching target but whatever.
-                    stateQueue.append((TO_EXACT_ROTATION, exactRotationTarget))
-                    stateQueue.append((SEARCH_BALLS, {'target': targetBall}))
-                    stateQueue.append((BACKOFF, intermediaryPoint))
-                
-                if playAreaIntermediate is not None:
-                    inside, closest = analyze_point_with_polygon(targetBall, playAreaIntermediate)
-                    print(f"Ball: {targetBall}")
-                    print(f"Inside: {inside}")
-                    if not inside:
-                        print(f"Closest Point: {closest}")
-                        stateQueue.pop(0)
-                        stateQueue.append((TO_INTERMEDIARY, closest))
-                        stateQueue.append((SEARCH_BALLS, {'target': targetBall}))
-                        stateQueue.append((BACKOFF, closest))
-                        cv2.line(frame, tuple_toint(targetBall), tuple_toint(closest), (0, 150, 150), 2)
-                
-                else:
-                    targetBall = min(detectedObjects["orangeBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
-
-                # Obstacle avoidance. Checks if obstacle is in the way, and if so, navigate to intermediate point first.
-                if avoidObstacle(robotPos[0], targetBall, detectedObjects["cross"], robotWidth=119) is not None:
-                    print("Obstacle in the way, navigating to intermediary point")
-                    intermediaryPoint = avoidObstacle(robotPos[0], targetBall, detectedObjects["cross"], robotWidth=119)
-                    stateQueue.pop(0)   
-                    stateQueue.append((TO_INTERMEDIARY, intermediaryPoint))
             elif detectedObjects.get("whiteBalls") and len(detectedObjects["whiteBalls"]) > 0:
                 targetBall = min(detectedObjects["whiteBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
-                # TODO: Apply cross logic to white also
+                handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObjects, robotPos, frame)
+            elif detectedObjects.get("orangeBalls") and len(detectedObjects["orangeBalls"]) > 0:
+                targetBall = min(detectedObjects["orangeBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
+                handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObjects, robotPos, frame)
 
             elif not detectedObjects["whiteBalls"] and not detectedObjects["orangeBalls"]:
                 print("No white balls")
@@ -153,10 +122,10 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         # Calculate distance and angle to the selected ball
         if state() is SEARCH_BALLS and targetBall and robotPos[0] is not None and robotPos[1] is not None:
             robotDistance = calculateDistance(robotPos[0], targetBall)
-            print(robotDistance)
+            #print(robotDistance)
             robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], targetBall)
             robotAngle = add_angle(robotToObjectAngle, -robotRotation)
-            if robotDistance < 64:
+            if robotDistance < 50:
                 print("Found ball")
                 stateQueue.pop(0)
                 targetBall = None # Reset target ball
@@ -230,7 +199,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         #robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], pixelBackoffPoint)
         #robotAngle = add_angle(robotToObjectAngle, -robotRotation) 
         # TODO: Readd robot angle so it does not fuck with the distance and shit
-        if robotDistance <= 20:
+        if robotDistance <= 35:
             print("Reached BACKOFF point")
             stateQueue.pop(0)
             
@@ -241,3 +210,38 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
 
     
     return robotDistance, robotAngle, state()
+
+def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObjects, robotPos, frame):
+    global stateQueue; global targetBall
+    if crossInfo is not None and is_objectmiddle_in_circle(targetBall, crossInfo.middle_point, crossInfo.size):
+        print("BALL IN CROSS!")
+        intermediaryPoint = findIntermediatyCrossPoint(targetBall, crossInfo.middle_point, crossInfo.robot_gap, crossInfo.robot_intermediary_corners)
+        stateQueue.pop(0)
+        stateQueue.append((TO_INTERMEDIARY, intermediaryPoint))
+        #exactRotationTarget = (crossInfo.angle_rad + np.pi + np.pi) % (2*np.pi) - np.pi
+        exactRotationTarget = calculateAngleOfTwoPoints(intermediaryPoint, targetBall) # TODO: Suboptimal with intermediary point and not robot point used after reaching target but whatever.
+        stateQueue.append((TO_EXACT_ROTATION, exactRotationTarget))
+        stateQueue.append((SEARCH_BALLS, {'target': targetBall}))
+        stateQueue.append((BACKOFF, intermediaryPoint))
+    
+    if playAreaIntermediate is not None:
+        inside, closest = analyze_point_with_polygon(targetBall, playAreaIntermediate)
+        # print(f"Ball: {targetBall}")
+        # print(f"Inside: {inside}")
+        if not inside:
+            print(f"Ball close to edge. Closest Point: {closest}")
+            stateQueue.pop(0)
+            stateQueue.append((TO_INTERMEDIARY, closest))
+            stateQueue.append((SEARCH_BALLS, {'target': targetBall}))
+            stateQueue.append((BACKOFF, closest))
+            cv2.line(frame, tuple_toint(targetBall), tuple_toint(closest), (0, 150, 150), 2)
+    
+    else:
+        targetBall = min(detectedObjects["orangeBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
+
+    # Obstacle avoidance. Checks if obstacle is in the way, and if so, navigate to intermediate point first.
+    if avoidObstacle(robotPos[0], targetBall, detectedObjects["cross"], robotWidth=119) is not None:
+        print("Obstacle in the way, navigating to intermediary point")
+        intermediaryPoint = avoidObstacle(robotPos[0], targetBall, detectedObjects["cross"], robotWidth=119)
+        #stateQueue.pop(0)   
+        stateQueue.insert(0, (TO_INTERMEDIARY, intermediaryPoint))
