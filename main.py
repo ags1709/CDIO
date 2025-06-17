@@ -16,7 +16,7 @@ import logging
 import threading
 logging.getLogger('ultralytics').setLevel(logging.ERROR)
 
-ENABLE_SOCKET = True
+ENABLE_SOCKET = False
 windowsize = (1280,720)
 
 
@@ -44,8 +44,8 @@ def main():
 
         # Calculate robots distance and angle to target, and set its state
         try:
-            frame, detectedObjects, crossInfo = od.detectAll()
-            distanceToTarget, angleToTarget, robotState = calcDistAndAngleToTarget(detectedObjects, crossInfo, frame)
+            frame, detectedObjects, crossInfo, playAreaIntermediate = od.detectAll()
+            distanceToTarget, angleToTarget, robotState = calcDistAndAngleToTarget(detectedObjects, crossInfo, playAreaIntermediate, frame)
 
             # print(abort)
             cv2.putText(frame, f"State: {robotState}", (20, 60), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 0), 4)
