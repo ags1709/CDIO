@@ -80,12 +80,12 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
         goalDistanceFromBall = 10
     
         if angleToTarget < -0.0872665: # 5 degrees
-            turnSpeed = -100
+            turnSpeed = -75
             forwardSpeed = 2
             if angleToTarget < -0.52: # 30 degrees
                 forwardSpeed = 15
         elif angleToTarget >= 0.0872665:
-            turnSpeed = 100
+            turnSpeed = 75
             forwardSpeed = 2
             if angleToTarget > 0.52:
                 forwardSpeed = 15
