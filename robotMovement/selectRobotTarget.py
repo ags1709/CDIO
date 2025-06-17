@@ -177,10 +177,12 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], goalPos)
         robotAngle = add_angle(robotToObjectAngle, -robotRotation)
 
-    # Add a condition for arrival if needed
-        if robotDistance <= 50:
-            print("Reached the goal!")
-            stateQueue.pop(0)
+        # Add a condition for arrival if needed
+        # if robotDistance <= 50:
+        #     print("Reached the goal!")
+        #     stateQueue.pop(0)
+        
+        stateQueue.pop(0)
         stateQueue.append((SEARCH_BALLS, {}))
         
         
