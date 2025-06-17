@@ -198,7 +198,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         #     stateQueue.pop(0)
         if firstDev:
             firstDev = False
-            threading.Timer(interval=2,function=appendSearchBalls)
+            threading.Timer(interval=2,function=appendSearchBalls).start()
         
         
     elif state == TO_EXACT_ROTATION:
