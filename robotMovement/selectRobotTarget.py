@@ -202,7 +202,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         #     stateQueue.pop(0)
         if firstDev:
             firstDev = False
-            threading.Timer(interval=2,function=appendSearchBalls).start()
+            threading.Timer(interval=10,function=appendSearchBalls).start()
         
         
     elif state() == TO_EXACT_ROTATION:
