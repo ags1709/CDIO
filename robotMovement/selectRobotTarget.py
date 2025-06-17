@@ -35,7 +35,7 @@ def goToGoalIntermidararyPoint(detectedObjects):
     intermediaryPoint = (detectedObjects["goals"][1][0] - 300, detectedObjects["goals"][1][1])
     stateQueue.clear()
     stateQueue.append(("TO_INTERMEDIARY", intermediaryPoint))
-    stateQueue.append(("TO_GOAL",))  # Har sat et komma, pga at det er en tuple.
+    stateQueue.append(("TO_GOAL", {}))  # Har sat et komma, pga at det er en tuple.
 
 def is_objectmiddle_in_circle(objectpos, center, radius):
     #middle = ( (objectpos[0][0] + objectpos[1][0])/2, (objectpos[0][1] + objectpos[1][1])/2 )
@@ -72,7 +72,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         skipFinalCheck = False
         abort = False
 
-    if 11 - tempBallCount == 5:
+    if 11 - tempBallCount == 7:
         goToGoalIntermidararyPoint(detectedObjects)
 
     # If no state has been set yet, put robot in ball searching state.
@@ -154,10 +154,11 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         intermediaryPoint = stateVariables[0]
 
         cv2.circle(frame, tuple_toint(intermediaryPoint), 11, (50,200,50), 6) # Mark intermediary
-        robotDistance = calculateDistance(robotMiddle, intermediaryPoint)
+        robotDistance = calculateDistance(robotPos[0], intermediaryPoint)
         robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], intermediaryPoint)
         robotAngle = add_angle(robotToObjectAngle, -robotRotation)
 
+        print("dist ", robotDistance)
         if robotDistance <= 75:# and -0.2 < robotAngle < 0.2:
             print("Reached intermediary point!")
             #state = intermediaryFinishState if intermediaryFinishState is not None else TO_GOAL
