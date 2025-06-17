@@ -15,6 +15,12 @@ def setAbort():
     global abort
     abort = True
 
+
+
+def getBallCount(detectedObjects):
+    return len(detectedObjects["whiteBalls"]) + len(detectedObjects["orangeBalls"])
+
+
 stateQueue = [ # Format: (State,variables)
     
 ]
@@ -24,7 +30,6 @@ targetBall = None
 # def log_state_transition(state: str, file_path: str = "state_transitions.txt"):
 #     with open(file_path, "a") as f:
 #         f.write(f"{state}\n")
-
 
 def goToGoalIntermidararyPoint(detectedObjects):
     intermediaryPoint = (detectedObjects["goals"][1][0] - 300, detectedObjects["goals"][1][1])
@@ -51,7 +56,10 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
     BACKOFF = "BACKOFF"
 
     global targetBall; global stateQueue; global abort; global skipFinalCheck
-        
+
+    tempBallCount = getBallCount(detectedObjects)
+
+
     robotDistance = 0
     robotAngle = 0
     
@@ -63,6 +71,9 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         goToGoalIntermidararyPoint(detectedObjects)
         skipFinalCheck = False
         abort = False
+
+    if 11 - tempBallCount == 5:
+        goToGoalIntermidararyPoint(detectedObjects)
 
     # If no state has been set yet, put robot in ball searching state.
     if len(stateQueue) == 0:
@@ -155,7 +166,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
 
     elif state == TO_GOAL:
         # log_state_transition(TO_GOAL)
-        if skipFinalCheck:
+        if skipFinalCheck or not(11 - tempBallCount == 5):
             if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
                 stateQueue.append((SEARCH_BALLS, {}))
                 stateQueue.pop(0)
