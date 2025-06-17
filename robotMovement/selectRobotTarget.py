@@ -181,6 +181,8 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         if robotDistance <= 50:
             print("Reached the goal!")
             stateQueue.pop(0)
+        stateQueue.append((SEARCH_BALLS, {}))
+        
         
     elif state == TO_EXACT_ROTATION:
         # log_state_transition(TO_EXACT_ROTATION)
