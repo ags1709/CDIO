@@ -16,6 +16,7 @@ stateQueue = [ # Format: (State,variables)
 
 # SEARCH_BALLS
 targetBall = None
+targetBallMemory = None # Used to remember the target ball when collecting it, so that it can be used in the next state if needed.
 # def log_state_transition(state: str, file_path: str = "state_transitions.txt"):
 #     with open(file_path, "a") as f:
 #         f.write(f"{state}\n")
@@ -76,6 +77,8 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
                 # TODO: Apply cross logic to white also
             elif detectedObjects.get("orangeBalls") and len(detectedObjects["orangeBalls"]) > 0:
                 targetBall = min(detectedObjects["orangeBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
+                targetBallMemory = targetBall  
+
                 print("ORANGE BALL DETECTED!")
                 if is_objectmiddle_in_circle(targetBall, crossInfo.middle_point, crossInfo.size):
                     print("ORANGE BALL IN CROSS!")
@@ -113,7 +116,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
             robotDistance = calculateDistance(robotPos[0], targetBall)
             robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], targetBall)
             robotAngle = add_angle(robotToObjectAngle, -robotRotation)
-            if robotDistance < 80:
+            if robotDistance < 150:
                 print("Found ball")
                 stateQueue.pop(0)
                 stateQueue.append((COLLECT_BALL, {'target': targetBall}))   # Go to collect ball state
@@ -135,7 +138,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         robotDistance = calculateDistance(robotMiddle, intermediaryPoint)
         robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], intermediaryPoint)
         robotAngle = add_angle(robotToObjectAngle, -robotRotation)
-
+        
         if robotDistance <= 50:# and -0.2 < robotAngle < 0.2:
             print("Reached intermediary point!")
             #state = intermediaryFinishState if intermediaryFinishState is not None else TO_GOAL
@@ -143,12 +146,20 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
 
 
     elif state == COLLECT_BALL:
-        
+        # log_state_transition(COLLECT_BALL)
+        print("Collecting ball")
+
         allBalls = detectedObjects.get("whiteBalls", []) + detectedObjects.get("orangeBalls", [])
 
         stateJson = stateVariables[0]
+        
         if 'target' in stateJson:
             targetBall = stateJson['target']
+
+        elif targetBallMemory is not None:
+            targetBall = targetBallMemory
+            stateJson['target'] = targetBall
+
 
         if targetBall is None or not allBalls:
             print("No target ball or no balls visible — reset")
@@ -157,18 +168,23 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
             stateQueue.append((SEARCH_BALLS, {}))
             return robotDistance, robotAngle, state
 
-        nearestBall = min(allBalls, key=lambda b: calculateDistance(b, targetBall))
-        drift = calculateDistance(nearestBall, targetBall)
+        nearestBall = min(allBalls, key=lambda b: calculateDistance(b, targetBall)) if allBalls else None
 
-        if drift > 40:
-            print("Ball drifted too far — restarting search")
-            stateQueue.pop(0)
-            stateQueue.append((SEARCH_BALLS, {}))
-            return robotDistance, robotAngle, state
-        elif drift < 15:
-            # Accept new nearest position as the true ball
-            targetBall = nearestBall
-            stateJson['target'] = nearestBall
+        if nearestBall:
+            drift = calculateDistance(nearestBall, targetBall)
+            if drift < 15:
+            # Accept updated ball
+                targetBall = nearestBall
+                targetBallMemory = nearestBall
+                stateJson['target'] = nearestBall
+            elif drift > 40:
+                print("Ball drifted too far — restarting search")
+                stateQueue.pop(0)
+                targetBallMemory = None
+                stateQueue.append((SEARCH_BALLS, {}))
+                return robotDistance, robotAngle, state
+        else:
+            print("Ball not visible — using memory")
 
         # Calculate movement toward the ball
         robotDistance = calculateDistance(robotPos[0], targetBall)
@@ -179,8 +195,10 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
             print("Ball collected!")
             stateQueue.pop(0)
             stateQueue.append((SEARCH_BALLS, {}))
+            targetBall = None
+            targetBallMemory = None
             return robotDistance, robotAngle, state
-
+    
     elif state == TO_GOAL:
         # log_state_transition(TO_GOAL)
 		
