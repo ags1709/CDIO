@@ -125,8 +125,12 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
                     # stateQueue.append((TO_INTERMEDIARY, OAintermediaryPoint))
 
             elif not detectedObjects["whiteBalls"] and not detectedObjects["orangeBalls"]:
-                print("No white balls")
-                goToGoalIntermidararyPoint(detectedObjects)
+                print("No more balls")
+                if avoidObstacle(robotPos[0], detectedObjects["goals"][1], detectedObjects["cross"], robotWidth=119) is not None:
+                    goToGoalIntermidararyPoint(detectedObjects)
+                    print("Obstacle in the way, navigating to intermediary point")
+                    OAintermediaryPoint = avoidObstacle(robotPos[0], detectedObjects["goals"][1], detectedObjects["cross"], robotWidth=119)
+                    stateQueue.insert(0, (TO_INTERMEDIARY, OAintermediaryPoint))
 
 
         
