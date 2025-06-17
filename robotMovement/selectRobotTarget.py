@@ -16,6 +16,8 @@ def setAbort():
     global abort
     abort = True
 
+firstDev = True
+
 
 
 def getBallCount(detectedObjects):
@@ -33,6 +35,7 @@ targetBall = None
 #         f.write(f"{state}\n")
 
 def goToGoalIntermidararyPoint(detectedObjects):
+    global stateQueue
     intermediaryPoint = (detectedObjects["goals"][1][0] - 300, detectedObjects["goals"][1][1])
     stateQueue.clear()
     stateQueue.append(("TO_INTERMEDIARY", intermediaryPoint))
@@ -49,8 +52,10 @@ def add_angle(a1, a2):
     return (a1 + a2 + np.pi) % (2*np.pi) - np.pi
 
 def appendSearchBalls():
-    stateQueue.pop(0)
+    global firstDev
+    stateQueue.clear()
     stateQueue.append(("SEARCH_BALLS", {}))
+    firstDev = False
         
 
 def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
@@ -61,7 +66,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
     TO_EXACT_ROTATION = "TO_EXACT_ROTATION"
     BACKOFF = "BACKOFF"
 
-    global targetBall; global stateQueue; global abort; global skipFinalCheck
+    global targetBall; global stateQueue; global abort; global skipFinalCheck; global firstDev
 
     tempBallCount = getBallCount(detectedObjects)
 
@@ -96,7 +101,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
     if state == SEARCH_BALLS:
         # TODO: WARNING! CHECK THAT THE TARGET BALL HAS NOT MOVED TOO MUCH!!!! HERE WE ASSUME IT IS STATIONARY WHICH IS BAAAAD
         # log_state_transition(SEARCH_BALLS)
-        if tempBallCount == 5:
+        if 11 - tempBallCount == 5 and firstDev:
             goToGoalIntermidararyPoint(detectedObjects)
             skipFinalCheck = False
 
@@ -104,7 +109,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
             stateJson = stateVariables[0]
             if 'target' in stateJson:
                 targetBall = stateJson['target']
-            elif detectedObjects.get("orangeBalls") and len(detectedObjects["orangeBalls"]) > 0 and tempBallCount == 4:
+            elif detectedObjects.get("orangeBalls") and len(detectedObjects["orangeBalls"]) > 0 and 11 - tempBallCount == 4:
                 targetBall = min(detectedObjects["orangeBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
                 print("ORANGE BALL DETECTED!")
                 if is_objectmiddle_in_circle(targetBall, crossInfo.middle_point, crossInfo.size):
@@ -191,8 +196,9 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         # if robotDistance <= 50:
         #     print("Reached the goal!")
         #     stateQueue.pop(0)
-        
-        threading.Timer(interval=10,function=appendSearchBalls)
+        if firstDev:
+            firstDev = False
+            threading.Timer(interval=2,function=appendSearchBalls)
         
         
     elif state == TO_EXACT_ROTATION:
