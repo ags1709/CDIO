@@ -109,24 +109,26 @@ class ObjectDetection():
             elif cls_id == 2:
                 egg = ((x1, y1), (x2, y2))
             elif cls_id == 3:
-                cross = ((x1, y1), (x2, y2))
+                playfield = ((x1,y1), (x2, y2))
             elif cls_id == 4:
+                cross = ((x1, y1), (x2, y2))
+            elif cls_id == 5:
                 backRightCorner = estimatePositionFromSquare(x1, y1, x2, y2)
                 cv2.circle(frame, tuple_toint(correctPerspective(backRightCorner)), 10, (0,0,255), 10)
-            elif cls_id == 5:
+            elif cls_id == 6:
                 frontRightCorner = estimatePositionFromSquare(x1, y1, x2, y2)
                 cv2.circle(frame, tuple_toint(correctPerspective(frontRightCorner)), 10, (0,0,255), 10)
-            elif cls_id == 6:
+            elif cls_id == 7:
                 frontLeftCorner = estimatePositionFromSquare(x1, y1, x2, y2)
                 cv2.circle(frame, tuple_toint(correctPerspective(frontLeftCorner)), 10, (0,0,255), 10)
-            elif cls_id == 7:
+            elif cls_id == 8:
                 backLeftCorner = estimatePositionFromSquare(x1, y1, x2, y2)
                 cv2.circle(frame, tuple_toint(correctPerspective(backLeftCorner)), 10, (0,0,255), 10)
 
         # A dictionary mapping names of objects we want to a list of their positions, each position being a tuple with 2 points
         # The points being respectively the upperleft and bottomright corner of their bounding box. Each point is itself a tuple of 2 integers.
         # NOTE: goals are stored differently to everything else. goals are stored as a tuple with its x coordinate, and the y coordinate being the middle of the goal.
-        positions = {"whiteBalls": whiteBalls, "orangeBalls": orangeBalls, "cross": cross, "egg": egg, "frontLeftCorner": frontLeftCorner, \
+        positions = {"whiteBalls": whiteBalls, "orangeBalls": orangeBalls,"playfield": playfield, "cross": cross, "egg": egg, "frontLeftCorner": frontLeftCorner, \
                      "frontRightCorner": frontRightCorner, "backLeftCorner": backLeftCorner, "backRightCorner": backRightCorner, "goals": goals}
         
         # Show live output
