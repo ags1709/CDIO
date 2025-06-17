@@ -43,6 +43,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
 
     #global targetBall;
     global stateQueue
+    global targetBall, targetBallMemory
         
     robotDistance = 0
     robotAngle = 0
@@ -138,7 +139,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         robotDistance = calculateDistance(robotMiddle, intermediaryPoint)
         robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], intermediaryPoint)
         robotAngle = add_angle(robotToObjectAngle, -robotRotation)
-        
+
         if robotDistance <= 50:# and -0.2 < robotAngle < 0.2:
             print("Reached intermediary point!")
             #state = intermediaryFinishState if intermediaryFinishState is not None else TO_GOAL
@@ -153,10 +154,10 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
 
         stateJson = stateVariables[0]
         
-        if 'target' in stateJson:
-            targetBall = stateJson['target']
+        targetBall = stateJson.get('target', None)
 
-        elif targetBallMemory is not None:
+        if targetBall is None and targetBallMemory is not None:
+            print("Target ball lost, going to memory location")
             targetBall = targetBallMemory
             stateJson['target'] = targetBall
 
@@ -172,6 +173,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
 
         if nearestBall:
             drift = calculateDistance(nearestBall, targetBall)
+
             if drift < 15:
             # Accept updated ball
                 targetBall = nearestBall
