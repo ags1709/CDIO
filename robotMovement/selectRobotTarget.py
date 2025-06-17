@@ -184,7 +184,13 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
 
     elif state() == TO_GOAL:
         # log_state_transition(TO_GOAL)
+        
+        if detectedObjects["orangeBalls"]:
+                stateQueue.append((SEARCH_BALLS, {}))
+                stateQueue.pop(0)
+
         if skipFinalCheck:
+            
             if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
                 stateQueue.append((SEARCH_BALLS, {}))
                 stateQueue.pop(0)
