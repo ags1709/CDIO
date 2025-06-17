@@ -163,6 +163,10 @@ def intersection_from_2pts_np(p1, p2, p3, p4):
     except np.linalg.LinAlgError:
         return None
 
+def score_point(p, ideal_x, ideal_y, weight_x=1.0, weight_y=1.0):
+    # Lower score is better (closer to corner)
+    return weight_x * abs(p[0] - ideal_x) + weight_y * abs(p[1] - ideal_y)
+
 
 def estimatePlayArea(result, cap, frame) -> list[np.ndarray]:
     h, w = cap.shape[:2]
@@ -175,7 +179,6 @@ def estimatePlayArea(result, cap, frame) -> list[np.ndarray]:
 
     #cv2.imshow("Red channel", cv2.resize(red_mask, (1280, 720)))
 
-    # Find contours
     contours, _ = cv2.findContours(red_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     if not contours:
         print("No contours found.")
@@ -186,62 +189,64 @@ def estimatePlayArea(result, cap, frame) -> list[np.ndarray]:
         print("Invalid points shape.")
         return None
 
-    # Quadrant filters
-    def in_tl(p): return p[0] < cx and p[1] < cy
-    def in_tr(p): return p[0] >= cx and p[1] < cy
-    def in_br(p): return p[0] >= cx and p[1] >= cy
-    def in_bl(p): return p[0] < cx and p[1] >= cy
+    # Scoring helper (weights prioritize vertical bias for top corners)
+    def find_best(points, ideal_x, ideal_y, weight_x=1.0, weight_y=2.0):
+        scores = [weight_x * abs(p[0] - ideal_x) + weight_y * abs(p[1] - ideal_y) for p in points]
+        return points[np.argmin(scores)]
 
-    # Filter and weighted sort helper
-    def pick(points, region_fn, sort_axis=1, reverse=False):
-        region_points = np.array([p for p in points if region_fn(p)])
-        if len(region_points) == 0:
-            return None
-        return region_points[np.argsort(region_points[:, sort_axis])[-1 if reverse else 0]]
+    # Pick 8 key edge points (2 per corner)
+    tl_top     = find_best(points, 0, 0)
+    tl_left    = find_best(points, 0, 0, weight_x=2.0, weight_y=1.0)
 
-    # Pick 2 per corner: one by x-extreme, one by y-extreme
-    tl_top  = pick(points, in_tl, sort_axis=1)         # lowest y
-    tl_left = pick(points, in_tl, sort_axis=0)         # lowest x
+    tr_top     = find_best(points, w, 0)
+    tr_right   = find_best(points, w, 0, weight_x=2.0, weight_y=1.0)
 
-    tr_top   = pick(points, in_tr, sort_axis=1)        # lowest y
-    tr_right = pick(points, in_tr, sort_axis=0, reverse=True)  # highest x
+    br_bottom  = find_best(points, w, h)
+    br_right   = find_best(points, w, h, weight_x=2.0, weight_y=1.0)
 
-    br_bottom = pick(points, in_br, sort_axis=1, reverse=True) # highest y
-    br_right  = pick(points, in_br, sort_axis=0, reverse=True) # highest x
-
-    bl_bottom = pick(points, in_bl, sort_axis=1, reverse=True) # highest y
-    bl_left   = pick(points, in_bl, sort_axis=0)         # lowest x
+    bl_bottom  = find_best(points, 0, h)
+    bl_left    = find_best(points, 0, h, weight_x=2.0, weight_y=1.0)
 
     extremities = [tl_top, tl_left, tr_top, tr_right, br_bottom, br_right, bl_bottom, bl_left]
-    
-    # Visualize
     for pt in extremities:
         if pt is not None:
-            cv2.circle(frame, tuple(pt), 5, (0, 255, 255), -1)
+            cv2.circle(frame, tuple(pt), 4, (0, 255, 255), -1)
 
-    if any(pt is None for pt in extremities):
-        print("One or more key points could not be found.")
+    if any(p is None for p in extremities):
+        print("Missing extremity points")
         return None
 
-
+    # Your updated line intersection logic
     pairs = [
-        (tl_top, bl_bottom, tl_left, tr_right),       # top-left and top-right
-        (tr_top, br_bottom, tr_right, tl_left),   # top-right and bottom-right
-        (br_bottom, tr_top, br_right, bl_left), # bottom-right and bottom-left
-        (bl_bottom, tl_top, bl_left, br_right),     # bottom-left and top-left
+        (tl_top, bl_bottom, tl_left, tr_right),
+        (tr_top, br_bottom, tr_right, tl_left),
+        (br_bottom, tr_top, br_right, bl_left),
+        (bl_bottom, tl_top, bl_left, br_right),
     ]
+
+    def intersection_from_2pts_np(p1, p2, p3, p4):
+        p1, p2, p3, p4 = map(np.asarray, [p1, p2, p3, p4])
+        a1 = p2 - p1
+        a2 = p4 - p3
+        A = np.array([a1, -a2]).T
+        b = p3 - p1
+        if np.linalg.matrix_rank(A) < 2:
+            return None
+        t = np.linalg.solve(A, b)
+        return p1 + t[0] * a1
+
     corners = []
     for p1, p2, p3, p4 in pairs:
         pt = intersection_from_2pts_np(p1, p2, p3, p4)
         if pt is not None:
             corners.append(pt)
             cv2.circle(frame, tuple(np.int32(pt)), 10, (0, 255, 255), -1)
-            #cv2.imshow("test", cv2.resize(frame, (1280,720)))
         else:
             print("Failed to compute intersection.")
             return None
 
     return corners
+
 
 
 def np_int(t):
