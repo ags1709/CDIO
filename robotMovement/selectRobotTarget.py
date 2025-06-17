@@ -78,9 +78,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         skipFinalCheck = False
         abort = False
 
-    if tempBallCount == 5:
-        goToGoalIntermidararyPoint(detectedObjects)
-        skipFinalCheck = False
+    
 
     # If no state has been set yet, put robot in ball searching state.
     if len(stateQueue) == 0:
@@ -98,6 +96,9 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
     if state == SEARCH_BALLS:
         # TODO: WARNING! CHECK THAT THE TARGET BALL HAS NOT MOVED TOO MUCH!!!! HERE WE ASSUME IT IS STATIONARY WHICH IS BAAAAD
         # log_state_transition(SEARCH_BALLS)
+        if tempBallCount == 5:
+            goToGoalIntermidararyPoint(detectedObjects)
+            skipFinalCheck = False
 
         if targetBall == None:
             stateJson = stateVariables[0]
