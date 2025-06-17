@@ -101,9 +101,6 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
     if state == SEARCH_BALLS:
         # TODO: WARNING! CHECK THAT THE TARGET BALL HAS NOT MOVED TOO MUCH!!!! HERE WE ASSUME IT IS STATIONARY WHICH IS BAAAAD
         # log_state_transition(SEARCH_BALLS)
-        if 11 - tempBallCount == 5 and firstDev:
-            goToGoalIntermidararyPoint(detectedObjects)
-            skipFinalCheck = False
 
         if targetBall == None:
             stateJson = stateVariables[0]
@@ -153,6 +150,9 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
                 stateQueue.pop(0)
                 targetBall = None # Reset target ball
 
+        if 11 - tempBallCount == 5 and firstDev:
+            goToGoalIntermidararyPoint(detectedObjects)
+            skipFinalCheck = False
 
         # If no balls are present, move to intermediary point in preperation for turning in balls.
 
