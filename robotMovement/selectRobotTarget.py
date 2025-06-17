@@ -59,7 +59,8 @@ def appendSearchBalls():
     firstDev = False
         
 
-def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
+def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaIntermediate: list[tuple[float, float]], frame):
+    
     # States for state machine. Can be expanded later to handle situations calling for specific behaviour like getting ball from corner/cross.
     SEARCH_BALLS = "SEARCH_BALLS"
     TO_INTERMEDIARY = "TO_INTERMEDIARY"
