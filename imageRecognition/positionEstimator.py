@@ -163,136 +163,85 @@ def intersection_from_2pts_np(p1, p2, p3, p4):
     except np.linalg.LinAlgError:
         return None
 
+
 def estimatePlayArea(result, cap, frame) -> list[np.ndarray]:
     h, w = cap.shape[:2]
     cx, cy = w // 2, h // 2
-    w8, h8 = w // 8, h // 8
 
     # Red pixel mask
     b, g, r = cap[:, :, 0], cap[:, :, 1], cap[:, :, 2]
     red_mask = ((r > 115) & (g < r / 1.8) & (b < r / 1.8)).astype(np.uint8) * 255
     red_mask = cv2.GaussianBlur(red_mask, (5, 5), 0)
-    
-    # Show
-    cv2.imshow("Red channel", cv2.resize(red_mask, (1280,720)))
 
-    # Contours
+    #cv2.imshow("Red channel", cv2.resize(red_mask, (1280, 720)))
+
+    # Find contours
     contours, _ = cv2.findContours(red_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     if not contours:
-        print("No contours")
-        return
+        print("No contours found.")
+        return None
+
     points = np.vstack(contours).squeeze()
+    if points.ndim != 2 or points.shape[1] != 2:
+        print("Invalid points shape.")
+        return None
 
-    # 8-point selection with stricter bounds
-    def filter_and_pick(condition_fn, sort_key_fn, reverse=False):
-        filtered = [p for p in points if condition_fn(p)]
-        if not filtered:
+    # Quadrant filters
+    def in_tl(p): return p[0] < cx and p[1] < cy
+    def in_tr(p): return p[0] >= cx and p[1] < cy
+    def in_br(p): return p[0] >= cx and p[1] >= cy
+    def in_bl(p): return p[0] < cx and p[1] >= cy
+
+    # Filter and weighted sort helper
+    def pick(points, region_fn, sort_axis=1, reverse=False):
+        region_points = np.array([p for p in points if region_fn(p)])
+        if len(region_points) == 0:
             return None
-        return sorted(filtered, key=sort_key_fn, reverse=reverse)[0]
+        return region_points[np.argsort(region_points[:, sort_axis])[-1 if reverse else 0]]
 
-    # 8 extreme points (2 per corner)
-    # top-left
-    tl_top  = filter_and_pick(lambda p: p[0] < w8*2 and p[1] < h8*2, lambda p: p[1])     # topmost
-    tl_left = filter_and_pick(lambda p: p[0] < w8*2 and p[1] < h8*2, lambda p: p[0])     # leftmost
+    # Pick 2 per corner: one by x-extreme, one by y-extreme
+    tl_top  = pick(points, in_tl, sort_axis=1)         # lowest y
+    tl_left = pick(points, in_tl, sort_axis=0)         # lowest x
 
-    # top-right
-    tr_top   = filter_and_pick(lambda p: p[0] > w*6//8 and p[1] < h8*2, lambda p: p[1])
-    tr_right = filter_and_pick(lambda p: p[0] > w*6//8 and p[1] < h8*2, lambda p: p[0], reverse=True)
+    tr_top   = pick(points, in_tr, sort_axis=1)        # lowest y
+    tr_right = pick(points, in_tr, sort_axis=0, reverse=True)  # highest x
 
-    # bottom-right
-    br_bottom = filter_and_pick(lambda p: p[0] > w*6//8 and p[1] > h*6//8, lambda p: p[1], reverse=True)
-    br_right  = filter_and_pick(lambda p: p[0] > w*6//8 and p[1] > h*6//8, lambda p: p[0], reverse=True)
+    br_bottom = pick(points, in_br, sort_axis=1, reverse=True) # highest y
+    br_right  = pick(points, in_br, sort_axis=0, reverse=True) # highest x
 
-    # bottom-left
-    bl_bottom = filter_and_pick(lambda p: p[0] < w8*2 and p[1] > h*6//8, lambda p: p[1], reverse=True)
-    bl_left   = filter_and_pick(lambda p: p[0] < w8*2 and p[1] > h*6//8, lambda p: p[0])
+    bl_bottom = pick(points, in_bl, sort_axis=1, reverse=True) # highest y
+    bl_left   = pick(points, in_bl, sort_axis=0)         # lowest x
 
-
-    
-    # Unpack for clarity
-    # tl_top, tl_left, tr_top, tr_right, br_bottom, br_right, bl_bottom, bl_left = extremities
-
-    # Define correct corner lines
-    corner_lines = [
-        # Top-left corner
-        ((tl_left, tr_right), (tl_top, bl_bottom)),
-
-        # Top-right corner
-        ((tl_left, tr_right), (br_bottom, tr_top)),
-
-        # Bottom-right corner
-        ((br_right, bl_left), (br_bottom, tr_top)),
-
-        # Bottom-left corner
-        ((bl_left, br_right), (bl_bottom, tl_top)),
-    ]
-    #print(corner_lines)
-    
     extremities = [tl_top, tl_left, tr_top, tr_right, br_bottom, br_right, bl_bottom, bl_left]
-    # Draw points before checking for none (with try catch)
-    for i, pt in enumerate(extremities):
-        try:
-            pt = tuple(map(int, pt))
-            cv2.circle(frame, pt, 3, (0, 255, 255), -1)
-        except:
-            pass
     
-    if any([extremitie is None for extremitie in extremities]):
-        print("WARNING! at least one point in play area not found (est playarea)")
+    # Visualize
+    for pt in extremities:
+        if pt is not None:
+            cv2.circle(frame, tuple(pt), 5, (0, 255, 255), -1)
+
+    if any(pt is None for pt in extremities):
+        print("One or more key points could not be found.")
         return None
 
 
-    # Compute actual corner points
-    corner_points = []
-    for (line1, line2) in corner_lines:
-        if line1 is None or line2 is None:
-            print("Error! missing corner_lines element")
-            return None
-        pt = intersection_from_2pts_np(*line1, *line2)
-        if pt is not None:
-            corner_points.append(pt)
-
-    if any(p is None for p in extremities):
-        print("Some points were not found in their 1/8 zones.")
-        return
-
-    # Compute intersections of each side
-    # Sides: top, right, bottom, left
     pairs = [
-        (tl_top, tl_left, tr_top, tr_right),       # top-left and top-right
-        (tr_top, tr_right, br_bottom, br_right),   # top-right and bottom-right
-        (br_bottom, br_right, bl_bottom, bl_left), # bottom-right and bottom-left
-        (bl_bottom, bl_left, tl_top, tl_left),     # bottom-left and top-left
+        (tl_top, bl_bottom, tl_left, tr_right),       # top-left and top-right
+        (tr_top, br_bottom, tr_right, tl_left),   # top-right and bottom-right
+        (br_bottom, tr_top, br_right, bl_left), # bottom-right and bottom-left
+        (bl_bottom, tl_top, bl_left, br_right),     # bottom-left and top-left
     ]
     corners = []
     for p1, p2, p3, p4 in pairs:
         pt = intersection_from_2pts_np(p1, p2, p3, p4)
         if pt is not None:
             corners.append(pt)
+            cv2.circle(frame, tuple(np.int32(pt)), 10, (0, 255, 255), -1)
+            #cv2.imshow("test", cv2.resize(frame, (1280,720)))
+        else:
+            print("Failed to compute intersection.")
+            return None
 
-    # Draw result
-    # output = cap.copy()
-    # for i, pt in enumerate(corners):
-    #     cv2.circle(output, pt, 10, (0, 255, 0), -1)
-    #     cv2.putText(output, str(i), pt, cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 0, 0), 2)
-
-    # for i, pt in enumerate(extremities):
-    #     cv2.circle(output, pt, 5, (0, 0, 255), -1)
-    
-    # Draw corners
-    for i, pt in enumerate(corner_points):
-        pt = tuple(map(int, pt))
-        cv2.circle(frame, pt, 10, (0, 255, 255), -1)
-        cv2.putText(frame, f"Corner {i}", (pt[0] + 5, pt[1] - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
-
-    # # Draw lines
-    # print(corner_points)
-    # for (p1, p2) in [l for pair in corner_lines for l in pair]:
-    #     cv2.line(output, p1, p2, (255, 0, 0), 1)
-
-
-    # cv2.imshow("Play Area - Refined 8 Region Extremes", cv2.resize(output, (640, 480)))
-    return corner_points
+    return corners
 
 
 def np_int(t):
