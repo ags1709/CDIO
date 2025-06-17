@@ -8,6 +8,7 @@ from robotMovement.tools import tuple_toint
 import math
 import numpy as np
 from robotMovement.obstacleAvoidance import avoidObstacle
+import threading
 
 abort = False
 skipFinalCheck = True
@@ -46,6 +47,11 @@ def is_objectmiddle_in_circle(objectpos, center, radius):
 
 def add_angle(a1, a2):
     return (a1 + a2 + np.pi) % (2*np.pi) - np.pi
+
+def appendSearchBalls():
+    stateQueue.pop(0)
+    stateQueue.append(("SEARCH_BALLS", {}))
+        
 
 def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
     # States for state machine. Can be expanded later to handle situations calling for specific behaviour like getting ball from corner/cross.
@@ -181,8 +187,8 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         # if robotDistance <= 50:
         #     print("Reached the goal!")
         #     stateQueue.pop(0)
-        stateQueue.pop(0)
-        stateQueue.append((SEARCH_BALLS, {}))
+        
+        threading.Timer(interval=10,function=appendSearchBalls)
         
         
     elif state == TO_EXACT_ROTATION:
