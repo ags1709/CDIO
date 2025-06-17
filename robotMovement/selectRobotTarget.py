@@ -38,7 +38,8 @@ def goToGoalIntermidararyPoint(detectedObjects):
     intermediaryPoint = (detectedObjects["goals"][1][0] - 300, detectedObjects["goals"][1][1])
     stateQueue.clear()
     stateQueue.append(("TO_INTERMEDIARY", intermediaryPoint))
-    stateQueue.append(("TO_GOAL",))  # Har sat et komma, pga at det er en tuple.
+    goalPos = detectedObjects["goals"][1]
+    stateQueue.append(("TO_GOAL", goalPos))  # Har sat et komma, pga at det er en tuple.
 
 def is_objectmiddle_in_circle(objectpos, center, radius):
     #middle = ( (objectpos[0][0] + objectpos[1][0])/2, (objectpos[0][1] + objectpos[1][1])/2 )
