@@ -34,9 +34,10 @@ targetBall = None
 #         f.write(f"{state}\n")
 
 
-def goToGoalIntermidararyPoint(detectedObjects):
+def goToGoalIntermidararyPoint(detectedObjects, robotPos):
     intermediaryPoint = (detectedObjects["goals"][1][0] - 300, detectedObjects["goals"][1][1])
     stateQueue.clear()
+    handleOA(robotPos, intermediaryPoint, detectedObjects)
     stateQueue.append(("TO_INTERMEDIARY", intermediaryPoint))
     stateQueue.append(("TO_GOAL",))  # Har sat et komma, pga at det er en tuple.
 
@@ -49,6 +50,12 @@ def is_objectmiddle_in_circle(objectpos, center, radius):
 
 def add_angle(a1, a2):
     return (a1 + a2 + np.pi) % (2*np.pi) - np.pi
+
+def handleOA(pos, target, objects):
+    if avoidObstacle(pos[0], target, objects["cross"]) is not None:
+        print("Obstacle in the way, navigating to intermediary point")
+        OAintermediaryPoint = avoidObstacle(pos[0], target, objects["cross"])
+        stateQueue.insert(0, (TO_INTERMEDIARY, OAintermediaryPoint))
 
 def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaIntermediate: list[tuple[float, float]], frame):
 
@@ -84,16 +91,18 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
             stateJson = stateVariables()[0]
             if 'target' in stateJson:
                 targetBall = stateJson['target']
+
             elif detectedObjects.get("whiteBalls") and len(detectedObjects["whiteBalls"]) > 0:
                 targetBall = min(detectedObjects["whiteBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
                 handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObjects, robotPos, frame)
+
             elif detectedObjects.get("orangeBalls") and len(detectedObjects["orangeBalls"]) > 0:
                 targetBall = min(detectedObjects["orangeBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
                 handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObjects, robotPos, frame)
                 
             elif not detectedObjects["whiteBalls"] and not detectedObjects["orangeBalls"]:
-                print("No white balls")
-                goToGoalIntermidararyPoint(detectedObjects)
+                print("No balls")
+                goToGoalIntermidararyPoint(detectedObjects, robotPos)
 
 
         
@@ -181,6 +190,8 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
         print("BALL IN CROSS!")
         intermediaryPoint = findIntermediatyCrossPoint(targetBall, crossInfo.middle_point, crossInfo.robot_gap, crossInfo.robot_intermediary_corners)
         stateQueue.pop(0)
+        # 
+        handleOA(robotPos, intermediaryPoint, detectedObjects)
         stateQueue.append((TO_INTERMEDIARY, intermediaryPoint))
         #exactRotationTarget = (crossInfo.angle_rad + np.pi + np.pi) % (2*np.pi) - np.pi
         exactRotationTarget = calculateAngleOfTwoPoints(intermediaryPoint, targetBall) # TODO: Suboptimal with intermediary point and not robot point used after reaching target but whatever.
@@ -195,6 +206,7 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
         if not inside:
             print(f"Ball close to edge. Closest Point: {closest}")
             stateQueue.pop(0)
+            handleOA(robotPos, closest, detectedObjects)
             stateQueue.append((TO_INTERMEDIARY, closest))
             stateQueue.append((SEARCH_BALLS, {'target': targetBall}))
             stateQueue.append((BACKOFF, closest))
@@ -204,8 +216,9 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
         targetBall = min(detectedObjects["orangeBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
 
     # Obstacle avoidance. Checks if obstacle is in the way, and if so, navigate to intermediate point first.
-    if avoidObstacle(robotPos[0], targetBall, detectedObjects["cross"], robotWidth=119) is not None:
-        print("Obstacle in the way, navigating to intermediary point")
-        intermediaryPoint = avoidObstacle(robotPos[0], targetBall, detectedObjects["cross"], robotWidth=119)
+    handleOA(robotPos, targetBall, detectedObjects)
+    # if avoidObstacle(robotPos[0], targetBall, detectedObjects["cross"], robotWidth=119) is not None:
+    #     print("Obstacle in the way, navigating to intermediary point")
+    #     intermediaryPoint = avoidObstacle(robotPos[0], targetBall, detectedObjects["cross"], robotWidth=119)
+    #     stateQueue.insert(0, (TO_INTERMEDIARY, intermediaryPoint))
         #stateQueue.pop(0)   
-        stateQueue.insert(0, (TO_INTERMEDIARY, intermediaryPoint))

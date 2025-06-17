@@ -22,7 +22,7 @@ def pathIntersectsObstacle(polygon, obstacle):
     return polygon.intersects(obs)
 
 
-def avoidObstacle(robotPos, targetPos, obstacle, robotWidth):
+def avoidObstacle(robotPos, targetPos, obstacle, robotWidth=119):
     # Initial swept path check from robot to target
     if not pathIntersectsObstacle(robotPath(robotPos, targetPos, robotWidth), obstacle):
         return None
@@ -30,7 +30,7 @@ def avoidObstacle(robotPos, targetPos, obstacle, robotWidth):
     xMin, yMin = obstacle[0]
     xMax, yMax = obstacle[1]
 
-    margin = 250  # Pixels to avoid obstacle by
+    margin = 200  # Pixels to avoid obstacle by
     candidates = [
         ((xMin + xMax)/2, yMax + margin),  # above
         ((xMin + xMax)/2, yMin - margin),  # below
