@@ -76,6 +76,8 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
 
     state = stateQueue[0][0] # State
     stateVariables = stateQueue[0][1:] # Variables for state
+
+    print(f"State is: {state}")
     # Use state machine to dictate robots target based on its state
     if state == SEARCH_BALLS:
         # TODO: WARNING! CHECK THAT THE TARGET BALL HAS NOT MOVED TOO MUCH!!!! HERE WE ASSUME IT IS STATIONARY WHICH IS BAAAAD
@@ -94,7 +96,16 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
                 if is_objectmiddle_in_circle(targetBall, crossInfo.middle_point, crossInfo.size):
                     print("ORANGE BALL IN CROSS!")
                     intermediaryPoint = findIntermediatyCrossPoint(targetBall, crossInfo.middle_point, crossInfo.robot_gap, crossInfo.robot_intermediary_corners)
-                    stateQueue.pop(0)
+
+                    # Obstacle avoidance. Checks if obstacle is in the way, and if so, navigate to intermediate point first.
+                    if avoidObstacle(robotPos[0], intermediaryPoint, detectedObjects["cross"], robotWidth=119) is not None:
+                        print("Obstacle in the way, navigating to intermediary point")
+                        stateQueue.pop(0)
+                        OAintermediaryPoint = avoidObstacle(robotPos[0], intermediaryPoint, detectedObjects["cross"], robotWidth=119)
+                        stateQueue.insert(0, (TO_INTERMEDIARY, OAintermediaryPoint))
+                    else:
+                        stateQueue.pop(0)
+
                     stateQueue.append((TO_INTERMEDIARY, intermediaryPoint))
                     #exactRotationTarget = (crossInfo.angle_rad + np.pi + np.pi) % (2*np.pi) - np.pi
                     exactRotationTarget = calculateAngleOfTwoPoints(intermediaryPoint, targetBall) # TODO: Suboptimal with intermediary point and not robot point used after reaching target but whatever.
@@ -108,9 +119,10 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
                 # Obstacle avoidance. Checks if obstacle is in the way, and if so, navigate to intermediate point first.
                 if avoidObstacle(robotPos[0], targetBall, detectedObjects["cross"], robotWidth=119) is not None:
                     print("Obstacle in the way, navigating to intermediary point")
-                    intermediaryPoint = avoidObstacle(robotPos[0], targetBall, detectedObjects["cross"], robotWidth=119)
-                    stateQueue.pop(0)   
-                    stateQueue.append((TO_INTERMEDIARY, intermediaryPoint))
+                    OAintermediaryPoint = avoidObstacle(robotPos[0], targetBall, detectedObjects["cross"], robotWidth=119)
+                    stateQueue.insert(0, (TO_INTERMEDIARY, OAintermediaryPoint))
+                    # stateQueue.pop(0)   
+                    # stateQueue.append((TO_INTERMEDIARY, OAintermediaryPoint))
 
             elif not detectedObjects["whiteBalls"] and not detectedObjects["orangeBalls"]:
                 print("No white balls")
@@ -162,6 +174,15 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         #print("TO_GOAL")
         # If no balls are present, move to goal.
         goalPos = detectedObjects["goals"][1]
+
+        # Obstacle avoidance. Checks if obstacle is in the way, and if so, navigate to intermediate point first.
+        if avoidObstacle(robotPos[0], goalPos, detectedObjects["cross"], robotWidth=119) is not None:
+            print("Obstacle in the way, navigating to intermediary point")
+            OAintermediaryPoint = avoidObstacle(robotPos[0], goalPos, detectedObjects["cross"], robotWidth=119)
+            # stateQueue.pop(0)   
+            # stateQueue.append((TO_INTERMEDIARY, intermediaryPoint))
+            stateQueue.insert(0, (TO_INTERMEDIARY, OAintermediaryPoint))
+
         robotDistance = calculateDistance(robotPos[0], goalPos)
         robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], goalPos)
         robotAngle = add_angle(robotToObjectAngle, -robotRotation)
