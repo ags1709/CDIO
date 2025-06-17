@@ -104,7 +104,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
             stateJson = stateVariables()[0]
             if 'target' in stateJson:
                 targetBall = stateJson['target']
-            elif detectedObjects.get("orangeBalls") and len(detectedObjects["orangeBalls"]) > 0 and 11 - tempBallCount == 4:
+            elif detectedObjects.get("orangeBalls") and len(detectedObjects["orangeBalls"]) > 0 and 11 - tempBallCount == 5:
                 targetBall = min(detectedObjects["orangeBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
                 print("ORANGE BALL DETECTED!")
                 if is_objectmiddle_in_circle(targetBall, crossInfo.middle_point, crossInfo.size):
@@ -162,7 +162,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
                 targetBall = None # Reset target ball
                 #time.sleep(0.5)
 
-        if 11 - tempBallCount == 5 and firstDev:
+        if 11 - tempBallCount == 6 and firstDev:
             goToGoalIntermidararyPoint(detectedObjects)
             skipFinalCheck = False
 
