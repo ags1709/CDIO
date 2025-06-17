@@ -96,10 +96,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
             stateJson = stateVariables[0]
             if 'target' in stateJson:
                 targetBall = stateJson['target']
-            elif detectedObjects.get("whiteBalls") and len(detectedObjects["whiteBalls"]) > 0:
-                targetBall = min(detectedObjects["whiteBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
-                # TODO: Apply cross logic to white also
-            elif detectedObjects.get("orangeBalls") and len(detectedObjects["orangeBalls"]) > 0:
+            elif detectedObjects.get("orangeBalls") and len(detectedObjects["orangeBalls"]) > 0 and 11-tempBallCount == 6:
                 targetBall = min(detectedObjects["orangeBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
                 print("ORANGE BALL DETECTED!")
                 if is_objectmiddle_in_circle(targetBall, crossInfo.middle_point, crossInfo.size):
@@ -122,6 +119,9 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
                     intermediaryPoint = avoidObstacle(robotPos[0], targetBall, detectedObjects["cross"], robotWidth=119)
                     stateQueue.pop(0)   
                     stateQueue.append((TO_INTERMEDIARY, intermediaryPoint))
+            elif detectedObjects.get("whiteBalls") and len(detectedObjects["whiteBalls"]) > 0:
+                targetBall = min(detectedObjects["whiteBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
+                # TODO: Apply cross logic to white also
 
             elif not detectedObjects["whiteBalls"] and not detectedObjects["orangeBalls"]:
                 print("No white balls")
@@ -181,7 +181,6 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
         # if robotDistance <= 50:
         #     print("Reached the goal!")
         #     stateQueue.pop(0)
-        
         stateQueue.pop(0)
         stateQueue.append((SEARCH_BALLS, {}))
         
