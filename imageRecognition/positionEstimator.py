@@ -81,9 +81,9 @@ def estimateCross(result, cap, frame) -> CrossInfo:
             edges = cv2.bitwise_and(edges, mask)
         
         contours, _ = cv2.findContours(red_thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) # WARNING: Perhaps use red_thresh instead of edges here?
-        if contours == None:
+        if contours == None or contours == ():
             print("No contours found for cross")
-            return
+            return None
         largest_contour = max(contours, key=cv2.contourArea)
         rect = cv2.minAreaRect(largest_contour)
         angle_deg = rect[2]+45 # Always 45 degrees rotatated?
@@ -162,148 +162,102 @@ def intersection_from_2pts_np(p1, p2, p3, p4):
     except np.linalg.LinAlgError:
         return None
 
+def score_point(p, ideal_x, ideal_y, weight_x=1.0, weight_y=1.0):
+    # Lower score is better (closer to corner)
+    return weight_x * abs(p[0] - ideal_x) + weight_y * abs(p[1] - ideal_y)
+
+
 def estimatePlayArea(result, cap, frame) -> list[np.ndarray]:
     h, w = cap.shape[:2]
     cx, cy = w // 2, h // 2
-    w8, h8 = w // 8, h // 8
 
     # Red pixel mask
     b, g, r = cap[:, :, 0], cap[:, :, 1], cap[:, :, 2]
     red_mask = ((r > 115) & (g < r / 1.8) & (b < r / 1.8)).astype(np.uint8) * 255
     red_mask = cv2.GaussianBlur(red_mask, (5, 5), 0)
-    
-    # Show
-    #cv2.imshow("Red channel", red_mask)
 
-    # Contours
+    #cv2.imshow("Red channel", cv2.resize(red_mask, (1280, 720)))
+
     contours, _ = cv2.findContours(red_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     if not contours:
-        print("No contours")
-        return
-    points = np.vstack(contours).squeeze()
-
-    # 8-point selection with stricter bounds
-    def filter_and_pick(condition_fn, sort_key_fn, reverse=False):
-        filtered = [p for p in points if condition_fn(p)]
-        if not filtered:
-            return None
-        return sorted(filtered, key=sort_key_fn, reverse=reverse)[0]
-
-    # 8 extreme points (2 per corner)
-    # top-left
-    tl_top  = filter_and_pick(lambda p: p[0] < w8*2 and p[1] < h8*2, lambda p: p[1])     # topmost
-    tl_left = filter_and_pick(lambda p: p[0] < w8*2 and p[1] < h8*2, lambda p: p[0])     # leftmost
-
-    # top-right
-    tr_top   = filter_and_pick(lambda p: p[0] > w*6//8 and p[1] < h8*2, lambda p: p[1])
-    tr_right = filter_and_pick(lambda p: p[0] > w*6//8 and p[1] < h8*2, lambda p: p[0], reverse=True)
-
-    # bottom-right
-    br_bottom = filter_and_pick(lambda p: p[0] > w*6//8 and p[1] > h*6//8, lambda p: p[1], reverse=True)
-    br_right  = filter_and_pick(lambda p: p[0] > w*6//8 and p[1] > h*6//8, lambda p: p[0], reverse=True)
-
-    # bottom-left
-    bl_bottom = filter_and_pick(lambda p: p[0] < w8*2 and p[1] > h*6//8, lambda p: p[1], reverse=True)
-    bl_left   = filter_and_pick(lambda p: p[0] < w8*2 and p[1] > h*6//8, lambda p: p[0])
-
-
-    
-    # Unpack for clarity
-    # tl_top, tl_left, tr_top, tr_right, br_bottom, br_right, bl_bottom, bl_left = extremities
-
-    # Define correct corner lines
-    corner_lines = [
-        # Top-left corner
-        ((tl_left, tr_right), (tl_top, bl_bottom)),
-
-        # Top-right corner
-        ((tl_left, tr_right), (br_bottom, tr_top)),
-
-        # Bottom-right corner
-        ((br_right, bl_left), (br_bottom, tr_top)),
-
-        # Bottom-left corner
-        ((bl_left, br_right), (bl_bottom, tl_top)),
-    ]
-    #print(corner_lines)
-    
-    extremities = [tl_top, tl_left, tr_top, tr_right, br_bottom, br_right, bl_bottom, bl_left]
-    # Draw points before checking for none (with try catch)
-    for i, pt in enumerate(extremities):
-        try:
-            pt = tuple(map(int, pt))
-            cv2.circle(frame, pt, 3, (0, 255, 255), -1)
-        except:
-            pass
-    
-    if any([extremitie is None for extremitie in extremities]):
-        print("WARNING! at least one point in play area not found (est playarea)")
+        print("No contours found.")
         return None
 
+    points = np.vstack(contours).squeeze()
+    if points.ndim != 2 or points.shape[1] != 2:
+        print("Invalid points shape.")
+        return None
 
-    # Compute actual corner points
-    corner_points = []
-    for (line1, line2) in corner_lines:
-        if line1 is None or line2 is None:
-            print("Error! missing corner_lines element")
-            return None
-        pt = intersection_from_2pts_np(*line1, *line2)
+    # Scoring helper (weights prioritize vertical bias for top corners)
+    def find_best(points, ideal_x, ideal_y, weight_x=1.0, weight_y=2.0):
+        scores = [weight_x * abs(p[0] - ideal_x) + weight_y * abs(p[1] - ideal_y) for p in points]
+        return points[np.argmin(scores)]
+
+    # Pick 8 key edge points (2 per corner)
+    tl_top     = find_best(points, 0, 0)
+    tl_left    = find_best(points, 0, 0, weight_x=2.0, weight_y=1.0)
+
+    tr_top     = find_best(points, w, 0)
+    tr_right   = find_best(points, w, 0, weight_x=2.0, weight_y=1.0)
+
+    br_bottom  = find_best(points, w, h)
+    br_right   = find_best(points, w, h, weight_x=2.0, weight_y=1.0)
+
+    bl_bottom  = find_best(points, 0, h)
+    bl_left    = find_best(points, 0, h, weight_x=2.0, weight_y=1.0)
+
+    extremities = [tl_top, tl_left, tr_top, tr_right, br_bottom, br_right, bl_bottom, bl_left]
+    for pt in extremities:
         if pt is not None:
-            corner_points.append(pt)
+            cv2.circle(frame, tuple(pt), 4, (0, 255, 255), -1)
 
     if any(p is None for p in extremities):
-        print("Some points were not found in their 1/8 zones.")
-        return
+        print("Missing extremity points")
+        return None
 
-    # Compute intersections of each side
-    # Sides: top, right, bottom, left
+    # Your updated line intersection logic
     pairs = [
-        (tl_top, tl_left, tr_top, tr_right),       # top-left and top-right
-        (tr_top, tr_right, br_bottom, br_right),   # top-right and bottom-right
-        (br_bottom, br_right, bl_bottom, bl_left), # bottom-right and bottom-left
-        (bl_bottom, bl_left, tl_top, tl_left),     # bottom-left and top-left
+        (tl_top, bl_bottom, tl_left, tr_right),
+        (tr_top, br_bottom, tr_right, tl_left),
+        (br_bottom, tr_top, br_right, bl_left),
+        (bl_bottom, tl_top, bl_left, br_right),
     ]
+
+    def intersection_from_2pts_np(p1, p2, p3, p4):
+        p1, p2, p3, p4 = map(np.asarray, [p1, p2, p3, p4])
+        a1 = p2 - p1
+        a2 = p4 - p3
+        A = np.array([a1, -a2]).T
+        b = p3 - p1
+        if np.linalg.matrix_rank(A) < 2:
+            return None
+        t = np.linalg.solve(A, b)
+        return p1 + t[0] * a1
+
     corners = []
     for p1, p2, p3, p4 in pairs:
         pt = intersection_from_2pts_np(p1, p2, p3, p4)
         if pt is not None:
             corners.append(pt)
+            cv2.circle(frame, tuple(np.int32(pt)), 10, (0, 255, 255), -1)
+        else:
+            print("Failed to compute intersection.")
+            return None
 
-    # Draw result
-    # output = cap.copy()
-    # for i, pt in enumerate(corners):
-    #     cv2.circle(output, pt, 10, (0, 255, 0), -1)
-    #     cv2.putText(output, str(i), pt, cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 0, 0), 2)
+    return corners
 
-    # for i, pt in enumerate(extremities):
-    #     cv2.circle(output, pt, 5, (0, 0, 255), -1)
-    
-    # Draw corners
-    for i, pt in enumerate(corner_points):
-        pt = tuple(map(int, pt))
-        cv2.circle(frame, pt, 10, (0, 255, 255), -1)
-        cv2.putText(frame, f"Corner {i}", (pt[0] + 5, pt[1] - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
-
-    # # Draw lines
-    # print(corner_points)
-    # for (p1, p2) in [l for pair in corner_lines for l in pair]:
-    #     cv2.line(output, p1, p2, (255, 0, 0), 1)
-
-
-    # cv2.imshow("Play Area - Refined 8 Region Extremes", cv2.resize(output, (640, 480)))
-    return corner_points
 
 
 def np_int(t):
     return np.round(t).astype(int)
 
 def estimatePlayAreaIntermediate(result, playarea, frame):
-    margin = 150
+    margin = 165
 
     #playarea = np.array(playarea)
     if playarea is None:
         print("WARNING! Play area is none, returning (est intermediate)")
-        return None,None,None,None 
+        return None
     
     tl = offset_vertex(playarea[0], playarea[1], playarea[3], margin)
     tr = offset_vertex(playarea[1], playarea[2], playarea[0], margin)

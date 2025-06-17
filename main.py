@@ -16,7 +16,7 @@ import logging
 import threading
 logging.getLogger('ultralytics').setLevel(logging.ERROR)
 
-ENABLE_SOCKET = True
+ENABLE_SOCKET = False
 windowsize = (1280,720)
 
 
@@ -33,8 +33,8 @@ def main():
         client_socket.connect(("192.168.137.112", 12353))
 
     # Set image detection model
-    od = ObjectDetection(model="imageRecognition/imageModels/best.pt", detection_mode=DetectionMode.CAMERA, capture_index=2)
-    #od = ObjectDetection(model="imageRecognition/yolov8s_060625.pt", detection_mode=DetectionMode.IMAGE, image="test/batch5_picture1.png")
+    #od = ObjectDetection(model="imageRecognition/imageModels/best.pt", detection_mode=DetectionMode.CAMERA, capture_index=3)
+    od = ObjectDetection(model="imageRecognition/yolov8s_060625.pt", detection_mode=DetectionMode.IMAGE, image="test/NPJ4.png")
     
     # Set initial robot state. State machine can be found in robotMovement/selectRobotTarget.py
 
@@ -44,8 +44,8 @@ def main():
 
         # Calculate robots distance and angle to target, and set its state
         try:
-            frame, detectedObjects, crossInfo = od.detectAll()
-            distanceToTarget, angleToTarget, robotState = calcDistAndAngleToTarget(detectedObjects, crossInfo, frame)
+            frame, detectedObjects, crossInfo, playAreaIntermediate = od.detectAll()
+            distanceToTarget, angleToTarget, robotState = calcDistAndAngleToTarget(detectedObjects, crossInfo, playAreaIntermediate, frame)
 
             # print(abort)
             cv2.putText(frame, f"State: {robotState}", (20, 60), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 0), 4)
