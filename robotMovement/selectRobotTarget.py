@@ -80,6 +80,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
 
     if tempBallCount == 5:
         goToGoalIntermidararyPoint(detectedObjects)
+        skipFinalCheck = False
 
     # If no state has been set yet, put robot in ball searching state.
     if len(stateQueue) == 0:
@@ -102,7 +103,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
             stateJson = stateVariables[0]
             if 'target' in stateJson:
                 targetBall = stateJson['target']
-            elif detectedObjects.get("orangeBalls") and len(detectedObjects["orangeBalls"]) > 0 and tempBallCount == 6:
+            elif detectedObjects.get("orangeBalls") and len(detectedObjects["orangeBalls"]) > 0 and tempBallCount == 4:
                 targetBall = min(detectedObjects["orangeBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
                 print("ORANGE BALL DETECTED!")
                 if is_objectmiddle_in_circle(targetBall, crossInfo.middle_point, crossInfo.size):
@@ -173,10 +174,11 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, frame):
 
     elif state == TO_GOAL:
         # log_state_transition(TO_GOAL)
-        if skipFinalCheck or not(tempBallCount == 5):
+        if skipFinalCheck:
             if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
                 stateQueue.append((SEARCH_BALLS, {}))
                 stateQueue.pop(0)
+            skipFinalCheck = True
         #print("TO_GOAL")
         # If no balls are present, move to goal.
         goalPos = detectedObjects["goals"][1]
