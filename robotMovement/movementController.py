@@ -59,18 +59,39 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
             if angleToTarget > 0.52:
                 forwardSpeed = 15
         else: 
-            turnSpeed = 0
-            forwardSpeed = 20
+            # turnSpeed = 0
+            turnSpeed = getTurnSpeed(angleToTarget)
+            forwardSpeed = 30
 
     elif state == "TO_GOAL":
         kp_speed = 0.15
 
         goalDistanceFromBall = 130
-        forwardSpeed = max(0, min(80, kp_speed * (distanceFromTarget - goalDistanceFromBall)))
+
+        # New approach to movement
+        if angleToTarget < -0.0872665:
+            turnSpeed = -100
+            forwardSpeed = 2
+            if angleToTarget < -0.52:
+                forwardSpeed = 15
+        elif angleToTarget >= 0.0872665:
+            turnSpeed = 100
+            forwardSpeed = 2
+            if angleToTarget > 0.52:
+                forwardSpeed = 15
+        else: 
+            turnSpeed = getTurnSpeed(angleToTarget)
+            forwardSpeed = 10
+            if distanceFromTarget < 110:
+                forwardSpeed = 0
+            # turnSpeed = 0
+            # forwardSpeed = 10
+
+        # forwardSpeed = max(0, min(80, kp_speed * (distanceFromTarget - goalDistanceFromBall)))
+        # turnSpeed = getTurnSpeed(angleToTarget) 
         # forwardSpeed = 10
         # if distanceFromTarget < 110:
         #     forwardSpeed = 0
-        turnSpeed = getTurnSpeed(angleToTarget) 
     
     elif state == "TO_EXACT_ROTATION":
         forwardSpeed = np.abs(getTurnSpeed(angleToTarget)/8)
