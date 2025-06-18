@@ -21,7 +21,7 @@ def main():
     except Exception as e:
         print("Error connecting to socket")
 
-    od = ObjectDetection(model="imageRecognition/ImageModels/best.pt", detection_mode=DetectionMode.IMAGE, image="test/batchborder_picture0.png")
+    od = ObjectDetection(model="imageRecognition/ImageModels/best.pt", detection_mode=DetectionMode.IMAGE, image="test/RobotOutsidePlayAreapicture0.png")
     #od = ObjectDetection(model="imageRecognition/yolov8_20250424.pt", detection_mode=DetectionMode.CAMERA, capture_index=2)
 
     # Main loop. Runs entire competition program.
