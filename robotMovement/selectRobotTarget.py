@@ -219,7 +219,7 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
             handleOA(robotPos, closest, detectedObjects)
             stateQueue.append((TO_INTERMEDIARY, closest))
             stateQueue.append((COLLECT_BALL, {'target': targetBall}))
-            stateQueue.append((BACKOFF, closest))
+            stateQueue.append((BACKOFF, None, calculateDistance(targetBall, closest)))
             cv2.line(frame, tuple_toint(targetBall), tuple_toint(closest), (0, 150, 150), 2)
     
     else:
