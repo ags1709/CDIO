@@ -207,7 +207,7 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
         exactRotationTarget = calculateAngleOfTwoPoints(intermediaryPoint, targetBall) # TODO: Suboptimal with intermediary point and not robot point used after reaching target but whatever.
         stateQueue.append((TO_EXACT_ROTATION, exactRotationTarget))
         stateQueue.append((SEARCH_BALLS, {'target': targetBall}))
-        stateQueue.append((BACKOFF, None, calculateDistance(targetBall, intermediaryPoint)))
+        stateQueue.append((BACKOFF, None, calculateDistance(targetBall, intermediaryPoint) / 2))
     
     if playAreaIntermediate is not None:
         inside, closest = analyze_point_with_polygon(targetBall, playAreaIntermediate)
