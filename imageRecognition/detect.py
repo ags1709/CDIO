@@ -132,8 +132,6 @@ class ObjectDetection():
         positions = {"whiteBalls": whiteBalls, "orangeBalls": orangeBalls,"playfield": playfield, "cross": cross, "egg": egg, "frontLeftCorner": frontLeftCorner, \
                      "frontRightCorner": frontRightCorner, "backLeftCorner": backLeftCorner, "backRightCorner": backRightCorner, "goals": goals}
         
-        # Remove all positions that are outside of the playarea
-        print(f"frontLeftCorner: {frontLeftCorner}, frontRightCorner: {frontRightCorner}, backLeftCorner: {backLeftCorner}, backRightCorner: {backRightCorner}")
         # Filter robot position
         if frontLeftCorner is not None and is_point_in_polygon(frontLeftCorner, playarea):
             positions["frontLeftCorner"] = frontLeftCorner
@@ -155,7 +153,6 @@ class ObjectDetection():
         else:
             positions["backRightCorner"] = None
 
-        print(f"Filtered robot position to {positions['backLeftCorner']} and {positions['backRightCorner']} and {positions['frontLeftCorner']} and {positions['frontRightCorner']} inside playarea")
 
         if whiteBalls.__len__() == 0 and orangeBalls.__len__() == 0:
             print("No balls detected, skipping position filtering")
@@ -165,14 +162,9 @@ class ObjectDetection():
             filtered_white_balls = []
             for ball in whiteBalls:
                 # Check if the ball is inside the playarea
-                # print(f"Checking white ball with coordinates {ball[0]} and {ball[1]}")
-                # print(f"Playarea: {playarea[0][0]} and {playarea[1][0]} and {playarea[0][1]} and {playarea[1][1]}")
                 if is_point_in_polygon(ball, playarea):
                     filtered_white_balls.append(ball)
-                # else:
-                #     print(f"Filtering white ball with coordinates {ball[0]} and {ball[1]}")
             positions["whiteBalls"] = filtered_white_balls
-            # print(f"Filtered white balls {filtered_white_balls.__len__()} inside playarea")
 
             # Filter orange balls inside playarea
             filtered_orange_balls = []
@@ -180,10 +172,7 @@ class ObjectDetection():
                 # Check if the ball is inside the playarea
                 if is_point_in_polygon(ball, playarea):
                     filtered_orange_balls.append(ball)
-                # else:
-                #     print(f"Filtering orange ball with coordinates {ball[0]} and {ball[1]}")
             positions["orangeBalls"] = filtered_orange_balls
-            print(f"Filtered to {positions['whiteBalls'].__len__()} white balls and {positions['orangeBalls'].__len__()} orange balls inside playarea")
         
         
         # Show live output
