@@ -119,7 +119,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
                 print("Found ball")
                 stateQueue.pop(0)
                 targetBall = None # Reset target ball
-                stateQueue.append((COLLECT_BALL, {'target': targetBall}))   # Go to collect ball state
+                stateQueue.append((SEARCH_BALLS, {'target': targetBall}))   # Go to collect ball state
                 #time.sleep(0.5)
 
 
