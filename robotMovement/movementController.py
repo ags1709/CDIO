@@ -99,9 +99,7 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
         turnSpeed = 100 if angleToTarget > 0 else -100
         
     elif state == "BACKOFF":
-        kp_speed = -0.15
-
-        forwardSpeed = np.clip(kp_speed * distanceFromTarget, -80, -5)
+        forwardSpeed = -100
         turnSpeed = 0
 
 
