@@ -50,7 +50,7 @@ def main():
             cv2.putText(frame, f"State: {robotState}", (20, 60), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 0), 4)
             
             # Determine whether to hand balls in or not
-            if robotState is "VOMIT":
+            if robotState == "VOMIT":
                 vomit = True
 
             print(f"vomit", vomit, "disdence", distanceToTarget)

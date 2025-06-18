@@ -32,9 +32,10 @@ VOMIT = "VOMIT"
 stateQueue = [ # Format: (State,variables)
     
 ]
+
 def setSearch_Balls():
     stateQueue.clear()
-    stateQueue.append(SEARCH_BALLS)
+    stateQueue.append(SEARCH_BALLS, )
 
 # SEARCH_BALLS
 targetBall = None
@@ -227,7 +228,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
 
         if robotDistance <= 110:
             stateQueue.pop(0)
-            stateQueue.append(VOMIT,)
+            stateQueue.append("VOMIT",)
 
     elif state == VOMIT:
         threading.Timer(interval=15, function=setSearch_Balls)
