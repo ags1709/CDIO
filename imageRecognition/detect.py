@@ -154,7 +154,7 @@ class ObjectDetection():
             positions["backRightCorner"] = None
 
 
-        if whiteBalls.__len__() == 0 and orangeBalls.__len__() == 0:
+        if len(whiteBalls) == 0 and len(orangeBalls) == 0:
             print("No balls detected, skipping position filtering")
             return frame, positions, crossinfo, playAreaIntermediate
         else:
