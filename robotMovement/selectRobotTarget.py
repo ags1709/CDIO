@@ -62,7 +62,7 @@ def handleOA(pos, target, objects):
 def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaIntermediate: list[tuple[float, float]], frame):
 
 
-    global targetBall; global stateQueue; global abort; global skipFinalCheck ;global targetBallMemory
+    global targetBall; global stateQueue; global abort; global skipFinalCheck ; #global targetBallMemory
         
     robotDistance = 0
     robotAngle = 0
@@ -118,8 +118,8 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
             if robotDistance < 100:
                 print("Found ball")
                 stateQueue.pop(0)
-                stateQueue.append((SEARCH_BALLS, {'target': targetBall}))   # Go to collect ball state
                 targetBall = None # Reset target ball
+                stateQueue.append((COLLECT_BALL, {'target': targetBall}))   # Go to collect ball state
                 #time.sleep(0.5)
 
 
