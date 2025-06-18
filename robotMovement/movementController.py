@@ -98,27 +98,6 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
         np.clip(forwardSpeed + 2, a_min=0, a_max=100)
         turnSpeed = 100 if angleToTarget > 0 else -100
         
-    elif state == "COLLECT_BALL":
-        kp_speed = 0.05
-
-        goalDistanceFromBall = 10
-    
-        if angleToTarget < -0.0872665: # 5 degrees
-            turnSpeed = -100
-            forwardSpeed = 5
-            if angleToTarget < -0.52: # 30 degrees
-                forwardSpeed = 5
-        elif angleToTarget >= 0.0872665:
-            turnSpeed = 100
-            forwardSpeed = 5
-            if angleToTarget > 0.52:
-                forwardSpeed = 5
-        else: 
-            # turnSpeed = 0
-            turnSpeed = getTurnSpeed(angleToTarget)
-            forwardSpeed = 5
-
-
     elif state == "BACKOFF":
         kp_speed = -0.15
 

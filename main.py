@@ -4,7 +4,6 @@ from robotMovement.distanceBetweenObjects import calculateDistance
 from robotMovement.angleOfRotationCalculator import calculateAngleOfRotation
 from robotMovement.selectRobotTarget import calcDistAndAngleToTarget, abort, setAbort
 from robotMovement.movementController import calculateSpeedAndRotation
-from robotMovement.determineAuxiliaryActions import determineAuxiliaryActions
 from robotMovement.calculateRobotPosition import calculateRobotPositionFlexible
 from ultralytics import YOLO
 import math
@@ -30,14 +29,13 @@ def main():
     # Set connection to robot
     if ENABLE_SOCKET:
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_socket.connect(("192.168.137.112", 12350))
+        client_socket.connect(("192.168.137.112", 12351))
 
     # Set image detection model
     od = ObjectDetection(model="imageRecognition/imageModels/best.pt", detection_mode=DetectionMode.CAMERA, capture_index=2)
     # od = ObjectDetection(model="imageRecognition/yolov8s_060625.pt", detection_mode=DetectionMode.IMAGE, image="test/NPJ4.png")
     
     # Set initial robot state. State machine can be found in robotMovement/selectRobotTarget.py
-
     # Main loop. Runs entire competition program.
     while True:
         # use model to detect objects
@@ -49,9 +47,9 @@ def main():
 
             # print(abort)
             cv2.putText(frame, f"State: {robotState}", (20, 60), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 0), 4)
-            
+
             # Determine whether to hand balls in or not
-            vomit = determineAuxiliaryActions(distanceToTarget, angleToTarget, robotState)
+            vomit = robotState == "VOMIT"
 
             print(f"vomit", vomit, "disdence", distanceToTarget)
             # Calculate the engine speeds determining the robots movement based on distance and angle to target.
