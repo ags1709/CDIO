@@ -160,6 +160,16 @@ class ObjectDetection():
                 #     print(f"Filtering orange ball with coordinates {ball[0]} and {ball[1]}")
             positions["orangeBalls"] = filtered_orange_balls
             print(f"Filtered to {positions['whiteBalls'].__len__()} white balls and {positions['orangeBalls'].__len__()} orange balls inside playarea")
+
+            # Filter robot position
+            if is_point_in_polygon(frontLeftCorner, playarea):
+                positions["backRightCorner"] = backRightCorner
+            if is_point_in_polygon(frontRightCorner, playarea):
+                positions["frontRightCorner"] = frontRightCorner
+            if is_point_in_polygon(backLeftCorner, playarea):
+                positions["backLeftCorner"] = backLeftCorner
+            if is_point_in_polygon(backRightCorner, playarea):
+                positions["backRightCorner"] = backRightCorner
         # Show live output
         
         return frame, positions, crossinfo, playAreaIntermediate
