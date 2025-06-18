@@ -176,7 +176,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         # We can't store the robot position when appending BACKOFF to the state queue
         # So when appending, it's set to None, so we can set it here instead on first BACKOFF frame
         if (stateVariables[0] == None):
-            stateQueue[0] = (BACKOFF, robotPos, stateVariables[1:])
+            stateQueue[0] = (BACKOFF, robotPos[0], *stateVariables[1:])
             stateVariables = stateQueue[0][1:]
         startPoint = stateVariables[0]
         targetDistance = stateVariables[1]
