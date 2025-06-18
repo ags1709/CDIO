@@ -138,15 +138,27 @@ class ObjectDetection():
             return frame, positions, crossinfo, playAreaIntermediate
         else:
             # Filter white balls inside playarea
-            positions["whiteBalls"] = [
-                ball for ball in whiteBalls
-                if playarea[0][0] >= ball[0] >= playarea[1][0] and playarea[0][1] >= ball[1] >= playarea[1][1]
-            ]
+            filtered_white_balls = []
+            for ball in whiteBalls:
+                # Check if the ball is inside the playarea
+                # print(f"Checking white ball with coordinates {ball[0]} and {ball[1]}")
+                # print(f"Playarea: {playarea[0][0]} and {playarea[1][0]} and {playarea[0][1]} and {playarea[1][1]}")
+                if playarea[0][0] <= ball[0] <= playarea[1][0] and playarea[0][1] <= ball[1] >= playarea[1][1]:
+                    filtered_white_balls.append(ball)
+                # else:
+                #     print(f"Filtering white ball with coordinates {ball[0]} and {ball[1]}")
+            positions["whiteBalls"] = filtered_white_balls
+            # print(f"Filtered white balls {filtered_white_balls.__len__()} inside playarea")
+
             # Filter orange balls inside playarea
-            positions["orangeBalls"] = [
-                ball for ball in orangeBalls
-                if playarea[0][0] >= ball[0] >= playarea[1][0] and playarea[0][1] >= ball[1] >= playarea[1][1]
-            ]
+            filtered_orange_balls = []
+            for ball in orangeBalls:
+                # Check if the ball is inside the playarea
+                if playarea[0][0] <= ball[0] <= playarea[1][0] and playarea[0][1] <= ball[1] >= playarea[1][1]:
+                    filtered_orange_balls.append(ball)
+                # else:
+                #     print(f"Filtering orange ball with coordinates {ball[0]} and {ball[1]}")
+            positions["orangeBalls"] = filtered_orange_balls
             print(f"Filtered to {positions['whiteBalls'].__len__()} white balls and {positions['orangeBalls'].__len__()} orange balls inside playarea")
         # Show live output
         
