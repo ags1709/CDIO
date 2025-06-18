@@ -205,7 +205,6 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         #     return robotDistance, robotAngle, state
     
     elif state == TO_GOAL:
-    elif state == TO_GOAL:
         # log_state_transition(TO_GOAL)
         if skipFinalCheck:
             if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
