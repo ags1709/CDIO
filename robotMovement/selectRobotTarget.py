@@ -55,11 +55,19 @@ def is_objectmiddle_in_circle(objectpos, center, radius):
 def add_angle(a1, a2):
     return (a1 + a2 + np.pi) % (2*np.pi) - np.pi
 
+
 def handleOA(pos, target, objects):
-    if avoidObstacle(pos[0], target, objects["cross"]) is not None:
-        print("Obstacle in the way, navigating to intermediary point")
-        OAintermediaryPoint = avoidObstacle(pos[0], target, objects["cross"])
-        stateQueue.insert(0, (TO_INTERMEDIARY, OAintermediaryPoint))
+    path = avoidObstacle(pos[0], target, objects["cross"])
+
+    # If an obstacle is in the way but no valid path is found, do nothing but print alert.
+    if path is None:
+        print("WARNING: Obstacle in way, but no viable path found")
+
+    # If necessary, calculates intermediary points to navigate to before going to target and adds them to state queue
+    elif path != [target]:
+        print("Obstacle in the way, navigating to intermediary point(s)")
+        for OAIP in reversed(path):
+            stateQueue.insert(0, (TO_INTERMEDIARY, OAIP))
 
 def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaIntermediate: list[tuple[float, float]], frame):
 
