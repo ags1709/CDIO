@@ -1,6 +1,6 @@
 import cv2
 from ultralytics import YOLO
-from imageRecognition.positionEstimator import estimateGoals, estimateCross, estimatePlayArea, estimatePlayAreaIntermediate, analyze_point_with_polygon, CrossInfo
+from imageRecognition.positionEstimator import estimateGoals, estimateCross, estimatePlayArea, estimatePlayAreaIntermediate, analyze_point_with_polygon, CrossInfo, is_point_in_polygon
 from imageRecognition.positionEstimator import estimatePositionFromSquare
 from imageRecognition.positionEstimator import tuple_toint
 from robotMovement.calculateRobotPosition import correctPerspective
@@ -143,7 +143,7 @@ class ObjectDetection():
                 # Check if the ball is inside the playarea
                 # print(f"Checking white ball with coordinates {ball[0]} and {ball[1]}")
                 # print(f"Playarea: {playarea[0][0]} and {playarea[1][0]} and {playarea[0][1]} and {playarea[1][1]}")
-                if playarea[0][0] <= ball[0] <= playarea[1][0] and playarea[0][1] <= ball[1] >= playarea[1][1]:
+                if is_point_in_polygon(ball, playarea):
                     filtered_white_balls.append(ball)
                 # else:
                 #     print(f"Filtering white ball with coordinates {ball[0]} and {ball[1]}")
@@ -154,7 +154,7 @@ class ObjectDetection():
             filtered_orange_balls = []
             for ball in orangeBalls:
                 # Check if the ball is inside the playarea
-                if playarea[0][0] <= ball[0] <= playarea[1][0] and playarea[0][1] <= ball[1] >= playarea[1][1]:
+                if is_point_in_polygon(ball, playarea):
                     filtered_orange_balls.append(ball)
                 # else:
                 #     print(f"Filtering orange ball with coordinates {ball[0]} and {ball[1]}")
