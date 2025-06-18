@@ -160,7 +160,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
 
         if robotDistance <= 110:
             stateQueue.pop(0)
-            stateQueue.append({VOMIT,})
+            stateQueue.append((VOMIT,))
             threading.Timer(interval=15, function=setSearch_Balls)
 
     elif state == VOMIT:
