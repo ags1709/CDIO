@@ -30,7 +30,7 @@ def avoidObstacle(robotPos, targetPos, obstacle, robotWidth=119):
     xMin, yMin = obstacle[0]
     xMax, yMax = obstacle[1]
 
-    margin = 200  # Pixels to avoid obstacle by
+    margin = 100  # Pixels to avoid obstacle by
     candidates = [
         ((xMin + xMax)/2, yMax + margin),  # above
         ((xMin + xMax)/2, yMin - margin),  # below

@@ -106,7 +106,6 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
                 print("No balls")
                 goToGoalIntermidararyPoint(detectedObjects, robotPos)
 
-
         
 
         # Calculate distance and angle to the selected ball
@@ -174,7 +173,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         #robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], pixelBackoffPoint)
         #robotAngle = add_angle(robotToObjectAngle, -robotRotation) 
         # TODO: Readd robot angle so it does not fuck with the distance and shit
-        if robotDistance <= 35:
+        if robotDistance <= 50:
             print("Reached BACKOFF point")
             stateQueue.pop(0)
             
