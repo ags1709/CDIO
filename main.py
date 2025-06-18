@@ -36,7 +36,7 @@ def main():
     # od = ObjectDetection(model="imageRecognition/yolov8s_060625.pt", detection_mode=DetectionMode.IMAGE, image="test/NPJ4.png")
     
     # Set initial robot state. State machine can be found in robotMovement/selectRobotTarget.py
-
+    vomit = False
     # Main loop. Runs entire competition program.
     while True:
         # use model to detect objects
@@ -48,7 +48,7 @@ def main():
 
             # print(abort)
             cv2.putText(frame, f"State: {robotState}", (20, 60), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 0), 4)
-            
+
             # Determine whether to hand balls in or not
             if robotState == "VOMIT":
                 vomit = True
