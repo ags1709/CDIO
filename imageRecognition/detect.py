@@ -86,7 +86,6 @@ class ObjectDetection():
         playAreaIntermediate = estimatePlayAreaIntermediate(result, playarea, frame) #pa_tl = playarea of top left... etc
         
         
-        
         for box in boxes:
             cls_id = int(box.cls[0])
             conf = float(box.conf[0])
@@ -125,12 +124,30 @@ class ObjectDetection():
                 backLeftCorner = estimatePositionFromSquare(x1, y1, x2, y2)
                 cv2.circle(frame, tuple_toint(correctPerspective(backLeftCorner)), 10, (0,0,255), 10)
 
+
+
         # A dictionary mapping names of objects we want to a list of their positions, each position being a tuple with 2 points
         # The points being respectively the upperleft and bottomright corner of their bounding box. Each point is itself a tuple of 2 integers.
         # NOTE: goals are stored differently to everything else. goals are stored as a tuple with its x coordinate, and the y coordinate being the middle of the goal.
         positions = {"whiteBalls": whiteBalls, "orangeBalls": orangeBalls, "playfield": playfield, "cross": cross, "egg": egg, "frontLeftCorner": frontLeftCorner, \
                      "frontRightCorner": frontRightCorner, "backLeftCorner": backLeftCorner, "backRightCorner": backRightCorner, "goals": goals}
         
+        # Remove all positions that are outside of the playarea
+        if whiteBalls.__len__() == 0 and orangeBalls.__len__() == 0:
+            print("No balls detected, skipping position filtering")
+            return frame, positions, crossinfo, playAreaIntermediate
+        else:
+            # Filter white balls inside playarea
+            positions["whiteBalls"] = [
+                ball for ball in whiteBalls
+                if playarea[0][0] >= ball[0] >= playarea[1][0] and playarea[0][1] >= ball[1] >= playarea[1][1]
+            ]
+            # Filter orange balls inside playarea
+            positions["orangeBalls"] = [
+                ball for ball in orangeBalls
+                if playarea[0][0] >= ball[0] >= playarea[1][0] and playarea[0][1] >= ball[1] >= playarea[1][1]
+            ]
+            print(f"Filtered to {positions['whiteBalls'].__len__()} white balls and {positions['orangeBalls'].__len__()} orange balls inside playarea")
         # Show live output
         
         return frame, positions, crossinfo, playAreaIntermediate
