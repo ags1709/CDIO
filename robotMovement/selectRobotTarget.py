@@ -67,11 +67,6 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
     robotDistance = 0
     robotAngle = 0
 
-    if abort:
-        goToGoalIntermidararyPoint(detectedObjects)
-        skipFinalCheck = False
-        abort = False
-
     # If no state has been set yet, put robot in ball searching state.
     if len(stateQueue) == 0:
         stateQueue.append((SEARCH_BALLS, {}))
@@ -81,6 +76,10 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
     robotMiddle = ((robotPos[0][0] + robotPos[1][0]) / 2, (robotPos[0][1] + robotPos[1][1]) / 2)
     robotRotation = calculateAngleOfTwoPoints(robotPos[1], robotPos[0])
     
+    if abort:
+        goToGoalIntermidararyPoint(detectedObjects, robotPos)
+        skipFinalCheck = False
+        abort = False
 
     state = lambda: stateQueue[0][0] # State
     stateVariables = lambda: stateQueue[0][1:] # Variables for state
@@ -115,10 +114,10 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
             #print(robotDistance)
             robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], targetBall)
             robotAngle = add_angle(robotToObjectAngle, -robotRotation)
-            if robotDistance < 150:
+            if robotDistance < 100:
                 print("Found ball")
                 stateQueue.pop(0)
-                stateQueue.append((COLLECT_BALL, {'target': targetBall}))   # Go to collect ball state
+                stateQueue.append((SEARCH_BALLS, {'target': targetBall}))   # Go to collect ball state
                 targetBall = None # Reset target ball
                 #time.sleep(0.5)
 
@@ -175,7 +174,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
             drift = calculateDistance(nearestBall, targetBall)
             if drift < 40:
             # Accept updated ball
-                print('Drifting like a mofo')
+                print('Moving to nearest ball')
                 targetBall = nearestBall
                 targetBallMemory = nearestBall
                 stateJson['target'] = nearestBall
@@ -196,13 +195,13 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], targetBall)
         robotAngle = add_angle(robotToObjectAngle, -robotRotation)
 
-        if robotDistance <= 15:
-            print("Ball collected!")
-            stateQueue.pop(0)
-            targetBall = None
-            targetBallMemory = None
-            stateQueue.append((SEARCH_BALLS, {}))
-            return robotDistance, robotAngle, state
+        # if robotDistance <= 15:
+        #     print("Ball collected!")
+        #     stateQueue.pop(0)
+        #     targetBall = None
+        #     targetBallMemory = None
+        #     stateQueue.append((SEARCH_BALLS, {}))
+        #     return robotDistance, robotAngle, state
     
     elif state == TO_GOAL:
         # log_state_transition(TO_GOAL)
@@ -265,7 +264,7 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
         #exactRotationTarget = (crossInfo.angle_rad + np.pi + np.pi) % (2*np.pi) - np.pi
         exactRotationTarget = calculateAngleOfTwoPoints(intermediaryPoint, targetBall) # TODO: Suboptimal with intermediary point and not robot point used after reaching target but whatever.
         stateQueue.append((TO_EXACT_ROTATION, exactRotationTarget))
-        stateQueue.append((SEARCH_BALLS, {'target': targetBall}))
+        stateQueue.append((COLLECT_BALL, {'target': targetBall}))
         stateQueue.append((BACKOFF, intermediaryPoint))
     
     if playAreaIntermediate is not None:
@@ -277,7 +276,7 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
             stateQueue.pop(0)
             handleOA(robotPos, closest, detectedObjects)
             stateQueue.append((TO_INTERMEDIARY, closest))
-            stateQueue.append((SEARCH_BALLS, {'target': targetBall}))
+            stateQueue.append((COLLECT_BALL, {'target': targetBall}))
             stateQueue.append((BACKOFF, closest))
             cv2.line(frame, tuple_toint(targetBall), tuple_toint(closest), (0, 150, 150), 2)
     
