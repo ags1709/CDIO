@@ -65,11 +65,6 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
     robotDistance = 0
     robotAngle = 0
 
-    if abort:
-        goToGoalIntermidararyPoint(detectedObjects)
-        skipFinalCheck = False
-        abort = False
-
     # If no state has been set yet, put robot in ball searching state.
     if len(stateQueue) == 0:
         stateQueue.append((SEARCH_BALLS, {}))
@@ -79,6 +74,10 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
     robotMiddle = ((robotPos[0][0] + robotPos[1][0]) / 2, (robotPos[0][1] + robotPos[1][1]) / 2)
     robotRotation = calculateAngleOfTwoPoints(robotPos[1], robotPos[0])
     
+    if abort:
+        goToGoalIntermidararyPoint(detectedObjects, robotPos)
+        skipFinalCheck = False
+        abort = False
 
     state = lambda: stateQueue[0][0] # State
     stateVariables = lambda: stateQueue[0][1:] # Variables for state
