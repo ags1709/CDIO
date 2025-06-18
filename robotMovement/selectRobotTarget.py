@@ -1,6 +1,6 @@
 from robotMovement.distanceBetweenObjects import calculateDistance
 from robotMovement.angleOfRotationCalculator import calculateAngleOfRotation, calculateAngleOfTwoPoints
-from robotMovement.calculateRobotPosition import calculateRobotPositionFlexible
+from robotMovement.calculateRobotPosition import calculateRobotPositionFlexible, getRobotPos
 from imageRecognition.positionEstimator import CrossInfo, findIntermediatyCrossPoint, analyze_point_with_polygon
 import numpy as np
 import cv2
@@ -74,7 +74,9 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         stateQueue.append((SEARCH_BALLS, {}))
 
     # This is the two points used to identify the robots position. 
-    robotPos = calculateRobotPositionFlexible(detectedObjects["frontLeftCorner"], detectedObjects["frontRightCorner"], detectedObjects["backLeftCorner"], detectedObjects["backRightCorner"])
+    # robotPos = calculateRobotPositionFlexible(detectedObjects["frontLeftCorner"], detectedObjects["frontRightCorner"], detectedObjects["backLeftCorner"], detectedObjects["backRightCorner"])
+    robotPos = getRobotPos([detectedObjects["frontLeftCorner"], detectedObjects["frontRightCorner"],\
+                            detectedObjects["backLeftCorner"], detectedObjects["backRightCorner"]])
     robotMiddle = ((robotPos[0][0] + robotPos[1][0]) / 2, (robotPos[0][1] + robotPos[1][1]) / 2)
     robotRotation = calculateAngleOfTwoPoints(robotPos[1], robotPos[0])
     
