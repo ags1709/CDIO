@@ -4,7 +4,6 @@ from robotMovement.distanceBetweenObjects import calculateDistance
 from robotMovement.angleOfRotationCalculator import calculateAngleOfRotation
 from robotMovement.selectRobotTarget import calcDistAndAngleToTarget, abort, setAbort
 from robotMovement.movementController import calculateSpeedAndRotation
-from robotMovement.determineAuxiliaryActions import determineAuxiliaryActions
 from robotMovement.calculateRobotPosition import calculateRobotPositionFlexible
 from ultralytics import YOLO
 import math
@@ -51,7 +50,8 @@ def main():
             cv2.putText(frame, f"State: {robotState}", (20, 60), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 0), 4)
             
             # Determine whether to hand balls in or not
-            vomit = determineAuxiliaryActions(distanceToTarget, angleToTarget, robotState)
+            if robotState is "VOMIT":
+                vomit = True
 
             print(f"vomit", vomit, "disdence", distanceToTarget)
             # Calculate the engine speeds determining the robots movement based on distance and angle to target.

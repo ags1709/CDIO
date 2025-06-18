@@ -9,6 +9,7 @@ import math
 import numpy as np
 from robotMovement.obstacleAvoidance import avoidObstacle
 import time
+import threading
 
 abort = False
 skipFinalCheck = True
@@ -16,6 +17,7 @@ def setAbort():
     global abort
     abort = True
     
+
 # States for state machine. Can be expanded later to handle situations calling for specific behaviour like getting ball from corner/cross.
 SEARCH_BALLS = "SEARCH_BALLS"
 TO_INTERMEDIARY = "TO_INTERMEDIARY"
@@ -23,10 +25,16 @@ TO_GOAL = "TO_GOAL"
 TO_EXACT_ROTATION = "TO_EXACT_ROTATION"
 BACKOFF = "BACKOFF"
 COLLECT_BALL = "COLLECT_BALL"
+VOMIT = "VOMIT"
+
+    
 
 stateQueue = [ # Format: (State,variables)
     
 ]
+def setSearch_Balls():
+    stateQueue.clear()
+    stateQueue.append(SEARCH_BALLS)
 
 # SEARCH_BALLS
 targetBall = None
@@ -217,11 +225,13 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], goalPos)
         robotAngle = add_angle(robotToObjectAngle, -robotRotation)
 
-    # Add a condition for arrival if needed
-        if robotDistance <= 50:
-            print("Reached the goal!")
+        if robotDistance <= 110:
             stateQueue.pop(0)
-        
+            stateQueue.append(VOMIT,)
+
+    elif state == VOMIT:
+        threading.Timer(interval=15, function=setSearch_Balls)
+
     elif state == TO_EXACT_ROTATION:
         # log_state_transition(TO_EXACT_ROTATION)
 
