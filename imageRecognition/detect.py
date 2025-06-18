@@ -128,7 +128,7 @@ class ObjectDetection():
         # A dictionary mapping names of objects we want to a list of their positions, each position being a tuple with 2 points
         # The points being respectively the upperleft and bottomright corner of their bounding box. Each point is itself a tuple of 2 integers.
         # NOTE: goals are stored differently to everything else. goals are stored as a tuple with its x coordinate, and the y coordinate being the middle of the goal.
-        positions = {"whiteBalls": whiteBalls, "orangeBalls": orangeBalls,"playfield": playfield, "cross": cross, "egg": egg, "frontLeftCorner": frontLeftCorner, \
+        positions = {"whiteBalls": whiteBalls, "orangeBalls": orangeBalls, "playfield": playfield, "cross": cross, "egg": egg, "frontLeftCorner": frontLeftCorner, \
                      "frontRightCorner": frontRightCorner, "backLeftCorner": backLeftCorner, "backRightCorner": backRightCorner, "goals": goals}
         
         # Show live output
