@@ -27,15 +27,9 @@ BACKOFF = "BACKOFF"
 # COLLECT_BALL = "COLLECT_BALL"
 VOMIT = "VOMIT"
 
-    
-
 stateQueue = [ # Format: (State,variables)
     
 ]
-
-def setSearch_Balls():
-    stateQueue.clear()
-    stateQueue.append(SEARCH_BALLS, )
 
 # SEARCH_BALLS
 targetBall = None
@@ -160,11 +154,12 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
 
         if robotDistance <= 110:
             stateQueue.pop(0)
-            stateQueue.append((VOMIT,))
-            threading.Timer(interval=15, function=setSearch_Balls)
+            stateQueue.append((VOMIT, time.time()))
 
     elif state == VOMIT:
-        pass
+        if (stateVariables[0] + 4 <= time.time()):
+            stateQueue.pop(0)
+            stateQueue.append((SEARCH_BALLS, {}))
 
     elif state == TO_EXACT_ROTATION:
         # log_state_transition(TO_EXACT_ROTATION)
