@@ -10,6 +10,7 @@ import numpy as np
 from robotMovement.obstacleAvoidance import avoidObstacle
 import time
 import threading
+from imageRecognition.positionEstimator import estimateGoals, estimateCross, estimatePlayArea, estimatePlayAreaIntermediate, analyze_point_with_polygon, CrossInfo, is_point_in_polygon
 
 abort = False
 skipFinalCheck = True
@@ -259,6 +260,23 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
     
     return robotDistance, robotAngle, state
 
+def calulateNewBallPosInConer(robotPos, targetBall):
+    moveBallOut = 70
+    #square = estimatePlayAreaIntermediate(result, playarea, frame, margin=70)
+    robotVector = (robotPos[0][0] - robotPos[1][0], robotPos[0][1] - robotPos[1][1])
+    robotVectorLength = np.sqrt(robotVector[0]**2 + robotVector[1]**2)
+    normalizedVector = robotVector / robotVectorLength
+
+    normalizedVector = normalizedVector * -1
+
+    scaledNormalizedVector = moveBallOut * normalizedVector
+
+    finalPoint = targetBall + scaledNormalizedVector
+
+    return finalPoint
+    
+
+
 def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObjects, robotPos, frame):
     global stateQueue; global targetBall
     if crossInfo is not None and is_objectmiddle_in_circle(targetBall, crossInfo.middle_point, crossInfo.size):
@@ -278,14 +296,15 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
         inside, closest = analyze_point_with_polygon(targetBall, playAreaIntermediate)
         # print(f"Ball: {targetBall}")
         # print(f"Inside: {inside}")
+        newBallPoint = calulateNewBallPosInConer(robotPos, targetBall)
         if not inside:
             print(f"Ball close to edge. Closest Point: {closest}")
             stateQueue.pop(0)
             handleOA(robotPos, closest, detectedObjects)
             stateQueue.append((TO_INTERMEDIARY, closest))
-            stateQueue.append((COLLECT_BALL, {'target': targetBall}))
+            stateQueue.append((COLLECT_BALL, {'target': newBallPoint}))
             stateQueue.append((BACKOFF, closest))
-            cv2.line(frame, tuple_toint(targetBall), tuple_toint(closest), (0, 150, 150), 2)
+            cv2.line(frame, tuple_toint(newBallPoint), tuple_toint(closest), (0, 150, 150), 2)
     
     else:
         targetBall = min(detectedObjects["orangeBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
