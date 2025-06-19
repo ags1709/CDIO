@@ -6,6 +6,7 @@ from shapely.geometry import LineString
 import numpy as np
 
 ROBOT_WIDTH = 119
+MARGIN = 100
 
 def calculateDistance(point1, point2):
     return np.sqrt((point1[0] - point2[0])**2 + (point1[1] - point2[1])**2)
@@ -39,7 +40,7 @@ def avoidObstacle(robotPos, targetPos, obstacle, robotWidth=119, depth=0, maxDep
     xMin, yMin = obstacle[0]
     xMax, yMax = obstacle[1]
 
-    margin = 100  # Pixels to avoid obstacle by
+    margin = MARGIN  # Pixels to avoid obstacle by
     candidates = [
         ((xMin + xMax)/2, yMax + margin),  # above
         ((xMin + xMax)/2, yMin - margin),  # below
@@ -79,93 +80,93 @@ def avoidObstacle(robotPos, targetPos, obstacle, robotWidth=119, depth=0, maxDep
 
 
 # ------------------------------------------------------------------------------------------------
-def visualizeScenario(robotPos, targetPos, obstacle, robotWidth, title="Scenario"):
-    direct_path_valid = not pathIntersectsObstacle(robotPath(robotPos, targetPos, robotWidth), obstacle)
+# def visualizeScenario(robotPos, targetPos, obstacle, robotWidth, title="Scenario"):
+#     direct_path_valid = not pathIntersectsObstacle(robotPath(robotPos, targetPos, robotWidth), obstacle)
 
-    if direct_path_valid:
-        path = [targetPos]  # Just go straight to the target
-    else:
-        path = avoidObstacle(robotPos, targetPos, obstacle, robotWidth)
+#     if direct_path_valid:
+#         path = [targetPos]  # Just go straight to the target
+#     else:
+#         path = avoidObstacle(robotPos, targetPos, obstacle, robotWidth)
 
-    fig, ax = plt.subplots()
+#     fig, ax = plt.subplots()
 
-    ax.plot(*robotPos, 'bo', label="Robot Start")
-    ax.plot(*targetPos, 'go', label="Target")
+#     ax.plot(*robotPos, 'bo', label="Robot Start")
+#     ax.plot(*targetPos, 'go', label="Target")
 
-    # Draw the obstacle
-    xMin, yMin = obstacle[0]
-    xMax, yMax = obstacle[1]
-    rect_patch = patches.Rectangle((xMin, yMin), xMax - xMin, yMax - yMin,
-                                   linewidth=2, edgecolor='red', facecolor='red', alpha=0.3, label="Obstacle")
-    ax.add_patch(rect_patch)
+#     # Draw the obstacle
+#     xMin, yMin = obstacle[0]
+#     xMax, yMax = obstacle[1]
+#     rect_patch = patches.Rectangle((xMin, yMin), xMax - xMin, yMax - yMin,
+#                                    linewidth=2, edgecolor='red', facecolor='red', alpha=0.3, label="Obstacle")
+#     ax.add_patch(rect_patch)
 
-    if path:
-        full_path = [robotPos] + path
-        for i in range(len(full_path) - 1):
-            start = full_path[i]
-            end = full_path[i + 1]
+#     if path:
+#         full_path = [robotPos] + path
+#         for i in range(len(full_path) - 1):
+#             start = full_path[i]
+#             end = full_path[i + 1]
 
-            # Plot segment line
-            ax.plot([start[0], end[0]], [start[1], end[1]],
-                    'b-' if i == 0 else 'g-', label="To Waypoint" if i == 0 else None)
+#             # Plot segment line
+#             ax.plot([start[0], end[0]], [start[1], end[1]],
+#                     'b-' if i == 0 else 'g-', label="To Waypoint" if i == 0 else None)
 
-            # Plot swept path
-            swept = robotPath(start, end, robotWidth)
-            ax.add_patch(patches.Polygon(list(swept.exterior.coords), alpha=0.1,
-                                         color='blue' if i == 0 else 'green'))
+#             # Plot swept path
+#             swept = robotPath(start, end, robotWidth)
+#             ax.add_patch(patches.Polygon(list(swept.exterior.coords), alpha=0.1,
+#                                          color='blue' if i == 0 else 'green'))
 
-            # Plot waypoints
-            if i > 0 and i < len(full_path) - 1:  # Only intermediate waypoints
-                ax.plot(*start, 'ro', label="Waypoint" if i == 1 else None)
+#             # Plot waypoints
+#             if i > 0 and i < len(full_path) - 1:  # Only intermediate waypoints
+#                 ax.plot(*start, 'ro', label="Waypoint" if i == 1 else None)
 
-    else:
-        # No valid path at all
-        ax.plot([robotPos[0], targetPos[0]], [robotPos[1], targetPos[1]], 'k--', label="Blocked Path")
-        swept = robotPath(robotPos, targetPos, robotWidth)
-        ax.add_patch(patches.Polygon(list(swept.exterior.coords), alpha=0.1, color='gray'))
+#     else:
+#         # No valid path at all
+#         ax.plot([robotPos[0], targetPos[0]], [robotPos[1], targetPos[1]], 'k--', label="Blocked Path")
+#         swept = robotPath(robotPos, targetPos, robotWidth)
+#         ax.add_patch(patches.Polygon(list(swept.exterior.coords), alpha=0.1, color='gray'))
 
-    ax.set_title(title)
-    ax.set_aspect('equal')
-    ax.grid(True)
-    ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)
-    plt.tight_layout()
-    plt.show()
+#     ax.set_title(title)
+#     ax.set_aspect('equal')
+#     ax.grid(True)
+#     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)
+#     plt.tight_layout()
+#     plt.show()
 
 
-# # Test cases
-test_cases = [
-    {
-        "robotPos": (100, 100),
-        "targetPos": (400, 400),
-        "obstacle": [(200, 200), (300, 300)],
-        "title": "Obstacle in Diagonal Path"
-    },
-    {
-        "robotPos": (100, 100),
-        "targetPos": (400, 100),
-        "obstacle": [(200, 50), (300, 150)],
-        "title": "Obstacle in Horizontal Path"
-    },
-    {
-        "robotPos": (100, 400),
-        "targetPos": (100, 100),
-        "obstacle": [(50, 200), (150, 300)],
-        "title": "Vertical Obstacle"
-    },
-    {
-        "robotPos": (50, 50),
-        "targetPos": (450, 50),
-        "obstacle": [(200, 0), (300, 100)],
-        "title": "Skimming Along Obstacle Bottom"
-    },
-    {
-        "robotPos": (100, 100),
-        "targetPos": (400, 400),
-        "obstacle": [(500, 500), (600, 600)],
-        "title": "Obstacle Not in Path"
-    },
-]
+# # # Test cases
+# test_cases = [
+#     {
+#         "robotPos": (100, 100),
+#         "targetPos": (400, 400),
+#         "obstacle": [(200, 200), (300, 300)],
+#         "title": "Obstacle in Diagonal Path"
+#     },
+#     {
+#         "robotPos": (100, 100),
+#         "targetPos": (400, 100),
+#         "obstacle": [(200, 50), (300, 150)],
+#         "title": "Obstacle in Horizontal Path"
+#     },
+#     {
+#         "robotPos": (100, 400),
+#         "targetPos": (100, 100),
+#         "obstacle": [(50, 200), (150, 300)],
+#         "title": "Vertical Obstacle"
+#     },
+#     {
+#         "robotPos": (50, 50),
+#         "targetPos": (450, 50),
+#         "obstacle": [(200, 0), (300, 100)],
+#         "title": "Skimming Along Obstacle Bottom"
+#     },
+#     {
+#         "robotPos": (100, 100),
+#         "targetPos": (400, 400),
+#         "obstacle": [(500, 500), (600, 600)],
+#         "title": "Obstacle Not in Path"
+#     },
+# ]
 
-for test in test_cases:
-    visualizeScenario(test["robotPos"], test["targetPos"], test["obstacle"], ROBOT_WIDTH, test["title"])
+# for test in test_cases:
+#     visualizeScenario(test["robotPos"], test["targetPos"], test["obstacle"], ROBOT_WIDTH, test["title"])
 
