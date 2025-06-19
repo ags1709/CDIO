@@ -252,9 +252,7 @@ def estimatePlayArea(result, cap, frame) -> list[np.ndarray]:
 def np_int(t):
     return np.round(t).astype(int)
 
-def estimatePlayAreaIntermediate(result, playarea, frame):
-    margin = 165
-
+def estimatePlayAreaIntermediate(result, playarea, frame, margin):
     #playarea = np.array(playarea)
     if playarea is None:
         print("WARNING! Play area is none, returning (est intermediate)")

@@ -10,6 +10,7 @@ import numpy as np
 from robotMovement.obstacleAvoidance import avoidObstacle
 import time
 import threading
+from imageRecognition.positionEstimator import estimateGoals, estimateCross, estimatePlayArea, estimatePlayAreaIntermediate, analyze_point_with_polygon, CrossInfo, is_point_in_polygon
 
 abort = False
 skipFinalCheck = True
@@ -72,7 +73,7 @@ def handleOA(pos, target, objects):
 def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaIntermediate: list[tuple[float, float]], frame):
 
 
-    global targetBall; global stateQueue; global abort; global skipFinalCheck
+    global targetBall; global stateQueue; global abort; global skipFinalCheck; global targetBallMemory
         
     robotDistance = 0
     robotAngle = 0
@@ -167,6 +168,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
     elif state == VOMIT:
         if (stateVariables[0] + 4 <= time.time()):
             stateQueue.pop(0)
+            stateQueue.append((BACKOFF, robotPos[0], 100))
             stateQueue.append((SEARCH_BALLS, {}))
 
     elif state == TO_EXACT_ROTATION:
@@ -181,14 +183,11 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
     
     elif state == BACKOFF:
         # Backoff to point
-        pixelBackoffPoint = stateVariables[0]
-        robotDistance = calculateDistance(robotPos[0], pixelBackoffPoint)
-        #robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[1], pixelBackoffPoint)
-        #robotAngle = add_angle(robotToObjectAngle, -robotRotation)
-        #robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], pixelBackoffPoint)
-        #robotAngle = add_angle(robotToObjectAngle, -robotRotation) 
-        # TODO: Readd robot angle so it does not fuck with the distance and shit
-        if robotDistance <= 50:
+        startPoint = stateVariables[0]
+        targetDistance = stateVariables[1]
+        distance = calculateDistance(robotPos[0], startPoint)
+        robotDistance = max(0, targetDistance - distance)
+        if distance >= targetDistance:
             print("Reached BACKOFF point")
             stateQueue.pop(0)
 
@@ -200,28 +199,28 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         stateJson = stateVariables[0]
         targetBall = stateJson.get('target', None)
 
-        # if targetBall is None and targetBallMemory is not None:
-        #     print("Restoring target from memory")
-        #     targetBall = targetBallMemory
-        #     stateJson['target'] = targetBall
+        if targetBall is None and targetBallMemory is not None:
+            print("Restoring target from memory")
+            targetBall = targetBallMemory
+            stateJson['target'] = targetBall
 
         if targetBall is None:
             print("No target ball and no memory — resetting")
             stateQueue.pop(0)
-            # targetBallMemory = None
+            targetBallMemory = None
             stateQueue.append((SEARCH_BALLS, {}))
             return robotDistance, robotAngle, state
         
-        # stateJson['memoryAge'] = stateJson.get('memoryAge', 0) + 1
-        # MaxMemoryAge = 30   # How many frames to remember the target ball before resetting it.
+        stateJson['memoryAge'] = stateJson.get('memoryAge', 0) + 1
+        MaxMemoryAge = 30   # How many frames to remember the target ball before resetting it.
 
-        # if stateJson['memoryAge'] > MaxMemoryAge:
-        #     print("Memory too old — resetting")
-        #     stateQueue.pop(0)
-        #     targetBall = None
-        #     targetBallMemory = None
-        #     stateQueue.append((SEARCH_BALLS, {}))
-        #     return robotDistance, robotAngle, state
+        if stateJson['memoryAge'] > MaxMemoryAge:
+            print("Memory too old — resetting")
+            stateQueue.pop(0)
+            targetBall = None
+            targetBallMemory = None
+            stateQueue.append((SEARCH_BALLS, {}))
+            return robotDistance, robotAngle, state
 
         nearestBall = min(allBalls, key=lambda b: calculateDistance(b, targetBall)) if allBalls else None
 
@@ -231,16 +230,9 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
             # Accept updated ball
                 print('Moving to nearest ball')
                 targetBall = nearestBall
-                # targetBallMemory = nearestBall
+                targetBallMemory = nearestBall
                 stateJson['target'] = nearestBall
-                # stateJson['memoryAge'] = 0  # Reset memory age
-            elif drift > 100:
-                print("Ball drifted too far — restarting search")
-                stateQueue.pop(0)
-                # targetBallMemory = None
-                targetBall = None
-                stateQueue.append((SEARCH_BALLS, {}))
-                return robotDistance, robotAngle, state
+                stateJson['memoryAge'] = 0  # Reset memory age
             
         else:
             print("Ball not visible — using memory")
@@ -254,7 +246,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
             print("Ball collected!")
             stateQueue.pop(0)
             targetBall = None
-          #  targetBallMemory = None
+            targetBallMemory = None
             stateQueue.append((SEARCH_BALLS, {}))
             return robotDistance, robotAngle, state
     
@@ -267,6 +259,23 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
     
     return robotDistance, robotAngle, state
 
+def calulateNewBallPosInConer(robotPos, targetBall):
+    moveBallOut = 55
+    #square = estimatePlayAreaIntermediate(result, playarea, frame, margin=70)
+    robotVector = (targetBall[0] - robotPos[0], targetBall[1] - robotPos[1])
+    robotVectorLength = np.sqrt(robotVector[0]**2 + robotVector[1]**2)
+    normalizedVector = robotVector / robotVectorLength
+
+    normalizedVector = normalizedVector * -1
+
+    scaledNormalizedVector = moveBallOut * normalizedVector
+
+    finalPoint = targetBall + scaledNormalizedVector
+
+    return finalPoint
+    
+
+
 def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObjects, robotPos, frame):
     global stateQueue; global targetBall
     if crossInfo is not None and is_objectmiddle_in_circle(targetBall, crossInfo.middle_point, crossInfo.size):
@@ -274,24 +283,29 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
         intermediaryPoint = findIntermediatyCrossPoint(targetBall, crossInfo.middle_point, crossInfo.robot_gap, crossInfo.robot_intermediary_corners)
         stateQueue.pop(0)
         # 
+        newBallPoint = calulateNewBallPosInConer(intermediaryPoint, targetBall)
         handleOA(robotPos, intermediaryPoint, detectedObjects)
         stateQueue.append((TO_INTERMEDIARY, intermediaryPoint))
         #exactRotationTarget = (crossInfo.angle_rad + np.pi + np.pi) % (2*np.pi) - np.pi
         exactRotationTarget = calculateAngleOfTwoPoints(intermediaryPoint, targetBall) # TODO: Suboptimal with intermediary point and not robot point used after reaching target but whatever.
         stateQueue.append((TO_EXACT_ROTATION, exactRotationTarget))
-        stateQueue.append((COLLECT_BALL, {'target': targetBall}))
-        stateQueue.append((BACKOFF, intermediaryPoint))
+        stateQueue.append((COLLECT_BALL, {'target': newBallPoint}))
+        stateQueue.append((BACKOFF, intermediaryPoint, calculateDistance(newBallPoint, intermediaryPoint) * 0.4))
     
     if playAreaIntermediate is not None:
         inside, closest = analyze_point_with_polygon(targetBall, playAreaIntermediate)
+        # print(f"Ball: {targetBall}")
+        # print(f"Inside: {inside}")
+        newBallPoint = calulateNewBallPosInConer(closest, targetBall)
         if not inside:
             print(f"Ball close to edge. Closest Point: {closest}")
             stateQueue.pop(0)
             handleOA(robotPos, closest, detectedObjects)
             stateQueue.append((TO_INTERMEDIARY, closest))
-            stateQueue.append((COLLECT_BALL, {'target': targetBall}))
-            stateQueue.append((BACKOFF, closest))
-            cv2.line(frame, tuple_toint(targetBall), tuple_toint(closest), (0, 150, 150), 2)
+            # stateQueue.append((TO_EXACT_ROTATION, exactRotationTarget))
+            stateQueue.append((COLLECT_BALL, {'target': newBallPoint}))
+            stateQueue.append((BACKOFF, closest, calculateDistance(newBallPoint, closest) * 0.4))
+            cv2.line(frame, tuple_toint(newBallPoint), tuple_toint(closest), (0, 150, 150), 2)
     
     else:
         targetBall = min(detectedObjects["orangeBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
