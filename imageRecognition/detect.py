@@ -100,7 +100,7 @@ class ObjectDetection():
             # Draw label
             cv2.putText(frame, label, (x1, y1 - 10),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
-            print(self.model.names)
+            # print(self.model.names)
             
             # Save position or box (Depending on which is appropriate) of all detected things
             if cls_id == 0:
