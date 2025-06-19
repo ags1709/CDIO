@@ -284,12 +284,13 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
         intermediaryPoint = findIntermediatyCrossPoint(targetBall, crossInfo.middle_point, crossInfo.robot_gap, crossInfo.robot_intermediary_corners)
         stateQueue.pop(0)
         # 
+        newBallPoint = calulateNewBallPosInConer(intermediaryPoint, targetBall)
         handleOA(robotPos, intermediaryPoint, detectedObjects)
         stateQueue.append((TO_INTERMEDIARY, intermediaryPoint))
         #exactRotationTarget = (crossInfo.angle_rad + np.pi + np.pi) % (2*np.pi) - np.pi
         exactRotationTarget = calculateAngleOfTwoPoints(intermediaryPoint, targetBall) # TODO: Suboptimal with intermediary point and not robot point used after reaching target but whatever.
         stateQueue.append((TO_EXACT_ROTATION, exactRotationTarget))
-        stateQueue.append((COLLECT_BALL, {'target': targetBall}))
+        stateQueue.append((COLLECT_BALL, {'target': newBallPoint}))
         stateQueue.append((BACKOFF, intermediaryPoint))
     
     if playAreaIntermediate is not None:
