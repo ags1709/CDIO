@@ -84,7 +84,7 @@ class ObjectDetection():
         crossinfo = estimateCross(result, cap, frame, cross_id)
         playarea = estimatePlayArea(result, cap, frame)
         goals = estimateGoals(playarea, cap, frame)
-        playAreaIntermediate = estimatePlayAreaIntermediate(result, playarea, frame) #pa_tl = playarea of top left... etc
+        playAreaIntermediate = estimatePlayAreaIntermediate(result, playarea, frame, margin=165) #pa_tl = playarea of top left... etc
         
         
         for box in boxes:
