@@ -80,6 +80,8 @@ def avoidObstacle(robotPos, targetPos, obstacle, robotWidth=119, depth=0, maxDep
 
 
 # ------------------------------------------------------------------------------------------------
+# Visualization of obstacle avoidance. DO NOT DELETE.
+
 # def visualizeScenario(robotPos, targetPos, obstacle, robotWidth, title="Scenario"):
 #     direct_path_valid = not pathIntersectsObstacle(robotPath(robotPos, targetPos, robotWidth), obstacle)
 
