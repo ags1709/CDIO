@@ -136,7 +136,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
 
     if state == TO_INTERMEDIARY: # 
         intermediaryPoint = stateVariables[0]
-
+        handleOA(robotPos, intermediaryPoint, detectedObjects)
         cv2.circle(frame, tuple_toint(intermediaryPoint), 11, (50,200,50), 6) # Mark intermediary
         robotDistance = calculateDistance(robotMiddle, intermediaryPoint)
         robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], intermediaryPoint)
@@ -284,8 +284,6 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
     
     if playAreaIntermediate is not None:
         inside, closest = analyze_point_with_polygon(targetBall, playAreaIntermediate)
-        # print(f"Ball: {targetBall}")
-        # print(f"Inside: {inside}")
         if not inside:
             print(f"Ball close to edge. Closest Point: {closest}")
             stateQueue.pop(0)
@@ -300,8 +298,3 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
 
     # Obstacle avoidance. Checks if obstacle is in the way, and if so, navigate to intermediate point first.
     handleOA(robotPos, targetBall, detectedObjects)
-    # if avoidObstacle(robotPos[0], targetBall, detectedObjects["cross"], robotWidth=119) is not None:
-    #     print("Obstacle in the way, navigating to intermediary point")
-    #     intermediaryPoint = avoidObstacle(robotPos[0], targetBall, detectedObjects["cross"], robotWidth=119)
-    #     stateQueue.insert(0, (TO_INTERMEDIARY, intermediaryPoint))
-        #stateQueue.pop(0)   
