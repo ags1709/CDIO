@@ -1,6 +1,6 @@
 import cv2
 from ultralytics import YOLO
-from imageRecognition.positionEstimator import estimateGoals, estimateCross, estimatePlayArea, estimatePlayAreaIntermediate, analyze_point_with_polygon, CrossInfo
+from imageRecognition.positionEstimator import estimateGoals, estimateCross, estimatePlayArea, estimatePlayAreaIntermediate, analyze_point_with_polygon, CrossInfo, is_point_in_polygon
 from imageRecognition.positionEstimator import estimatePositionFromSquare
 from imageRecognition.positionEstimator import tuple_toint
 from robotMovement.calculateRobotPosition import correctPerspective
@@ -86,7 +86,6 @@ class ObjectDetection():
         playAreaIntermediate = estimatePlayAreaIntermediate(result, playarea, frame) #pa_tl = playarea of top left... etc
         
         
-        
         for box in boxes:
             cls_id = int(box.cls[0])
             conf = float(box.conf[0])
@@ -125,11 +124,56 @@ class ObjectDetection():
                 backLeftCorner = estimatePositionFromSquare(x1, y1, x2, y2)
                 cv2.circle(frame, tuple_toint(correctPerspective(backLeftCorner)), 10, (0,0,255), 10)
 
+
+
         # A dictionary mapping names of objects we want to a list of their positions, each position being a tuple with 2 points
         # The points being respectively the upperleft and bottomright corner of their bounding box. Each point is itself a tuple of 2 integers.
         # NOTE: goals are stored differently to everything else. goals are stored as a tuple with its x coordinate, and the y coordinate being the middle of the goal.
         positions = {"whiteBalls": whiteBalls, "orangeBalls": orangeBalls,"playfield": playfield, "cross": cross, "egg": egg, "frontLeftCorner": frontLeftCorner, \
                      "frontRightCorner": frontRightCorner, "backLeftCorner": backLeftCorner, "backRightCorner": backRightCorner, "goals": goals}
+        
+        # Filter robot position
+        if frontLeftCorner is not None and is_point_in_polygon(frontLeftCorner, playarea):
+            positions["frontLeftCorner"] = frontLeftCorner
+        else:
+            positions["frontLeftCorner"] = None
+
+        if frontRightCorner is not None and is_point_in_polygon(frontRightCorner, playarea):
+            positions["frontRightCorner"] = frontRightCorner
+        else:
+            positions["frontRightCorner"] = None
+
+        if backLeftCorner is not None and is_point_in_polygon(backLeftCorner, playarea):
+            positions["backLeftCorner"] = backLeftCorner
+        else:
+            positions["backLeftCorner"] = None
+
+        if backRightCorner is not None and is_point_in_polygon(backRightCorner, playarea):
+            positions["backRightCorner"] = backRightCorner
+        else:
+            positions["backRightCorner"] = None
+
+
+        if len(whiteBalls) == 0 and len(orangeBalls) == 0:
+            print("No balls detected, skipping position filtering")
+            return frame, positions, crossinfo, playAreaIntermediate
+        else:
+            # Filter white balls inside playarea
+            filtered_white_balls = []
+            for ball in whiteBalls:
+                # Check if the ball is inside the playarea
+                if is_point_in_polygon(ball, playarea):
+                    filtered_white_balls.append(ball)
+            positions["whiteBalls"] = filtered_white_balls
+
+            # Filter orange balls inside playarea
+            filtered_orange_balls = []
+            for ball in orangeBalls:
+                # Check if the ball is inside the playarea
+                if is_point_in_polygon(ball, playarea):
+                    filtered_orange_balls.append(ball)
+            positions["orangeBalls"] = filtered_orange_balls
+        
         
         # Show live output
         

@@ -1,5 +1,7 @@
+import traceback
 import cv2
 import socket
+from robotMovement.determineAuxiliaryActions import determineAuxiliaryActions
 from robotMovement.distanceBetweenObjects import calculateDistance
 from robotMovement.angleOfRotationCalculator import calculateAngleOfRotation
 from robotMovement.movementController import calculateSpeedAndRotation
@@ -7,6 +9,7 @@ from robotMovement.calculateRobotPosition import calculateRobotPositionFlexible
 from ultralytics import YOLO
 import math
 from imageRecognition.detect import ObjectDetection, DetectionMode
+from robotMovement.selectRobotTarget import calcDistAndAngleToTarget
 
 def main():
     # Set connection to robot
@@ -18,33 +21,33 @@ def main():
     except Exception as e:
         print("Error connecting to socket")
 
-    od = ObjectDetection(model="imageRecognition/yolov8_20250424.pt", detection_mode=DetectionMode.IMAGE, image="test/batch1_picture36.png")
+    od = ObjectDetection(model="imageRecognition/ImageModels/best.pt", detection_mode=DetectionMode.IMAGE, image="test/RobotOutsidePlayAreapicture0.png")
     #od = ObjectDetection(model="imageRecognition/yolov8_20250424.pt", detection_mode=DetectionMode.CAMERA, capture_index=2)
 
     # Main loop. Runs entire competition program.
-    while True:
         # use model to detect objects
-        detectedObjects = od.detectAll()
-        # detectedObjects["frontRightCorner"] = None
-        # detectedObjects["frontLeftCorner"] = None
-        # detectedObjects["backLeftCorner"] = None
-        detectedObjects["backRightCorner"] = None
-        # This is the two points used to identify the robots position. 
-        robotPos = calculateRobotPositionFlexible(detectedObjects["frontLeftCorner"], detectedObjects["frontRightCorner"], detectedObjects["backLeftCorner"], detectedObjects["backRightCorner"])
-        print(f"Detected objects: {detectedObjects}")
 
-        robotDistance = None
-        robotAngle = None
-        vomit = False
-        targetBall = None
+        # Calculate robots distance and angle to target, and set its state
+    try:
+        frame, detectedObjects, crossInfo, playAreaIntermediate = od.detectAll()
+        distanceToTarget, angleToTarget, robotState = calcDistAndAngleToTarget(detectedObjects, crossInfo, playAreaIntermediate, frame)
 
-        if detectedObjects.get("whiteBalls") and len(detectedObjects["whiteBalls"]) > 0:
-            targetBall = min(detectedObjects["whiteBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
-            print("Targeting NEAREST WHITE ball")
-        elif detectedObjects.get("orangeBalls") and len(detectedObjects["orangeBalls"]) > 0:
-            targetBall = min(detectedObjects["orangeBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
-            print("No white balls found. Targeting NEAREST ORANGE ball.")
+        cv2.putText(frame, f"State: {robotState}", (20, 60), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 0), 4)
+        
+        vomit = determineAuxiliaryActions(distanceToTarget, angleToTarget, robotState)
+        print(f"vomit", vomit, "distance", distanceToTarget)
+        robotMovement = calculateSpeedAndRotation(distanceToTarget, angleToTarget, robotState)
 
+        # Show the result
+        cv2.imshow("Result", frame)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+        od.close()
+
+    except Exception as e:
+        print(e)
+        print(traceback.print_exc())
+            #pass
         # Calculate distance and angle to the selected ball
         # if targetBall and robotPos[0] is not None and robotPos[1] is not None:
         #     robotDistance = calculateDistance(robotPos[0], targetBall)
@@ -61,18 +64,12 @@ def main():
         # robotMovement = calculateSpeedAndRotation(robotDistance, robotAngle)
 
         # Send data to robot
-        try:
-            client_socket.sendall(f"{round(robotMovement[0])}#{round(robotMovement[1])}#False#{vomit}\n".encode())
-        except Exception:
-            print("client not connected")
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        od.close()
 
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            od.close()
-            break
-
-        if (od.mode == DetectionMode.IMAGE): # Only run once with image
-            while True:
-                cv2.waitKey(100)
+    if (od.mode == DetectionMode.IMAGE): # Only run once with image
+        while True:
+            cv2.waitKey(100)
 
 if __name__ == "__main__":
     main()
