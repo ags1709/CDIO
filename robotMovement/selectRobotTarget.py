@@ -261,9 +261,9 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
     return robotDistance, robotAngle, state
 
 def calulateNewBallPosInConer(robotPos, targetBall):
-    moveBallOut = 70
+    moveBallOut = 55
     #square = estimatePlayAreaIntermediate(result, playarea, frame, margin=70)
-    robotVector = (robotPos[0][0] - robotPos[1][0], robotPos[0][1] - robotPos[1][1])
+    robotVector = (targetBall[0] - robotPos[0], targetBall[1] - robotPos[1])
     robotVectorLength = np.sqrt(robotVector[0]**2 + robotVector[1]**2)
     normalizedVector = robotVector / robotVectorLength
 
@@ -296,12 +296,13 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
         inside, closest = analyze_point_with_polygon(targetBall, playAreaIntermediate)
         # print(f"Ball: {targetBall}")
         # print(f"Inside: {inside}")
-        newBallPoint = calulateNewBallPosInConer(robotPos, targetBall)
+        newBallPoint = calulateNewBallPosInConer(closest, targetBall)
         if not inside:
             print(f"Ball close to edge. Closest Point: {closest}")
             stateQueue.pop(0)
             handleOA(robotPos, closest, detectedObjects)
             stateQueue.append((TO_INTERMEDIARY, closest))
+            # stateQueue.append((TO_EXACT_ROTATION, exactRotationTarget))
             stateQueue.append((COLLECT_BALL, {'target': newBallPoint}))
             stateQueue.append((BACKOFF, closest))
             cv2.line(frame, tuple_toint(newBallPoint), tuple_toint(closest), (0, 150, 150), 2)
