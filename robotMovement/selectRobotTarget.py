@@ -200,7 +200,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         if targetBall is None:
             print("No target ball and no memory — resetting")
             stateQueue.pop(0)
-            # targetBallMemory = None
+            targetBallMemory = None
             stateQueue.append((SEARCH_BALLS, {}))
             return robotDistance, robotAngle, state
         
@@ -226,13 +226,6 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
                 targetBallMemory = nearestBall
                 stateJson['target'] = nearestBall
                 stateJson['memoryAge'] = 0  # Reset memory age
-            elif drift > 100:
-                print("Ball drifted too far — restarting search")
-                stateQueue.pop(0)
-                targetBallMemory = None
-                targetBall = None
-                stateQueue.append((SEARCH_BALLS, {}))
-                return robotDistance, robotAngle, state
             
         else:
             print("Ball not visible — using memory")
