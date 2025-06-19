@@ -173,11 +173,6 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
     
     elif state == BACKOFF:
         # Backoff to point
-        # We can't store the robot position when appending BACKOFF to the state queue
-        # So when appending, it's set to None, so we can set it here instead on first BACKOFF frame
-        if (stateVariables[0] == None):
-            stateQueue[0] = (BACKOFF, robotPos[0], *stateVariables[1:])
-            stateVariables = stateQueue[0][1:]
         startPoint = stateVariables[0]
         targetDistance = stateVariables[1]
         distance = calculateDistance(robotPos[0], startPoint)
@@ -274,7 +269,7 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
         exactRotationTarget = calculateAngleOfTwoPoints(intermediaryPoint, targetBall) # TODO: Suboptimal with intermediary point and not robot point used after reaching target but whatever.
         stateQueue.append((TO_EXACT_ROTATION, exactRotationTarget))
         stateQueue.append((COLLECT_BALL, {'target': targetBall}))
-        stateQueue.append((BACKOFF, None, calculateDistance(targetBall, intermediaryPoint) / 3))
+        stateQueue.append((BACKOFF, intermediaryPoint, calculateDistance(targetBall, intermediaryPoint) * 0.4))
     
     if playAreaIntermediate is not None:
         inside, closest = analyze_point_with_polygon(targetBall, playAreaIntermediate)
@@ -286,7 +281,7 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
             handleOA(robotPos, closest, detectedObjects)
             stateQueue.append((TO_INTERMEDIARY, closest))
             stateQueue.append((COLLECT_BALL, {'target': targetBall}))
-            stateQueue.append((BACKOFF, None, calculateDistance(targetBall, closest) / 2))
+            stateQueue.append((BACKOFF, closest, calculateDistance(targetBall, closest) * 0.4))
             cv2.line(frame, tuple_toint(targetBall), tuple_toint(closest), (0, 150, 150), 2)
     
     else:

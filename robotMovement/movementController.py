@@ -99,7 +99,7 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
         turnSpeed = 100 if angleToTarget > 0 else -100
         
     elif state == "BACKOFF":
-        forwardSpeed = -60
+        forwardSpeed = -50
         turnSpeed = 0
 
     elif state == "COLLECT_BALL":
