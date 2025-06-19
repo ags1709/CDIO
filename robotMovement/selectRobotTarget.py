@@ -64,7 +64,7 @@ def handleOA(pos, target, objects):
 def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaIntermediate: list[tuple[float, float]], frame):
 
 
-    global targetBall; global stateQueue; global abort; global skipFinalCheck
+    global targetBall; global stateQueue; global abort; global skipFinalCheck; global targetBallMemory
         
     robotDistance = 0
     robotAngle = 0
@@ -192,10 +192,10 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         stateJson = stateVariables[0]
         targetBall = stateJson.get('target', None)
 
-        # if targetBall is None and targetBallMemory is not None:
-        #     print("Restoring target from memory")
-        #     targetBall = targetBallMemory
-        #     stateJson['target'] = targetBall
+        if targetBall is None and targetBallMemory is not None:
+            print("Restoring target from memory")
+            targetBall = targetBallMemory
+            stateJson['target'] = targetBall
 
         if targetBall is None:
             print("No target ball and no memory — resetting")
@@ -204,16 +204,16 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
             stateQueue.append((SEARCH_BALLS, {}))
             return robotDistance, robotAngle, state
         
-        # stateJson['memoryAge'] = stateJson.get('memoryAge', 0) + 1
-        # MaxMemoryAge = 30   # How many frames to remember the target ball before resetting it.
+        stateJson['memoryAge'] = stateJson.get('memoryAge', 0) + 1
+        MaxMemoryAge = 30   # How many frames to remember the target ball before resetting it.
 
-        # if stateJson['memoryAge'] > MaxMemoryAge:
-        #     print("Memory too old — resetting")
-        #     stateQueue.pop(0)
-        #     targetBall = None
-        #     targetBallMemory = None
-        #     stateQueue.append((SEARCH_BALLS, {}))
-        #     return robotDistance, robotAngle, state
+        if stateJson['memoryAge'] > MaxMemoryAge:
+            print("Memory too old — resetting")
+            stateQueue.pop(0)
+            targetBall = None
+            targetBallMemory = None
+            stateQueue.append((SEARCH_BALLS, {}))
+            return robotDistance, robotAngle, state
 
         nearestBall = min(allBalls, key=lambda b: calculateDistance(b, targetBall)) if allBalls else None
 
@@ -223,13 +223,13 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
             # Accept updated ball
                 print('Moving to nearest ball')
                 targetBall = nearestBall
-                # targetBallMemory = nearestBall
+                targetBallMemory = nearestBall
                 stateJson['target'] = nearestBall
-                # stateJson['memoryAge'] = 0  # Reset memory age
+                stateJson['memoryAge'] = 0  # Reset memory age
             elif drift > 100:
                 print("Ball drifted too far — restarting search")
                 stateQueue.pop(0)
-                # targetBallMemory = None
+                targetBallMemory = None
                 targetBall = None
                 stateQueue.append((SEARCH_BALLS, {}))
                 return robotDistance, robotAngle, state
@@ -246,7 +246,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
             print("Ball collected!")
             stateQueue.pop(0)
             targetBall = None
-          #  targetBallMemory = None
+            targetBallMemory = None
             stateQueue.append((SEARCH_BALLS, {}))
             return robotDistance, robotAngle, state
     
