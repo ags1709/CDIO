@@ -6,7 +6,7 @@ from shapely.geometry import LineString
 import numpy as np
 
 ROBOT_WIDTH = 119
-MARGIN = 100
+MARGIN = 200
 
 def calculateDistance(point1, point2):
     return np.sqrt((point1[0] - point2[0])**2 + (point1[1] - point2[1])**2)
@@ -41,15 +41,28 @@ def avoidObstacle(robotPos, targetPos, obstacle, robotWidth=119, depth=0, maxDep
     xMax, yMax = obstacle[1]
 
     margin = MARGIN  # Pixels to avoid obstacle by
+
+    # candidates = [
+    #     ((xMin + xMax)/2, yMax + margin),  # above
+    #     ((xMin + xMax)/2, yMin - margin),  # below
+    #     (xMin - margin, (yMin + yMax)/2),  # left
+    #     (xMax + margin, (yMin + yMax)/2),  # right
+    #     (xMin - margin, yMax + margin),    # top-left
+    #     (xMax + margin, yMax + margin),    # top-right
+    #     (xMin - margin, yMin - margin),    # bottom-left
+    #     (xMax + margin, yMin - margin),    # bottom-right
+    # ]
+    center_x = (xMin + xMax) / 2
+    center_y = (yMin + yMax) / 2
+
+    num_candidates = 20
+    radius = max(xMax - xMin, yMax - yMin) / 2 + margin  # Distance from obstacle
+
+    angles = np.linspace(0, 2 * np.pi, num_candidates, endpoint=False)
+
     candidates = [
-        ((xMin + xMax)/2, yMax + margin),  # above
-        ((xMin + xMax)/2, yMin - margin),  # below
-        (xMin - margin, (yMin + yMax)/2),  # left
-        (xMax + margin, (yMin + yMax)/2),  # right
-        (xMin - margin, yMax + margin),    # top-left
-        (xMax + margin, yMax + margin),    # top-right
-        (xMin - margin, yMin - margin),    # bottom-left
-        (xMax + margin, yMin - margin),    # bottom-right
+        (center_x + radius * math.cos(angle), center_y + radius * math.sin(angle))
+        for angle in angles
     ]
 
     validPaths = []

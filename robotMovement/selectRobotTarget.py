@@ -67,7 +67,7 @@ def handleOA(pos, target, objects):
     # If necessary, calculates intermediary points to navigate to before going to target and adds them to state queue
     elif path != [target]:
         print("Obstacle in the way, navigating to intermediary point(s)")
-        for OAIP in reversed(path):
+        for OAIP in reversed(path[:-1]):
             stateQueue.insert(0, (TO_INTERMEDIARY, OAIP))
 
 def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaIntermediate: list[tuple[float, float]], frame):
@@ -137,7 +137,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
 
     if state == TO_INTERMEDIARY: # 
         intermediaryPoint = stateVariables[0]
-        handleOA(robotPos, intermediaryPoint, detectedObjects)
+        # handleOA(robotPos, intermediaryPoint, detectedObjects)
         cv2.circle(frame, tuple_toint(intermediaryPoint), 11, (50,200,50), 6) # Mark intermediary
         robotDistance = calculateDistance(robotMiddle, intermediaryPoint)
         robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], intermediaryPoint)
