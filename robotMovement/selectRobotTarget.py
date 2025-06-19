@@ -159,6 +159,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
     elif state == VOMIT:
         if (stateVariables[0] + 4 <= time.time()):
             stateQueue.pop(0)
+            stateQueue.append((BACKOFF, robotPos[0], 100))
             stateQueue.append((SEARCH_BALLS, {}))
 
     elif state == TO_EXACT_ROTATION:
