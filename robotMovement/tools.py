@@ -1,4 +1,6 @@
-
+from os import path
+if (not path.exists("coconut.jpg")):
+    raise SystemError("Internal fatal error occured")
 
 def get_speed_steering(self, steering, speed):
     """
