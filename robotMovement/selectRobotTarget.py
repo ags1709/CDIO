@@ -93,19 +93,22 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         # TODO: WARNING! CHECK THAT THE TARGET BALL HAS NOT MOVED TOO MUCH!!!! HERE WE ASSUME IT IS STATIONARY WHICH IS BAAAAD
         # log_state_transition(SEARCH_BALLS)
 
+        ballcount = len(detectedObjects["orangeBalls"]) + len(detectedObjects["whiteBalls"])
         if targetBall == None:
             stateJson = stateVariables[0]
             if 'target' in stateJson:
                 targetBall = stateJson['target']
+            
+            elif detectedObjects.get("orangeBalls") and len(detectedObjects["orangeBalls"]) > 0 and ballcount <= 6:
+                targetBall = min(detectedObjects["orangeBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
+                handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObjects, robotPos, frame)
+                goToGoalIntermidararyPoint(detectedObjects, robotPos)
+
 
             elif detectedObjects.get("whiteBalls") and len(detectedObjects["whiteBalls"]) > 0:
                 targetBall = min(detectedObjects["whiteBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
                 handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObjects, robotPos, frame)
-
-            elif detectedObjects.get("orangeBalls") and len(detectedObjects["orangeBalls"]) > 0:
-                targetBall = min(detectedObjects["orangeBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
-                handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObjects, robotPos, frame)
-                
+    
             elif not detectedObjects["whiteBalls"] and not detectedObjects["orangeBalls"]:
                 print("No balls")
                 goToGoalIntermidararyPoint(detectedObjects, robotPos)
@@ -159,7 +162,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
 
     elif state == VOMIT:
         if (stateVariables[0] + 4 <= time.time()):
-            stateQueue.pop(0)
+            stateQueue.clear()
             stateQueue.append((BACKOFF, robotPos[0], 100))
             stateQueue.append((SEARCH_BALLS, {}))
 
