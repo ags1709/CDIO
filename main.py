@@ -51,7 +51,7 @@ def main():
             # Determine whether to hand balls in or not
             vomit = robotState == "VOMIT"
 
-            # print(f"vomit", vomit, "disdence", distanceToTarget)
+            #print(f"vomit", vomit, "disdence", distanceToTarget)
             # Calculate the engine speeds determining the robots movement based on distance and angle to target.
             robotMovement = calculateSpeedAndRotation(distanceToTarget, angleToTarget, robotState)
             # Send data to robot
