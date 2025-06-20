@@ -270,13 +270,16 @@ def estimatePlayAreaIntermediate(result, playarea, frame, margin):
 
     return (tl, tr, br, bl)
 
+def edge_normal(p1, p2):
+    """Calculates the normal vector to the edge from p1 to p2, on the right side."""
+    normal = np.array((p1[1] - p2[1], p2[0] - p1[0]), float)
+    return normal / np.linalg.norm(normal)
+
 def offset_vertex(p1, p2, p3, distance):
     """Offsets the vertex p1 by distance inwards. p2 is the adjacent vertex in the clockwise direction, and opposite for p3."""
     # The vectors from the vertex to the adjacent vertices, rotated by 90°
-    v1 = np.array((p1[1] - p2[1], p2[0] - p1[0]), float)
-    v2 = np.array((p3[1] - p1[1], p1[0] - p3[0]), float)
-    v1 /= np.linalg.norm(v1)
-    v2 /= np.linalg.norm(v2)
+    v1 = edge_normal(p1, p2)
+    v2 = edge_normal(p3, p1)
     v3 = v1 + v2
     v3 *= distance / np.linalg.norm(v3) / np.sqrt((1 + np.dot(v1, v2)) / 2)
     return p1 + v3
