@@ -155,9 +155,9 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
     elif state == TO_GOAL:
         # log_state_transition(TO_GOAL)
 
-        if len(detectedObjects["orangeBalls"]) > 0:
-            stateQueue.append((SEARCH_BALLS, {}))
-            stateQueue.pop(0)
+        # if len(detectedObjects["orangeBalls"]) > 0:
+        #     stateQueue.append((SEARCH_BALLS, {}))
+        #     stateQueue.pop(0)
                 
         #print("TO_GOAL")
         # If no balls are present, move to goal.
