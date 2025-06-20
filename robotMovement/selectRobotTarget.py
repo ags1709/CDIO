@@ -40,7 +40,7 @@ targetBall = None
 
 
 def goToGoalIntermidararyPoint(detectedObjects, robotPos):
-    intermediaryPoint = (detectedObjects["goals"][1][0] - 300, detectedObjects["goals"][1][1])
+    intermediaryPoint = (detectedObjects["goals"][0][0] + 300, detectedObjects["goals"][0][1])
     stateQueue.clear()
     handleOA(robotPos, intermediaryPoint, detectedObjects)
     stateQueue.append(("TO_INTERMEDIARY", intermediaryPoint))
@@ -148,7 +148,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
                 stateQueue.pop(0)
         #print("TO_GOAL")
         # If no balls are present, move to goal.
-        goalPos = detectedObjects["goals"][1]
+        goalPos = detectedObjects["goals"][0]
         robotDistance = calculateDistance(robotPos[0], goalPos)
         robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], goalPos)
         robotAngle = add_angle(robotToObjectAngle, -robotRotation)
@@ -203,7 +203,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
             return robotDistance, robotAngle, state
         
         stateJson['memoryAge'] = stateJson.get('memoryAge', 0) + 1
-        MaxMemoryAge = 300   # How many frames to remember the target ball before resetting it.
+        MaxMemoryAge = 100   # How many frames to remember the target ball before resetting it.
 
         if stateJson['memoryAge'] > MaxMemoryAge:
             print("Memory too old — resetting")
@@ -285,7 +285,7 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
         exactRotationTarget = calculateAngleOfTwoPoints(intermediaryPoint, targetBall) # TODO: Suboptimal with intermediary point and not robot point used after reaching target but whatever.
         stateQueue.append((TO_EXACT_ROTATION, exactRotationTarget))
         stateQueue.append((COLLECT_BALL, {'target': targetBall}))
-        stateQueue.append((BACKOFF, intermediaryPoint, calculateDistance(targetBall, intermediaryPoint) * 0.4))
+        stateQueue.append((BACKOFF, targetBall, calculateDistance(targetBall, intermediaryPoint) * 0.8))
     
     if playAreaIntermediate is not None:
         inside, closest = analyze_point_with_polygon(targetBall, playAreaIntermediate)
@@ -299,7 +299,7 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
             stateQueue.append((TO_INTERMEDIARY, closest))
             # stateQueue.append((TO_EXACT_ROTATION, exactRotationTarget))
             stateQueue.append((COLLECT_BALL, {'target': targetBall}))
-            stateQueue.append((BACKOFF, closest, calculateDistance(targetBall, closest) * 0.4))
+            stateQueue.append((BACKOFF, targetBall, calculateDistance(targetBall, closest) * 0.8))
             cv2.line(frame, tuple_toint(targetBall), tuple_toint(closest), (0, 150, 150), 2)
     
     else:
