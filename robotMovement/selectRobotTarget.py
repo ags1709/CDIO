@@ -97,15 +97,20 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         # log_state_transition(SEARCH_BALLS)
 
         ballcount = len(detectedObjects["orangeBalls"]) + len(detectedObjects["whiteBalls"])
-        if ballcount <=5 and firstimer:
-            goToGoalIntermidararyPoint(detectedObjects, robotPos)
-            firstimer = False
         
         if targetBall == None:
             stateJson = stateVariables[0]
             if 'target' in stateJson:
                 targetBall = stateJson['target']
 
+            elif ballcount <=5 and firstimer and len(detectedObjects["orangeBalls"]) == 0 :
+                goToGoalIntermidararyPoint(detectedObjects, robotPos)
+                firstimer = False
+            
+            elif ballcount <=5 and firstimer:
+                goToGoalIntermidararyPoint(detectedObjects, robotPos)
+                firstimer = False
+            
             elif detectedObjects.get("orangeBalls") and len(detectedObjects["orangeBalls"]) > 0 and ballcount <= 6:
                 targetBall = min(detectedObjects["orangeBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
                 handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObjects, robotPos, frame)
