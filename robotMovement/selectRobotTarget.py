@@ -45,6 +45,7 @@ def goToGoalIntermidararyPoint(detectedObjects, robotPos):
     handleOA(robotPos, intermediaryPoint, detectedObjects)
     stateQueue.append(("TO_INTERMEDIARY", intermediaryPoint))
     stateQueue.append(("TO_GOAL",))  # Har sat et komma, pga at det er en tuple.
+    global skipFinalCheck
     skipFinalCheck = False
 
 def is_objectmiddle_in_circle(objectpos, center, radius):
