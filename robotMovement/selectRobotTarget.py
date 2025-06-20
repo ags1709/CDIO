@@ -102,13 +102,14 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
             if 'target' in stateJson:
                 targetBall = stateJson['target']
             
+            elif ballcount <=5 and firstimer:
+                goToGoalIntermidararyPoint(detectedObjects, robotPos)
+                firstimer = False
+                
             elif detectedObjects.get("orangeBalls") and len(detectedObjects["orangeBalls"]) > 0 and ballcount <= 6:
                 targetBall = min(detectedObjects["orangeBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
                 handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObjects, robotPos, frame)
 
-            elif ballcount <=5 and firstimer:
-                goToGoalIntermidararyPoint(detectedObjects, robotPos)
-                firstimer = False
 
             elif detectedObjects.get("whiteBalls") and len(detectedObjects["whiteBalls"]) > 0:
                 targetBall = min(detectedObjects["whiteBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
