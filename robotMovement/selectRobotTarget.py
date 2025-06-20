@@ -13,7 +13,8 @@ import threading
 from imageRecognition.positionEstimator import estimateGoals, estimateCross, estimatePlayArea, estimatePlayAreaIntermediate, analyze_point_with_polygon, CrossInfo, is_point_in_polygon
 
 abort = False
-skipFinalCheck = True
+firstimer = True
+
 def setAbort(): 
     global abort
     abort = True
@@ -40,11 +41,12 @@ targetBall = None
 
 
 def goToGoalIntermidararyPoint(detectedObjects, robotPos):
-    intermediaryPoint = (detectedObjects["goals"][1][0] - 300, detectedObjects["goals"][1][1])
+    intermediaryPoint = (detectedObjects["goals"][0][0] + 300, detectedObjects["goals"][0][1])
     stateQueue.clear()
     handleOA(robotPos, intermediaryPoint, detectedObjects)
     stateQueue.append(("TO_INTERMEDIARY", intermediaryPoint))
     stateQueue.append(("TO_GOAL",))  # Har sat et komma, pga at det er en tuple.
+
 
 def is_objectmiddle_in_circle(objectpos, center, radius):
     #middle = ( (objectpos[0][0] + objectpos[1][0])/2, (objectpos[0][1] + objectpos[1][1])/2 )
@@ -65,7 +67,7 @@ def handleOA(pos, target, objects):
 def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaIntermediate: list[tuple[float, float]], frame):
 
 
-    global targetBall; global stateQueue; global abort; global skipFinalCheck; global targetBallMemory
+    global targetBall; global stateQueue; global abort; global targetBallMemory
         
     robotDistance = 0
     robotAngle = 0
@@ -81,9 +83,10 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
     
     if abort:
         goToGoalIntermidararyPoint(detectedObjects, robotPos)
-        skipFinalCheck = False
         abort = False
 
+    
+    global firstimer
     # state = lambda: stateQueue[0][0] # State
     # stateVariables = lambda: stateQueue[0][1:] # Variables for state
     state = stateQueue[0][0] # State
@@ -93,24 +96,33 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         # TODO: WARNING! CHECK THAT THE TARGET BALL HAS NOT MOVED TOO MUCH!!!! HERE WE ASSUME IT IS STATIONARY WHICH IS BAAAAD
         # log_state_transition(SEARCH_BALLS)
 
+        ballcount = len(detectedObjects["orangeBalls"]) + len(detectedObjects["whiteBalls"])
+        
         if targetBall == None:
             stateJson = stateVariables[0]
             if 'target' in stateJson:
                 targetBall = stateJson['target']
 
+            elif ballcount <=5 and firstimer and len(detectedObjects["orangeBalls"]) == 0 :
+                firstimer = False
+                goToGoalIntermidararyPoint(detectedObjects, robotPos)
+            
+            elif ballcount <=5 and firstimer:
+                firstimer = False
+                goToGoalIntermidararyPoint(detectedObjects, robotPos)
+            
+            elif detectedObjects.get("orangeBalls") and len(detectedObjects["orangeBalls"]) > 0 and ballcount <= 6:
+                targetBall = min(detectedObjects["orangeBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
+                handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObjects, robotPos, frame)
+
+
             elif detectedObjects.get("whiteBalls") and len(detectedObjects["whiteBalls"]) > 0:
                 targetBall = min(detectedObjects["whiteBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
                 handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObjects, robotPos, frame)
-
-            elif detectedObjects.get("orangeBalls") and len(detectedObjects["orangeBalls"]) > 0:
-                targetBall = min(detectedObjects["orangeBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
-                handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObjects, robotPos, frame)
-                
+    
             elif not detectedObjects["whiteBalls"] and not detectedObjects["orangeBalls"]:
                 print("No balls")
                 goToGoalIntermidararyPoint(detectedObjects, robotPos)
-
-        
 
         # Calculate distance and angle to the selected ball
         if state is SEARCH_BALLS and targetBall and robotPos[0] is not None and robotPos[1] is not None:
@@ -142,13 +154,14 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
 
     elif state == TO_GOAL:
         # log_state_transition(TO_GOAL)
-        if skipFinalCheck:
-            if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
-                stateQueue.append((SEARCH_BALLS, {}))
-                stateQueue.pop(0)
+
+        # if len(detectedObjects["orangeBalls"]) > 0:
+        #     stateQueue.append((SEARCH_BALLS, {}))
+        #     stateQueue.pop(0)
+                
         #print("TO_GOAL")
         # If no balls are present, move to goal.
-        goalPos = detectedObjects["goals"][1]
+        goalPos = detectedObjects["goals"][0]
         robotDistance = calculateDistance(robotPos[0], goalPos)
         robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], goalPos)
         robotAngle = add_angle(robotToObjectAngle, -robotRotation)
@@ -159,7 +172,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
 
     elif state == VOMIT:
         if (stateVariables[0] + 4 <= time.time()):
-            stateQueue.pop(0)
+            stateQueue.clear()
             stateQueue.append((BACKOFF, robotPos[0], 100))
             stateQueue.append((SEARCH_BALLS, {}))
 
@@ -203,7 +216,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
             return robotDistance, robotAngle, state
         
         stateJson['memoryAge'] = stateJson.get('memoryAge', 0) + 1
-        MaxMemoryAge = 300   # How many frames to remember the target ball before resetting it.
+        MaxMemoryAge = 100   # How many frames to remember the target ball before resetting it.
 
         if stateJson['memoryAge'] > MaxMemoryAge:
             print("Memory too old — resetting")
@@ -285,7 +298,7 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
         exactRotationTarget = calculateAngleOfTwoPoints(intermediaryPoint, targetBall) # TODO: Suboptimal with intermediary point and not robot point used after reaching target but whatever.
         stateQueue.append((TO_EXACT_ROTATION, exactRotationTarget))
         stateQueue.append((COLLECT_BALL, {'target': targetBall}))
-        stateQueue.append((BACKOFF, intermediaryPoint, calculateDistance(targetBall, intermediaryPoint) * 0.4))
+        stateQueue.append((BACKOFF, targetBall, calculateDistance(targetBall, intermediaryPoint) * 0.8))
     
     if playAreaIntermediate is not None:
         inside, closest = analyze_point_with_polygon(targetBall, playAreaIntermediate)
@@ -299,7 +312,7 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
             stateQueue.append((TO_INTERMEDIARY, closest))
             # stateQueue.append((TO_EXACT_ROTATION, exactRotationTarget))
             stateQueue.append((COLLECT_BALL, {'target': targetBall}))
-            stateQueue.append((BACKOFF, closest, calculateDistance(targetBall, closest) * 0.4))
+            stateQueue.append((BACKOFF, targetBall, calculateDistance(targetBall, closest) * 0.8))
             cv2.line(frame, tuple_toint(targetBall), tuple_toint(closest), (0, 150, 150), 2)
     
     else:
