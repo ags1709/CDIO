@@ -14,7 +14,7 @@ from imageRecognition.positionEstimator import estimateGoals, estimateCross, est
 
 abort = False
 firstimer = True
-skipFinalCheck = True
+
 def setAbort(): 
     global abort
     abort = True
@@ -46,8 +46,7 @@ def goToGoalIntermidararyPoint(detectedObjects, robotPos):
     handleOA(robotPos, intermediaryPoint, detectedObjects)
     stateQueue.append(("TO_INTERMEDIARY", intermediaryPoint))
     stateQueue.append(("TO_GOAL",))  # Har sat et komma, pga at det er en tuple.
-    global skipFinalCheck
-    skipFinalCheck = False
+
 
 def is_objectmiddle_in_circle(objectpos, center, radius):
     #middle = ( (objectpos[0][0] + objectpos[1][0])/2, (objectpos[0][1] + objectpos[1][1])/2 )
@@ -68,7 +67,7 @@ def handleOA(pos, target, objects):
 def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaIntermediate: list[tuple[float, float]], frame):
 
 
-    global targetBall; global stateQueue; global abort; global skipFinalCheck; global targetBallMemory
+    global targetBall; global stateQueue; global abort; global targetBallMemory
         
     robotDistance = 0
     robotAngle = 0
@@ -84,8 +83,6 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
     
     if abort:
         goToGoalIntermidararyPoint(detectedObjects, robotPos)
-        skipFinalCheck = False
-        print(f"Skip boolean {skipFinalCheck}")
         abort = False
 
     
@@ -109,11 +106,9 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
                 targetBall = min(detectedObjects["orangeBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
                 handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObjects, robotPos, frame)
 
-            elif ballcount <=5 and len(detectedObjects["orangeBalls"]) == 0 and firstimer:    
+            elif ballcount <=5 and firstimer:
                 goToGoalIntermidararyPoint(detectedObjects, robotPos)
                 firstimer = False
-                skipFinalCheck = False
-                print(f"Setting skip final check, it is now: {skipFinalCheck}")
 
             elif detectedObjects.get("whiteBalls") and len(detectedObjects["whiteBalls"]) > 0:
                 targetBall = min(detectedObjects["whiteBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
@@ -122,8 +117,6 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
             elif not detectedObjects["whiteBalls"] and not detectedObjects["orangeBalls"]:
                 print("No balls")
                 goToGoalIntermidararyPoint(detectedObjects, robotPos)
-
-            print(f"SkipFinalCheck: {skipFinalCheck}")
 
         # Calculate distance and angle to the selected ball
         if state is SEARCH_BALLS and targetBall and robotPos[0] is not None and robotPos[1] is not None:
@@ -155,12 +148,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
 
     elif state == TO_GOAL:
         # log_state_transition(TO_GOAL)
-        print(f"Skip boolean {skipFinalCheck}")
-        # if skipFinalCheck:
-        #     if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
-        #         stateQueue.append((SEARCH_BALLS, {}))
-        #         stateQueue.pop(0)
-        # else:
+
         if len(detectedObjects["orangeBalls"]) > 0:
             stateQueue.append((SEARCH_BALLS, {}))
             stateQueue.pop(0)
@@ -171,7 +159,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         robotDistance = calculateDistance(robotPos[0], goalPos)
         robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], goalPos)
         robotAngle = add_angle(robotToObjectAngle, -robotRotation)
-        skipFinalCheck = True
+
         if robotDistance <= 110:
             stateQueue.pop(0)
             stateQueue.append((VOMIT, time.time()))
