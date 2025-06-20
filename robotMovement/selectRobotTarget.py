@@ -40,11 +40,11 @@ targetBall = None
 
 
 def goToGoalIntermidararyPoint(detectedObjects, robotPos):
-    intermediaryPoint = (detectedObjects["goals"][0][0] + 300, detectedObjects["goals"][0][1])
+    intermediaryPoint = detectedObjects["goals"][0] + detectedObjects["goalNormals"][0] * 300
     stateQueue.clear()
     handleOA(robotPos, intermediaryPoint, detectedObjects)
-    stateQueue.append(("TO_INTERMEDIARY", intermediaryPoint))
-    stateQueue.append(("TO_GOAL",))  # Har sat et komma, pga at det er en tuple.
+    stateQueue.append((TO_INTERMEDIARY, intermediaryPoint))
+    stateQueue.append((TO_GOAL,)) # Comma to make it a tuple
 
 def is_objectmiddle_in_circle(objectpos, center, radius):
     #middle = ( (objectpos[0][0] + objectpos[1][0])/2, (objectpos[0][1] + objectpos[1][1])/2 )

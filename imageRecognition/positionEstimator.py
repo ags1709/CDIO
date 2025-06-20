@@ -12,9 +12,8 @@ class CrossInfo:
     angle_rad: float
     robot_intermediary_corners: list
 
-def estimateGoals(playarea: list[np.ndarray], cap, frame):
-    if playarea is not None:        
-        playarea
+def estimateGoals(playarea: list[np.ndarray], frame):
+    if playarea is not None:
         leftGoal = (playarea[0] + playarea[3]) / 2
         rightGoal = (playarea[1] + playarea[2]) / 2
         cv2.circle(frame, tuple(map(int, leftGoal)), 30, (200, 150, 0), 3)
@@ -23,7 +22,12 @@ def estimateGoals(playarea: list[np.ndarray], cap, frame):
     else:
         pass
         # print("WARNING! No playfield detected, no goal estimation done")
-    
+
+def estimateGoalNormals(playarea: list[np.ndarray], frame):
+    leftGoalNormal = edge_normal(playarea[3], playarea[0])
+    rightGoalNormal = edge_normal(playarea[1], playarea[2])
+    return [leftGoalNormal, rightGoalNormal]
+
 def estimatePositionFromSquare(x1,y1,x2,y2):
     xCoordinate = (x1 + x2) / 2
     yCoordinate = (y1 + y2) / 2
