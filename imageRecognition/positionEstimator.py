@@ -56,13 +56,11 @@ def estimateCross(result, cap, frame) -> CrossInfo:
         crop_cap = cap[y1_abs:y2_abs,x1_abs:x2_abs]
         crop_frame = frame[y1_abs:y2_abs,x1_abs:x2_abs]
         #cv2.imshow("crop frame", crop_frame)
-        
-        #gray = cv2.cvtColor(crop_frame, cv2.COLOR_BGR2GRAY)
-        b = crop_cap[:, :, 0].astype(np.float32)
-        g = crop_cap[:, :, 1].astype(np.float32)
-        r = crop_cap[:, :, 2].astype(np.float32)
-        # Create a mask where red is strong and green/blue are weak relative to red
-        red_mask = ((r > 115) & (g < r / 1.8) & (b < r / 1.8)).astype(np.uint8) * 255
+
+        hsv = cv2.cvtColor(crop_cap, cv2.COLOR_BGR2HSV)
+        lower_red1 = np.array([0, 100, 120])
+        upper_red1 = np.array([50, 255, 255])
+        red_mask = cv2.inRange(hsv, lower_red1, upper_red1)
         red_thresh = cv2.GaussianBlur(red_mask, (5, 5), 0)
         
 
@@ -173,9 +171,10 @@ def estimatePlayArea(result, cap, frame) -> list[np.ndarray]:
     cx, cy = w // 2, h // 2
 
     # Red pixel mask
-    b, g, r = cap[:, :, 0], cap[:, :, 1], cap[:, :, 2]
-    red_mask = ((r > 115) & (g < r / 1.8) & (b < r / 1.8)).astype(np.uint8) * 255
-    red_mask = cv2.GaussianBlur(red_mask, (5, 5), 0)
+    hsv = cv2.cvtColor(cap, cv2.COLOR_BGR2HSV)
+    lower_red1 = np.array([0, 100, 120])
+    upper_red1 = np.array([50, 255, 255])
+    red_mask = cv2.inRange(hsv, lower_red1, upper_red1)
 
     #cv2.imshow("Red channel", cv2.resize(red_mask, (1280, 720)))
 
