@@ -45,6 +45,7 @@ def goToGoalIntermidararyPoint(detectedObjects, robotPos):
     handleOA(robotPos, intermediaryPoint, detectedObjects)
     stateQueue.append(("TO_INTERMEDIARY", intermediaryPoint))
     stateQueue.append(("TO_GOAL",))  # Har sat et komma, pga at det er en tuple.
+    skipFinalCheck = False
 
 def is_objectmiddle_in_circle(objectpos, center, radius):
     #middle = ( (objectpos[0][0] + objectpos[1][0])/2, (objectpos[0][1] + objectpos[1][1])/2 )
@@ -149,13 +150,18 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
             if detectedObjects["whiteBalls"] or detectedObjects["orangeBalls"]:
                 stateQueue.append((SEARCH_BALLS, {}))
                 stateQueue.pop(0)
+        else:
+            if detectedObjects["orangeBalls"]:
+                stateQueue.append((SEARCH_BALLS, {}))
+                stateQueue.pop(0)
+                
         #print("TO_GOAL")
         # If no balls are present, move to goal.
         goalPos = detectedObjects["goals"][1]
         robotDistance = calculateDistance(robotPos[0], goalPos)
         robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], goalPos)
         robotAngle = add_angle(robotToObjectAngle, -robotRotation)
-
+        skipFinalCheck = True
         if robotDistance <= 110:
             stateQueue.pop(0)
             stateQueue.append((VOMIT, time.time()))
