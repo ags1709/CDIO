@@ -42,28 +42,29 @@ def avoidObstacle(robotPos, targetPos, obstacle, robotWidth=119, depth=0, maxDep
 
     margin = MARGIN  # Pixels to avoid obstacle by
 
-    # candidates = [
-    #     ((xMin + xMax)/2, yMax + margin),  # above
-    #     ((xMin + xMax)/2, yMin - margin),  # below
-    #     (xMin - margin, (yMin + yMax)/2),  # left
-    #     (xMax + margin, (yMin + yMax)/2),  # right
-    #     (xMin - margin, yMax + margin),    # top-left
-    #     (xMax + margin, yMax + margin),    # top-right
-    #     (xMin - margin, yMin - margin),    # bottom-left
-    #     (xMax + margin, yMin - margin),    # bottom-right
-    # ]
-    center_x = (xMin + xMax) / 2
-    center_y = (yMin + yMax) / 2
-
-    num_candidates = 20
-    radius = max(xMax - xMin, yMax - yMin) / 2 + margin  # Distance from obstacle
-
-    angles = np.linspace(0, 2 * np.pi, num_candidates, endpoint=False)
-
     candidates = [
-        (center_x + radius * math.cos(angle), center_y + radius * math.sin(angle))
-        for angle in angles
+        ((xMin + xMax)/2, yMax + margin),  # above
+        ((xMin + xMax)/2, yMin - margin),  # below
+        (xMin - margin, (yMin + yMax)/2),  # left
+        (xMax + margin, (yMin + yMax)/2),  # right
+        (xMin - margin, yMax + margin),    # top-left
+        (xMax + margin, yMax + margin),    # top-right
+        (xMin - margin, yMin - margin),    # bottom-left
+        (xMax + margin, yMin - margin),    # bottom-right
     ]
+
+    # center_x = (xMin + xMax) / 2
+    # center_y = (yMin + yMax) / 2
+
+    # num_candidates = 20
+    # radius = max(xMax - xMin, yMax - yMin) / 2 + margin  # Distance from obstacle
+
+    # angles = np.linspace(0, 2 * np.pi, num_candidates, endpoint=False)
+
+    # candidates = [
+    #     (center_x + radius * math.cos(angle), center_y + radius * math.sin(angle))
+    #     for angle in angles
+    # ]
 
     validPaths = []
 
