@@ -1,7 +1,6 @@
 import traceback
 import cv2
 import socket
-from robotMovement.determineAuxiliaryActions import determineAuxiliaryActions
 from robotMovement.distanceBetweenObjects import calculateDistance
 from robotMovement.angleOfRotationCalculator import calculateAngleOfRotation
 from robotMovement.movementController import calculateSpeedAndRotation
@@ -10,6 +9,8 @@ from ultralytics import YOLO
 import math
 from imageRecognition.detect import ObjectDetection, DetectionMode
 from robotMovement.selectRobotTarget import calcDistAndAngleToTarget
+
+WindowSize = (400, 400)
 
 def main():
     # Set connection to robot
@@ -21,7 +22,8 @@ def main():
     except Exception as e:
         print("Error connecting to socket")
 
-    od = ObjectDetection(model="imageRecognition/ImageModels/best.pt", detection_mode=DetectionMode.IMAGE, image="test/RobotOutsidePlayAreapicture0.png")
+    od = ObjectDetection(model="imageRecognition/ImageModels/newbest.pt", detection_mode=DetectionMode.IMAGE, image="test/pictureForNPJ.png")
+    
     #od = ObjectDetection(model="imageRecognition/yolov8_20250424.pt", detection_mode=DetectionMode.CAMERA, capture_index=2)
 
     # Main loop. Runs entire competition program.
@@ -34,7 +36,7 @@ def main():
 
         cv2.putText(frame, f"State: {robotState}", (20, 60), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 0), 4)
         
-        vomit = determineAuxiliaryActions(distanceToTarget, angleToTarget, robotState)
+        vomit = robotState == "VOMIT"
         print(f"vomit", vomit, "distance", distanceToTarget)
         robotMovement = calculateSpeedAndRotation(distanceToTarget, angleToTarget, robotState)
 
@@ -64,6 +66,7 @@ def main():
         # robotMovement = calculateSpeedAndRotation(robotDistance, robotAngle)
 
         # Send data to robot
+    frame = cv2.resize(frame, WindowSize)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         od.close()
 
