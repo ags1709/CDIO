@@ -86,6 +86,9 @@ class ObjectDetection():
         goalNormals = estimateGoalNormals(playarea, frame)
         playAreaIntermediate = estimatePlayAreaIntermediate(result, playarea, frame, margin=165) #pa_tl = playarea of top left... etc
         
+        corners = [box.xyxy[0].cpu().numpy().astype(int) for box in boxes if 5 <= box.cls[0] <= 8]
+        side_lengths = [max(coords[2] - coords[0], coords[3] - coords[1]) for coords in corners]
+        largest_corner_sidelength = max(side_lengths)
         
         for box in boxes:
             cls_id = int(box.cls[0])
@@ -96,8 +99,8 @@ class ObjectDetection():
             x1, y1, x2, y2 = xyxy
 
             # If this is a corner, but it's too thin, ignore it and draw a thin red rectangle instead
-            if 5 <= cls_id <= 8 and min(x2 - x1, y2 - y1) < 30:
-                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 1)
+            if 5 <= cls_id <= 8 and min(x2 - x1, y2 - y1) < largest_corner_sidelength - 10:
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 2)
                 continue
 
             # Draw box
