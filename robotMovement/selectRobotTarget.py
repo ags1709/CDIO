@@ -55,6 +55,13 @@ def is_objectmiddle_in_circle(objectpos, center, radius):
     distance_squared = np.sum((point - center) ** 2)
     return distance_squared <= radius ** 2
 
+def is_objectmiddle_close_circle(objectpos, center, radius):
+    #middle = ( (objectpos[0][0] + objectpos[1][0])/2, (objectpos[0][1] + objectpos[1][1])/2 )
+    point = np.array(objectpos)
+    center = np.array(center)
+    distance_squared = np.sum((point - center) ** 2)
+    return distance_squared <= radius ** 2
+
 def add_angle(a1, a2):
     return (a1 + a2 + np.pi) % (2*np.pi) - np.pi
 
@@ -290,7 +297,21 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
         print("BALL IN CROSS!")
         intermediaryPoint = findIntermediatyCrossPoint(targetBall, crossInfo.middle_point, crossInfo.robot_gap, crossInfo.robot_intermediary_corners)
         stateQueue.pop(0)
-        # 
+        
+        # newBallPoint = calulateNewBallPosInConer(intermediaryPoint, targetBall)
+        handleOA(robotPos, intermediaryPoint, detectedObjects)
+        stateQueue.append((TO_INTERMEDIARY, intermediaryPoint))
+        #exactRotationTarget = (crossInfo.angle_rad + np.pi + np.pi) % (2*np.pi) - np.pi
+        exactRotationTarget = calculateAngleOfTwoPoints(intermediaryPoint, targetBall) # TODO: Suboptimal with intermediary point and not robot point used after reaching target but whatever.
+        stateQueue.append((TO_EXACT_ROTATION, exactRotationTarget))
+        stateQueue.append((COLLECT_BALL, {'target': targetBall}))
+        stateQueue.append((BACKOFF, targetBall, calculateDistance(targetBall, intermediaryPoint) * 0.8))
+    
+    if crossInfo is not None and is_objectmiddle_close_circle(targetBall, crossInfo.middle_point, crossInfo.size+2):
+        print("BALL close to CROSS!")
+        intermediaryPoint = findIntermediatyCrossPoint(targetBall, crossInfo.middle_point, crossInfo.robot_gap, crossInfo.robot_intermediary_corners)
+        stateQueue.pop(0)
+        
         # newBallPoint = calulateNewBallPosInConer(intermediaryPoint, targetBall)
         handleOA(robotPos, intermediaryPoint, detectedObjects)
         stateQueue.append((TO_INTERMEDIARY, intermediaryPoint))
