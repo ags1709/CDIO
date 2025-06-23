@@ -1,6 +1,6 @@
 import cv2
 from ultralytics import YOLO
-from imageRecognition.positionEstimator import estimateGoals, estimateCross, estimatePlayArea, estimatePlayAreaIntermediate, analyze_point_with_polygon, CrossInfo, is_point_in_polygon
+from imageRecognition.positionEstimator import estimateGoals, estimateGoalNormals, estimateCross, estimatePlayArea, estimatePlayAreaIntermediate, analyze_point_with_polygon, CrossInfo, is_point_in_polygon
 from imageRecognition.positionEstimator import estimatePositionFromSquare
 from imageRecognition.positionEstimator import tuple_toint
 from robotMovement.calculateRobotPosition import correctPerspective
@@ -82,7 +82,8 @@ class ObjectDetection():
         backLeftCorner = None
         crossinfo = estimateCross(result, cap, frame)
         playarea = estimatePlayArea(result, cap, frame)
-        goals = estimateGoals(playarea, cap, frame)
+        goals = estimateGoals(playarea, frame)
+        goalNormals = estimateGoalNormals(playarea, frame)
         playAreaIntermediate = estimatePlayAreaIntermediate(result, playarea, frame, margin=165) #pa_tl = playarea of top left... etc
         
         
@@ -130,7 +131,7 @@ class ObjectDetection():
         # The points being respectively the upperleft and bottomright corner of their bounding box. Each point is itself a tuple of 2 integers.
         # NOTE: goals are stored differently to everything else. goals are stored as a tuple with its x coordinate, and the y coordinate being the middle of the goal.
         positions = {"whiteBalls": whiteBalls, "orangeBalls": orangeBalls,"playfield": playfield, "cross": cross, "egg": egg, "frontLeftCorner": frontLeftCorner, \
-                     "frontRightCorner": frontRightCorner, "backLeftCorner": backLeftCorner, "backRightCorner": backRightCorner, "goals": goals}
+                     "frontRightCorner": frontRightCorner, "backLeftCorner": backLeftCorner, "backRightCorner": backRightCorner, "goals": goals, "goalNormals": goalNormals}
         
         # Filter robot position
         if frontLeftCorner is not None and is_point_in_polygon(frontLeftCorner, playarea):
