@@ -35,9 +35,8 @@ def estimatePositionFromSquare(x1,y1,x2,y2):
     return (xCoordinate, yCoordinate)
 
 
-def estimateCross(result, cap, frame) -> CrossInfo:
+def estimateCross(result, cap, frame, id_cross) -> CrossInfo:
     boxes = result.boxes
-    id_cross = 4
     cross_box = [x for x in boxes if x.cls == id_cross]
     
     id_orange = 1
