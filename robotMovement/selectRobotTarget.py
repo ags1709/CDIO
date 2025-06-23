@@ -264,7 +264,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
     cv2.arrowedLine(frame, tuple_toint(robotPos[0]), (int(robotPos[0][0] + math.cos(drobotAngle)*250), int(robotPos[0][1] + math.sin(drobotAngle)*250)), (255,0,0), 4, tipLength=0.2) 
 
     print(f"State queue: {stateQueue}")
-    print(f"state Variables: {stateVariables}")
+    print(f"State variables: {stateVariables}")
     
     return robotDistance, robotAngle, state
     
