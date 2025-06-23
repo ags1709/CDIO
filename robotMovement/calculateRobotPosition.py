@@ -24,48 +24,48 @@ def calculateRobotPosition(frontLeftCorner, frontRightCorner, backLeftCorner, ba
 # NOTE: Insert default width and height. Should be the pixel distences between corners
 def calculateRobotPositionFlexible(frontLeftCorner, frontRightCorner, backLeftCorner, backRightCorner, width=77, length=77):
     # Fill missing corners if possible
-    if not frontLeftCorner:
-        if frontRightCorner and backLeftCorner and backRightCorner:
+    if frontLeftCorner is None:
+        if frontRightCorner is not None and backLeftCorner is not None and backRightCorner is not None:
             frontLeftCorner = find_fourth_corner(backLeftCorner, backRightCorner, frontRightCorner)
-        elif frontRightCorner and backLeftCorner:
+        elif frontRightCorner is not None and backLeftCorner is not None:
             frontLeftCorner = find_diagonal_corner(frontRightCorner, backLeftCorner)
-        elif frontRightCorner and backRightCorner:
+        elif frontRightCorner is not None and backRightCorner is not None:
             frontLeftCorner, backLeftCorner = find_opposite_side(frontRightCorner, backRightCorner, width)
-        elif backLeftCorner and backRightCorner:
+        elif backLeftCorner is not None and backRightCorner is not None:
             frontRightCorner, frontLeftCorner = find_opposite_side(backRightCorner, backLeftCorner, length)
     
-    if not frontRightCorner:
-        if frontLeftCorner and backLeftCorner and backRightCorner:
+    if frontRightCorner is None:
+        if frontLeftCorner is not None and backLeftCorner is not None and backRightCorner is not None:
             frontRightCorner = find_fourth_corner(backRightCorner, backLeftCorner, frontLeftCorner)
-        elif frontLeftCorner and backRightCorner:
+        elif frontLeftCorner is not None and backRightCorner is not None:
             frontRightCorner = find_diagonal_corner(backRightCorner, frontLeftCorner)
-        elif frontLeftCorner and backLeftCorner:
+        elif frontLeftCorner is not None and backLeftCorner is not None:
             backRightCorner, frontRightCorner = find_opposite_side(backLeftCorner, frontLeftCorner, width)
-        elif backLeftCorner and backRightCorner:
+        elif backLeftCorner is not None and backRightCorner is not None:
             frontRightCorner, frontLeftCorner = find_opposite_side(backRightCorner, backLeftCorner, length)
 
-    if not backLeftCorner:
-        if backRightCorner and frontRightCorner and frontLeftCorner:
+    if backLeftCorner is None:
+        if backRightCorner is not None and frontRightCorner is not None and frontLeftCorner is not None:
             backLeftCorner = find_fourth_corner(frontLeftCorner, frontRightCorner, backRightCorner)
-        elif backRightCorner and frontLeftCorner:
+        elif backRightCorner is not None and frontLeftCorner is not None:
             backLeftCorner = find_diagonal_corner(frontLeftCorner, backRightCorner)
-        elif frontLeftCorner and frontRightCorner:
+        elif frontLeftCorner is not None and frontRightCorner is not None:
             backLeftCorner, backRightCorner = find_opposite_side(frontLeftCorner, frontRightCorner, length)
-        elif frontRightCorner and backRightCorner:
+        elif frontRightCorner is not None and backRightCorner is not None:
             frontLeftCorner, backLeftCorner = find_opposite_side(frontRightCorner, backRightCorner, width)
 
-    if not backRightCorner:
-        if backLeftCorner and frontLeftCorner and frontRightCorner:
+    if backRightCorner is None:
+        if backLeftCorner is not None and frontLeftCorner is not None and frontRightCorner is not None:
             backRightCorner = find_fourth_corner(frontRightCorner, frontLeftCorner, backLeftCorner)
-        elif backLeftCorner and frontRightCorner:
+        elif backLeftCorner is not None and frontRightCorner is not None:
             backRightCorner = find_diagonal_corner(backLeftCorner, frontRightCorner)
-        elif frontLeftCorner and frontRightCorner:
+        elif frontLeftCorner is not None and frontRightCorner is not None:
             backLeftCorner, backRightCorner = find_opposite_side(frontLeftCorner, frontRightCorner, length)
-        elif frontLeftCorner and backLeftCorner:
+        elif frontLeftCorner is not None and backLeftCorner is not None:
             backRightCorner, frontRightCorner = find_opposite_side(backLeftCorner, frontLeftCorner, width)
 
     # Now calculate points
-    if (frontLeftCorner and frontRightCorner and backLeftCorner and backRightCorner):
+    if (frontLeftCorner is not None and frontRightCorner is not None and backLeftCorner is not None and backRightCorner is not None):
         # Transform the points down to the ground plane instead of being in the air
         frontLeftCorner  = correctPerspective(frontLeftCorner)
         frontRightCorner = correctPerspective(frontRightCorner)
