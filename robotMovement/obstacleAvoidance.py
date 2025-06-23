@@ -6,7 +6,7 @@ from shapely.geometry import LineString
 import numpy as np
 
 # ROBOT_WIDTH = 119
-ROBOT_WIDTH = 135
+ROBOT_WIDTH = 145
 MARGIN = 150
 
 def calculateDistance(point1, point2):
