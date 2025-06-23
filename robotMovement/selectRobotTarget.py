@@ -174,7 +174,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], goalPos)
         robotAngle = add_angle(robotToObjectAngle, -robotRotation)
 
-        if robotDistance <= 120:
+        if robotDistance <= 155:
             stateQueue.pop(0)
             stateQueue.append((VOMIT, time.time()))
 
@@ -224,7 +224,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
             return robotDistance, robotAngle, state
         
         stateJson['memoryAge'] = stateJson.get('memoryAge', 0) + 1
-        MaxMemoryAge = 80   # How many frames to remember the target ball before resetting it.
+        MaxMemoryAge = 100   # How many frames to remember the target ball before resetting it.
 
         if stateJson['memoryAge'] > MaxMemoryAge:
             print("Memory too old — resetting")
