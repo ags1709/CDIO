@@ -1,4 +1,8 @@
 import math
+import numpy as np
+from imageRecognition.positionEstimator import edge_normal
+
+type Point = np.ndarray[tuple[int], np.dtype[np.floating]]
 
 # The heights of different things in cm
 camera_height = 165
@@ -16,50 +20,49 @@ def calculateRobotPosition(frontLeftCorner, frontRightCorner, backLeftCorner, ba
         return (forwardsPoint, backwardsPoint)
 
 
-# Done with chatGPT
+# Partially done with ChatGPT
 # NOTE: Insert default width and height. Should be the pixel distences between corners
-def calculateRobotPositionFlexible(frontLeftCorner, frontRightCorner, backLeftCorner, backRightCorner, width=102, height=138):
+def calculateRobotPositionFlexible(frontLeftCorner, frontRightCorner, backLeftCorner, backRightCorner, width=77, length=77):
     # Fill missing corners if possible
     if not frontLeftCorner:
         if frontRightCorner and backLeftCorner and backRightCorner:
             frontLeftCorner = find_fourth_corner(backLeftCorner, backRightCorner, frontRightCorner)
         elif frontRightCorner and backLeftCorner:
-            frontLeftCorner = find_Top_Corner(frontRightCorner, backLeftCorner)
+            frontLeftCorner = find_diagonal_corner(frontRightCorner, backLeftCorner)
         elif frontRightCorner and backRightCorner:
-            frontLeftCorner, backLeftCorner = find_opposite_side(frontRightCorner, backRightCorner, width, height)
+            frontLeftCorner, backLeftCorner = find_opposite_side(frontRightCorner, backRightCorner, width)
         elif backLeftCorner and backRightCorner:
-            frontLeftCorner, frontRightCorner = find_opposite_side(backLeftCorner, backRightCorner, width, height)
+            frontRightCorner, frontLeftCorner = find_opposite_side(backRightCorner, backLeftCorner, length)
     
     if not frontRightCorner:
         if frontLeftCorner and backLeftCorner and backRightCorner:
             frontRightCorner = find_fourth_corner(backRightCorner, backLeftCorner, frontLeftCorner)
         elif frontLeftCorner and backRightCorner:
-            frontRightCorner = find_Top_Corner(frontLeftCorner, backRightCorner)
+            frontRightCorner = find_diagonal_corner(backRightCorner, frontLeftCorner)
         elif frontLeftCorner and backLeftCorner:
-            frontRightCorner, backRightCorner = find_opposite_side(frontLeftCorner, backLeftCorner, width, height)
+            backRightCorner, frontRightCorner = find_opposite_side(backLeftCorner, frontLeftCorner, width)
         elif backLeftCorner and backRightCorner:
-            frontRightCorner, frontLeftCorner = find_opposite_side(backLeftCorner, backRightCorner, width, height)
-        
+            frontRightCorner, frontLeftCorner = find_opposite_side(backRightCorner, backLeftCorner, length)
+
     if not backLeftCorner:
         if backRightCorner and frontRightCorner and frontLeftCorner:
             backLeftCorner = find_fourth_corner(frontLeftCorner, frontRightCorner, backRightCorner)
         elif backRightCorner and frontLeftCorner:
-            backLeftCorner = find_Bottom_Corner(frontLeftCorner, backRightCorner)
+            backLeftCorner = find_diagonal_corner(frontLeftCorner, backRightCorner)
         elif frontLeftCorner and frontRightCorner:
-            backLeftCorner, backRightCorner = find_opposite_side(frontLeftCorner, frontRightCorner, width, height)
+            backLeftCorner, backRightCorner = find_opposite_side(frontLeftCorner, frontRightCorner, length)
         elif frontRightCorner and backRightCorner:
-            backLeftCorner, frontLeftCorner = find_opposite_side(frontRightCorner, backRightCorner, width, height)
-        
+            frontLeftCorner, backLeftCorner = find_opposite_side(frontRightCorner, backRightCorner, width)
 
     if not backRightCorner:
         if backLeftCorner and frontLeftCorner and frontRightCorner:
             backRightCorner = find_fourth_corner(frontRightCorner, frontLeftCorner, backLeftCorner)
         elif backLeftCorner and frontRightCorner:
-            backRightCorner = find_Bottom_Corner(frontRightCorner, backLeftCorner)
+            backRightCorner = find_diagonal_corner(backLeftCorner, frontRightCorner)
         elif frontLeftCorner and frontRightCorner:
-            backRightCorner, backLeftCorner = find_opposite_side(frontLeftCorner, frontRightCorner, width, height)
+            backLeftCorner, backRightCorner = find_opposite_side(frontLeftCorner, frontRightCorner, length)
         elif frontLeftCorner and backLeftCorner:
-            backRightCorner, frontRightCorner = find_opposite_side(frontLeftCorner, backLeftCorner, width, height)
+            backRightCorner, frontRightCorner = find_opposite_side(backLeftCorner, frontLeftCorner, width)
 
     # Now calculate points
     if (frontLeftCorner and frontRightCorner and backLeftCorner and backRightCorner):
@@ -74,7 +77,7 @@ def calculateRobotPositionFlexible(frontLeftCorner, frontRightCorner, backLeftCo
         #print(f"\n Forward point {forwardsPoint}, Backward points {backwardsPoint} \n")
         return (forwardsPoint, backwardsPoint)
     else:
-        return((0,0),(0,0))
+        return None
         #raise ValueError("Not enough information to calculate corners.")
 
 def correctPerspective(point):
@@ -82,50 +85,18 @@ def correctPerspective(point):
     x, y = frame_w / 2, frame_h / 2
     return (factor * (point[0]  - x) + x, factor * (point[1]  - y) + y)
 
-# Help from ChatGPT
-#--------------------------
-def subtract(p1, p2):
-    return (p1[0] - p2[0], p1[1] - p2[1])
+def find_fourth_corner(A: Point, B: Point, C: Point):
+    return A + (C - B)
 
-def add(p1, p2):
-    return (p1[0] + p2[0], p1[1] + p2[1])
+def find_diagonal_corner(A: Point, C: Point):
+    """Calculates one of the two missing corners from two diagonal corners. This function assumes a square!"""
+    v = (C - A) / 2
+    M = (A + C) / 2
 
-def MidPoint(p1, p2):
-    return ((p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2)
+    perp = np.array((-v[1], v[0])) # Rotate 90 degrees clockwise
 
-def find_fourth_corner(A, B, C):
-    return add(A, subtract(C, B))
+    return M + perp
 
-def find_Top_Corner(A,C):
-    v = subtract(A,C)
-    M = MidPoint(A,C)
-
-    Perpendicular = (-v[1], v[0])  # Rotate 90 degrees
-    HalfPerpendicular = (Perpendicular[0] / 2, Perpendicular[1] / 2)
-
-    return (M[0] + HalfPerpendicular[0], M[1] + HalfPerpendicular[1])
-
-def find_Bottom_Corner(A,C):
-    v = subtract(A,C)
-    M = MidPoint(A,C)
-    Perpendicular = (-v[1], v[0])  # Rotate 90 degrees
-    HalfPerpendicular = (Perpendicular[0] / 2, Perpendicular[1] / 2)
-
-    return (M[0] - HalfPerpendicular[0], M[1] - HalfPerpendicular[1])
-
-def scale(v, s):
-    return (v[0]*s, v[1]*s)
-
-def find_opposite_side(A, B, width, height):
-    AB = subtract(B, A)
-    length = math.hypot(AB[0], AB[1])
-
-    AB_unit = (AB[0]/length, AB[1]/length)
-    perp = (-AB_unit[1], AB_unit[0])
-    perp_scaled = scale(perp, width)
-
-    C = add(B, perp_scaled)
-    D = add(A, perp_scaled)
-    return C, D
-
-#--------------------------
+def find_opposite_side(A: Point, B: Point, side_length: float):
+    perp = edge_normal(A, B) * side_length
+    return A + perp, B + perp
