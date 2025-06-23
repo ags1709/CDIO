@@ -15,6 +15,10 @@ class CrossInfo:
 def estimateGoals(playarea: list[np.ndarray], frame):
     if playarea is not None:
         leftGoal = (playarea[0] + playarea[3]) / 2
+        leftGoal[1] -= 10
+        # print(f"play area 0 type: {type(playarea[0])}")
+        # print(f"play area 0: {playarea[0]}")
+        # print(f"play area 3: {playarea[3]}")
         rightGoal = (playarea[1] + playarea[2]) / 2
         cv2.circle(frame, tuple(map(int, leftGoal)), 30, (200, 150, 0), 3)
         cv2.circle(frame, tuple(map(int, rightGoal)), 30, (200, 150, 0), 3)
@@ -35,9 +39,8 @@ def estimatePositionFromSquare(x1,y1,x2,y2):
     return (xCoordinate, yCoordinate)
 
 
-def estimateCross(result, cap, frame) -> CrossInfo:
+def estimateCross(result, cap, frame, id_cross) -> CrossInfo:
     boxes = result.boxes
-    id_cross = 4
     cross_box = [x for x in boxes if x.cls == id_cross]
     
     id_orange = 1
