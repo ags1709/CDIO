@@ -5,7 +5,9 @@ from shapely.geometry import Polygon, box
 from shapely.geometry import LineString
 import numpy as np
 
-ROBOT_WIDTH = 119
+# ROBOT_WIDTH = 119
+ROBOT_WIDTH = 135
+MARGIN = 150
 
 def calculateDistance(point1, point2):
     return np.sqrt((point1[0] - point2[0])**2 + (point1[1] - point2[1])**2)
@@ -21,16 +23,26 @@ def pathIntersectsObstacle(polygon, obstacle):
     obs = box(obstacle[0][0], obstacle[0][1], obstacle[1][0], obstacle[1][1])
     return polygon.intersects(obs)
 
+# ------------------------------------------------------------------------------------------
+# New avoid obstacle attempt to handle edge case
+def avoidObstacle(robotPos, targetPos, obstacle, robotWidth=119, depth=0, maxDepth=5, visited=None):
+    if visited is None:
+        visited = set()
 
-def avoidObstacle(robotPos, targetPos, obstacle, robotWidth=119):
-    # Initial swept path check from robot to target
     if not pathIntersectsObstacle(robotPath(robotPos, targetPos, robotWidth), obstacle):
+        return [targetPos]  # Return path with just the target
+
+    # Avoid infinite recursion
+    if depth >= maxDepth:
         return None
+
+    visited.add((round(robotPos[0]), round(robotPos[1])))
 
     xMin, yMin = obstacle[0]
     xMax, yMax = obstacle[1]
 
-    margin = 140  # Pixels to avoid obstacle by
+    margin = MARGIN  # Pixels to avoid obstacle by
+
     candidates = [
         ((xMin + xMax)/2, yMax + margin),  # above
         ((xMin + xMax)/2, yMin - margin),  # below
@@ -42,81 +54,93 @@ def avoidObstacle(robotPos, targetPos, obstacle, robotWidth=119):
         (xMax + margin, yMin - margin),    # bottom-right
     ]
 
-    valid = []
-    for candidate in candidates:
-        path1 = robotPath(robotPos, candidate, robotWidth)
-        path2 = robotPath(candidate, targetPos, robotWidth)
+    # center_x = (xMin + xMax) / 2
+    # center_y = (yMin + yMax) / 2
 
+    # num_candidates = 20
+    # radius = max(xMax - xMin, yMax - yMin) / 2 + margin  # Distance from obstacle
+
+    # angles = np.linspace(0, 2 * np.pi, num_candidates, endpoint=False)
+
+    # candidates = [
+    #     (center_x + radius * math.cos(angle), center_y + radius * math.sin(angle))
+    #     for angle in angles
+    # ]
+
+    validPaths = []
+
+    for candidate in candidates:
+        rounded = (round(candidate[0]), round(candidate[1]))
+        if rounded in visited:
+            continue
+
+        path1 = robotPath(robotPos, candidate, robotWidth)
         if pathIntersectsObstacle(path1, obstacle):
             continue
-        if pathIntersectsObstacle(path2, obstacle):
-            continue
 
-        totalDist = calculateDistance(robotPos, candidate) + calculateDistance(candidate, targetPos)
-        valid.append((candidate, totalDist))
+        # Recursively check from this candidate to target
+        subPath = avoidObstacle(candidate, targetPos, obstacle, robotWidth, depth + 1, maxDepth, visited.copy())
+        if subPath:
+            totalDist = calculateDistance(robotPos, candidate) + sum(
+                calculateDistance(subPath[i], subPath[i + 1]) for i in range(len(subPath) - 1)
+            )
+            validPaths.append(([candidate] + subPath, totalDist))
 
-    if valid:
-        bestIntermediatePoint = min(valid, key=lambda x: x[1])
-        return bestIntermediatePoint[0]
-    else:
-        return None
+    if validPaths:
+        # Return the shortest valid full path
+        bestPath = min(validPaths, key=lambda x: x[1])[0]
+        return bestPath
 
-#------------------------------------------------------------------------------------------------
-# Visualization and testing 
-# chatGPT used for the below visualization code and test cases
+    return None  # No valid path found
 
-# def computeFrontCornersFromPose(position, headingTarget, robotWidth):
-#     dx = headingTarget[0] - position[0]
-#     dy = headingTarget[1] - position[1]
-#     length = math.hypot(dx, dy)
-#     if length == 0:
-#         return position, position
 
-#     dx /= length
-#     dy /= length
-
-#     perp_x = -dy
-#     perp_y = dx
-
-#     offset_x = perp_x * (robotWidth / 2)
-#     offset_y = perp_y * (robotWidth / 2)
-
-#     frontLeft = (position[0] + offset_x, position[1] + offset_y)
-#     frontRight = (position[0] - offset_x, position[1] - offset_y)
-
-#     return frontLeft, frontRight
+# ------------------------------------------------------------------------------------------------
+# Visualization of obstacle avoidance. DO NOT DELETE.
 
 # def visualizeScenario(robotPos, targetPos, obstacle, robotWidth, title="Scenario"):
-#     # frontLeftCorner, frontRightCorner = computeFrontCornersFromPose(robotPos, targetPos, robotWidth)
-#     waypoint = avoidObstacle(robotPos, targetPos, obstacle, robotWidth)
+#     direct_path_valid = not pathIntersectsObstacle(robotPath(robotPos, targetPos, robotWidth), obstacle)
+
+#     if direct_path_valid:
+#         path = [targetPos]  # Just go straight to the target
+#     else:
+#         path = avoidObstacle(robotPos, targetPos, obstacle, robotWidth)
 
 #     fig, ax = plt.subplots()
 
-#     ax.plot(*robotPos, 'bo', label="Robot Center")
+#     ax.plot(*robotPos, 'bo', label="Robot Start")
 #     ax.plot(*targetPos, 'go', label="Target")
-#     # ax.plot(*frontLeftCorner, 'co', label="Front Left")
-#     # ax.plot(*frontRightCorner, 'mo', label="Front Right")
 
+#     # Draw the obstacle
 #     xMin, yMin = obstacle[0]
 #     xMax, yMax = obstacle[1]
 #     rect_patch = patches.Rectangle((xMin, yMin), xMax - xMin, yMax - yMin,
 #                                    linewidth=2, edgecolor='red', facecolor='red', alpha=0.3, label="Obstacle")
 #     ax.add_patch(rect_patch)
 
-#     if waypoint:
-#         ax.plot(*waypoint, 'ro', label="Waypoint")
-#         ax.plot([robotPos[0], waypoint[0]], [robotPos[1], waypoint[1]], 'b-', label="To Waypoint")
-#         ax.plot([waypoint[0], targetPos[0]], [waypoint[1], targetPos[1]], 'g-', label="To Target")
+#     if path:
+#         full_path = [robotPos] + path
+#         for i in range(len(full_path) - 1):
+#             start = full_path[i]
+#             end = full_path[i + 1]
 
-#         # Visualize swept areas (optional debugging)
-#         path1 = robotPath(robotPos, waypoint, robotWidth)
-#         path2 = robotPath(waypoint, targetPos, robotWidth)
-#         ax.add_patch(patches.Polygon(list(path1.exterior.coords), color='blue', alpha=0.1))
-#         ax.add_patch(patches.Polygon(list(path2.exterior.coords), color='green', alpha=0.1))
+#             # Plot segment line
+#             ax.plot([start[0], end[0]], [start[1], end[1]],
+#                     'b-' if i == 0 else 'g-', label="To Waypoint" if i == 0 else None)
+
+#             # Plot swept path
+#             swept = robotPath(start, end, robotWidth)
+#             ax.add_patch(patches.Polygon(list(swept.exterior.coords), alpha=0.1,
+#                                          color='blue' if i == 0 else 'green'))
+
+#             # Plot waypoints
+#             if i > 0 and i < len(full_path) - 1:  # Only intermediate waypoints
+#                 ax.plot(*start, 'ro', label="Waypoint" if i == 1 else None)
+
 #     else:
-#         ax.plot([robotPos[0], targetPos[0]], [robotPos[1], targetPos[1]], 'k--', label="Direct Path")
-#         path = robotPath(robotPos, targetPos, robotWidth)
-#         ax.add_patch(patches.Polygon(list(path.exterior.coords), color='gray', alpha=0.1))
+#         # No valid path at all
+#         ax.plot([robotPos[0], targetPos[0]], [robotPos[1], targetPos[1]], 'k--', label="Blocked Path")
+#         swept = robotPath(robotPos, targetPos, robotWidth)
+#         ax.add_patch(patches.Polygon(list(swept.exterior.coords), alpha=0.1, color='gray'))
 
 #     ax.set_title(title)
 #     ax.set_aspect('equal')
@@ -124,6 +148,7 @@ def avoidObstacle(robotPos, targetPos, obstacle, robotWidth=119):
 #     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)
 #     plt.tight_layout()
 #     plt.show()
+
 
 # # Test cases
 # test_cases = [
@@ -159,7 +184,6 @@ def avoidObstacle(robotPos, targetPos, obstacle, robotWidth=119):
 #     },
 # ]
 
-# robotWidth = 119  # pixels
-
 # for test in test_cases:
-#     visualizeScenario(test["robotPos"], test["targetPos"], test["obstacle"], robotWidth, test["title"])
+#     visualizeScenario(test["robotPos"], test["targetPos"], test["obstacle"], ROBOT_WIDTH, test["title"])
+

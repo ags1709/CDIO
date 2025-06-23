@@ -65,11 +65,19 @@ def is_objectmiddle_close_circle(objectpos, center, radius):
 def add_angle(a1, a2):
     return (a1 + a2 + np.pi) % (2*np.pi) - np.pi
 
+
 def handleOA(pos, target, objects):
-    if avoidObstacle(pos[0], target, objects["cross"]) is not None:
-        print("Obstacle in the way, navigating to intermediary point")
-        OAintermediaryPoint = avoidObstacle(pos[0], target, objects["cross"])
-        stateQueue.insert(0, (TO_INTERMEDIARY, OAintermediaryPoint))
+    path = avoidObstacle(pos[0], target, objects["cross"])
+
+    # If an obstacle is in the way but no valid path is found, do nothing but print alert.
+    if path is None:
+        print("WARNING: Obstacle in way, but no viable path found")
+
+    # If necessary, calculates intermediary points to navigate to before going to target and adds them to state queue
+    elif path != [target]:
+        print("Obstacle in the way, navigating to intermediary point(s)")
+        for OAIP in reversed(path[:-1]):
+            stateQueue.insert(0, (TO_INTERMEDIARY, OAIP))
 
 def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaIntermediate: list[tuple[float, float]], frame):
 
@@ -148,7 +156,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
 
     if state == TO_INTERMEDIARY: # 
         intermediaryPoint = stateVariables[0]
-
+        # handleOA(robotPos, intermediaryPoint, detectedObjects)
         cv2.circle(frame, tuple_toint(intermediaryPoint), 11, (50,200,50), 6) # Mark intermediary
         robotDistance = calculateDistance(robotMiddle, intermediaryPoint)
         robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], intermediaryPoint)
@@ -173,7 +181,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], goalPos)
         robotAngle = add_angle(robotToObjectAngle, -robotRotation)
 
-        if robotDistance <= 110:
+        if robotDistance <= 155:
             stateQueue.pop(0)
             stateQueue.append((VOMIT, time.time()))
 
@@ -256,7 +264,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         # Draw what we are trying to collect
         cv2.circle(frame, tuple_toint(targetBall), 20, (0,150,150), 5)
 
-        if robotDistance <= 55:
+        if robotDistance <= 65:
             print("Ball collected!")
             stateQueue.pop(0)
             targetBall = None
@@ -341,8 +349,3 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
 
     # Obstacle avoidance. Checks if obstacle is in the way, and if so, navigate to intermediate point first.
     handleOA(robotPos, targetBall, detectedObjects)
-    # if avoidObstacle(robotPos[0], targetBall, detectedObjects["cross"], robotWidth=119) is not None:
-    #     print("Obstacle in the way, navigating to intermediary point")
-    #     intermediaryPoint = avoidObstacle(robotPos[0], targetBall, detectedObjects["cross"], robotWidth=119)
-    #     stateQueue.insert(0, (TO_INTERMEDIARY, intermediaryPoint))
-        #stateQueue.pop(0)   
