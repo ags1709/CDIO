@@ -95,6 +95,11 @@ class ObjectDetection():
             xyxy = box.xyxy[0].cpu().numpy().astype(int)
             x1, y1, x2, y2 = xyxy
 
+            # If this is a corner, but it's too thin, ignore it and draw a thin red rectangle instead
+            if 5 <= cls_id <= 8 and min(x2 - x1, y2 - y1) < 30:
+                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 0, 255), 1)
+                continue
+
             # Draw box
             cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
             # Draw label
