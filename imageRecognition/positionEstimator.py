@@ -15,6 +15,10 @@ class CrossInfo:
 def estimateGoals(playarea: list[np.ndarray], frame):
     if playarea is not None:
         leftGoal = (playarea[0] + playarea[3]) / 2
+        leftGoal[1] -= 10
+        # print(f"play area 0 type: {type(playarea[0])}")
+        # print(f"play area 0: {playarea[0]}")
+        # print(f"play area 3: {playarea[3]}")
         rightGoal = (playarea[1] + playarea[2]) / 2
         cv2.circle(frame, tuple(map(int, leftGoal)), 30, (200, 150, 0), 3)
         cv2.circle(frame, tuple(map(int, rightGoal)), 30, (200, 150, 0), 3)

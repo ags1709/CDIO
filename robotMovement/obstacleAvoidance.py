@@ -150,7 +150,7 @@ def avoidObstacle(robotPos, targetPos, obstacle, robotWidth=119, depth=0, maxDep
 #     plt.show()
 
 
-# # # Test cases
+# # Test cases
 # test_cases = [
 #     {
 #         "robotPos": (100, 100),

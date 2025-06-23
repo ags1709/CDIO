@@ -134,8 +134,6 @@ class ObjectDetection():
         # NOTE: goals are stored differently to everything else. goals are stored as a tuple with its x coordinate, and the y coordinate being the middle of the goal.
         positions = {"whiteBalls": whiteBalls, "orangeBalls": orangeBalls,"playfield": playfield, "cross": cross, "egg": egg, "frontLeftCorner": frontLeftCorner, \
              "frontRightCorner": frontRightCorner, "backLeftCorner": backLeftCorner, "backRightCorner": backRightCorner, "goals": goals, "goalNormals": goalNormals}
-        # positions = {"whiteBalls": whiteBalls, "orangeBalls": orangeBalls, "cross": cross, "egg": egg, "frontLeftCorner": frontLeftCorner, \
-        #              "frontRightCorner": frontRightCorner, "backLeftCorner": backLeftCorner, "backRightCorner": backRightCorner, "goals": goals, "goalNormals": goalNormals}
         
         # Filter robot position
         if frontLeftCorner is not None and is_point_in_polygon(frontLeftCorner, playarea):
