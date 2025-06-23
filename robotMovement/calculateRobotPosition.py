@@ -23,6 +23,10 @@ def calculateRobotPosition(frontLeftCorner, frontRightCorner, backLeftCorner, ba
 # Partially done with ChatGPT
 # NOTE: Insert default width and height. Should be the pixel distences between corners
 def calculateRobotPositionFlexible(frontLeftCorner, frontRightCorner, backLeftCorner, backRightCorner, width=77, length=77):
+    if (frontLeftCorner is not None): frontLeftCorner = np.array(frontLeftCorner, float)
+    if (frontRightCorner is not None): frontRightCorner = np.array(frontRightCorner, float)
+    if (backLeftCorner is not None): backLeftCorner = np.array(backLeftCorner, float)
+    if (backRightCorner is not None): backRightCorner = np.array(backRightCorner, float)
     # Fill missing corners if possible
     if frontLeftCorner is None:
         if frontRightCorner is not None and backLeftCorner is not None and backRightCorner is not None:
