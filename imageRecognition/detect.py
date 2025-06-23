@@ -1,6 +1,6 @@
 import cv2
 from ultralytics import YOLO
-from imageRecognition.positionEstimator import estimateGoals, estimateCross, estimatePlayArea, estimatePlayAreaIntermediate, analyze_point_with_polygon, CrossInfo, is_point_in_polygon
+from imageRecognition.positionEstimator import estimateGoals, estimateGoalNormals, estimateCross, estimatePlayArea, estimatePlayAreaIntermediate, analyze_point_with_polygon, CrossInfo, is_point_in_polygon
 from imageRecognition.positionEstimator import estimatePositionFromSquare
 from imageRecognition.positionEstimator import tuple_toint
 from robotMovement.calculateRobotPosition import correctPerspective
@@ -83,7 +83,8 @@ class ObjectDetection():
         cross_id = [k for k, v in self.model.names.items() if v == "cross"][0]
         crossinfo = estimateCross(result, cap, frame, cross_id)
         playarea = estimatePlayArea(result, cap, frame)
-        goals = estimateGoals(playarea, cap, frame)
+        goals = estimateGoals(playarea, frame)
+        goalNormals = estimateGoalNormals(playarea, frame)
         playAreaIntermediate = estimatePlayAreaIntermediate(result, playarea, frame, margin=165) #pa_tl = playarea of top left... etc
         
         
