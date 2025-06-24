@@ -1,7 +1,6 @@
 import numpy as np
 
 def getTurnSpeed(angleToTarget, kpTurn=50, minTurn=-100, maxTurn=100):
-    # kpTurn = 50
     # turn = max(-100, min(100, angleToTarget**5*2+angleToTarget*40)) # x^(3)*40+x*50
     #turn += 2 if turn>0 else -2
     #turn = np.clip(turn, -100, 100)
@@ -13,24 +12,16 @@ def getForwardSpeed(distanceToTarget, kpForward=0.1, minSpeed=-100, maxSpeed=100
     return np.clip(distanceToTarget * kpForward, a_min=minSpeed, a_max=maxSpeed)
 
 
-def getRotationSign(angleToTarget):
-    if angleToTarget >= 0:
-        return 1
-    else:
-        return -1
-
-
-
 def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
     turnSpeed=0;forwardSpeed=0
-    
+
     if state == "SEARCH_BALLS":
         # Proportionality constants. Tune to change how fast speed changes    
         if distanceFromTarget > 50:
             kp_forward = 0.2
             kp_turn = 30
             maxSpeed = 80
-            turnSpeed = getRotationSign(angleToTarget) * 100
+            turnSpeed = np.sign(angleToTarget) * 100
             if abs(angleToTarget) < 0.349: # 20 degrees
                 turnSpeed = getTurnSpeed(angleToTarget, kp_turn)
                 forwardSpeed = getForwardSpeed(distanceFromTarget, kp_forward, minSpeed=30, maxSpeed=maxSpeed)
@@ -45,7 +36,7 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
             kp_forward = 0.2
             kp_turn = 30
             maxSpeed = 25
-            turnSpeed = getRotationSign(angleToTarget) * 100
+            turnSpeed = np.sign(angleToTarget) * 100
             if abs(angleToTarget) < 0.0872: # 5 degrees
                 turnSpeed = 0
                 forwardSpeed = 10
@@ -56,8 +47,7 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
             else:
                 # turnSpeed = 0
                 forwardSpeed = maxSpeed
-            
-            
+
             # # New approach to movement: Turn before moving
             # if angleToTarget < -0.0872665: # 5 degrees
             #     turnSpeed = -100
@@ -83,7 +73,7 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
             kp_forward = 0.2
             kp_turn = 30
             maxSpeed = 80
-            turnSpeed = getRotationSign(angleToTarget) * 100
+            turnSpeed = np.sign(angleToTarget) * 100
             if abs(angleToTarget) < 0.349: # 20 degrees
                 turnSpeed = getTurnSpeed(angleToTarget, kp_turn)
                 forwardSpeed = getForwardSpeed(distanceFromTarget, kp_forward, minSpeed=30, maxSpeed=maxSpeed)
@@ -98,7 +88,7 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
             kp_forward = 0.2
             kp_turn = 30
             maxSpeed = 25
-            turnSpeed = getRotationSign(angleToTarget) * 100
+            turnSpeed = np.sign(angleToTarget) * 100
             if abs(angleToTarget) < 0.0872: # 5 degrees
                 turnSpeed = 0
                 forwardSpeed = 10
@@ -134,7 +124,7 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
         kp_forward = 0.2
         kp_turn = 30
         maxSpeed = 80
-        turnSpeed = getRotationSign(angleToTarget) * 100
+        turnSpeed = np.sign(angleToTarget) * 100
         if abs(angleToTarget) < 0.349: # 20 degrees
             turnSpeed = getTurnSpeed(angleToTarget, kp_turn)
             forwardSpeed = getForwardSpeed(distanceFromTarget, kp_forward, minSpeed=30, maxSpeed=maxSpeed)
@@ -149,7 +139,7 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
         #     kp_forward = 0.2
         #     kp_turn = 30
         #     maxSpeed = 25
-        #     turnSpeed = getRotationSign(angleToTarget) * 100
+        #     turnSpeed = np.sign(angleToTarget) * 100
         #     if abs(angleToTarget) < 0.0872: # 5 degrees
         #         turnSpeed = 0
         #         forwardSpeed = 10
@@ -160,12 +150,11 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
         #     else:
         #         # turnSpeed = 0
         #         forwardSpeed = maxSpeed
-        
-        
+
         # kp_forward = 0.25
         # kp_turn = 30
         # maxSpeed = 60
-        # turnSpeed = getRotationSign(angleToTarget) * 100
+        # turnSpeed = np.sign(angleToTarget) * 100
         # if abs(angleToTarget) < 0.349: # 20 degrees
         #     turnSpeed = getTurnSpeed(angleToTarget, kp_turn)
         #     forwardSpeed = getForwardSpeed(distanceFromTarget, kp_forward, minSpeed=30, maxSpeed=maxSpeed)
@@ -175,7 +164,6 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
         #     forwardSpeed = 50
         # else:
         #     forwardSpeed = maxSpeed
-        
 
         # New approach to movement
         # if angleToTarget < -0.349: # 20 degrees
@@ -199,7 +187,7 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
         kp_forward = 0.15
         
         # New to goal
-        turnSpeed = getRotationSign(angleToTarget) * 100
+        turnSpeed = np.sign(angleToTarget) * 100
         if abs(angleToTarget) < 0.0436: # 2.5 degrees
             # turnSpeed = getTurnSpeed(angleToTarget, kp_turn)
             # forwardSpeed = getForwardSpeed(distanceFromTarget, kp_forward, minSpeed=30, maxSpeed=80)
@@ -213,7 +201,7 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
             forwardSpeed = 5
         else:
             forwardSpeed = 10
-        
+
         # New approach to movement
         # if angleToTarget < -0.0872665:
         #     turnSpeed = -100
@@ -252,12 +240,11 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
         # kp_forward = 0.05
         kp_turn = 100
 
-
         if distanceFromTarget > 150:
             kp_forward = 0.2
             kp_turn = 30
             maxSpeed = 45
-            turnSpeed = getRotationSign(angleToTarget) * 100
+            turnSpeed = np.sign(angleToTarget) * 100
             if abs(angleToTarget) < 0.349: # 20 degrees
                 turnSpeed = getTurnSpeed(angleToTarget, kp_turn)
                 forwardSpeed = getForwardSpeed(distanceFromTarget, kp_forward, minSpeed=30, maxSpeed=maxSpeed)
@@ -267,7 +254,7 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
                 forwardSpeed = 20
             else:
                 forwardSpeed = maxSpeed
-        
+
         else:
             # New approach to movement
             if angleToTarget < -0.0872665:

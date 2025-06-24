@@ -179,7 +179,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         if robotDistance <= 60:# and -0.2 < robotAngle < 0.2:
             print("Reached OA-intermediary point!")
             stateQueue.pop(0)
-           
+
 
     elif state == TO_GOAL:
                 

@@ -86,7 +86,6 @@ def main():
         if cv2.waitKey(1) & 0xFF == ord('q'):
             od.close()
             #videowriter.release()
-            exit(0)
             break
 
 
