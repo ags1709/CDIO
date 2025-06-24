@@ -118,7 +118,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
             if 'target' in stateJson:
                 targetBall = stateJson['target']
 
-            elif ballcount <=5 and firstimer and len(detectedObjects["orangeBalls"]) == 0 :
+            if ballcount <=5 and firstimer and len(detectedObjects["orangeBalls"]) == 0 :
                 firstimer = False
                 goToGoalIntermidararyPoint(detectedObjects, robotPos)
             
@@ -249,7 +249,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         # Draw what we are trying to collect
         cv2.circle(frame, tuple_toint(targetBall), 20, (0,150,150), 5)
 
-        if robotDistance <= 65:
+        if robotDistance <= 70:
             print("Ball collected!")
             stateQueue.pop(0)
             targetBall = None
@@ -281,14 +281,14 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
         exactRotationTarget = calculateAngleOfTwoPoints(intermediaryPoint, targetBall) # TODO: Suboptimal with intermediary point and not robot point used after reaching target but whatever.
         stateQueue.append((TO_EXACT_ROTATION, exactRotationTarget))
         stateQueue.append((COLLECT_BALL, {'target': targetBall}))
-        stateQueue.append((BACKOFF, targetBall, calculateDistance(targetBall, intermediaryPoint) * 0.8))
+        stateQueue.append((BACKOFF, targetBall, calculateDistance(targetBall, intermediaryPoint) * 0.6))
     
     elif crossInfo is not None and is_objectmiddle_close_circle(targetBall, crossInfo.middle_point, crossInfo.size+100):
         print("BALL close to CROSS!")
         stateQueue.pop(0)
         handleOA(robotPos, targetBall, detectedObjects)        
         stateQueue.append((COLLECT_BALL, {'target': targetBall}))
-        stateQueue.append((BACKOFF, targetBall, 100))
+        stateQueue.append((BACKOFF, targetBall, 80))
         
     
     if playAreaIntermediate is not None:
@@ -299,7 +299,7 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
             handleOA(robotPos, closest, detectedObjects)
             stateQueue.append((TO_INTERMEDIARY, closest))
             stateQueue.append((COLLECT_BALL, {'target': targetBall}))
-            stateQueue.append((BACKOFF, targetBall, calculateDistance(targetBall, closest) * 0.8))
+            stateQueue.append((BACKOFF, targetBall, max(80, calculateDistance(targetBall, closest) * 0.6)))
             cv2.line(frame, tuple_toint(targetBall), tuple_toint(closest), (0, 150, 150), 2)
     
     else:

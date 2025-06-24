@@ -29,10 +29,12 @@ def main():
     # Set connection to robot
     if ENABLE_SOCKET:
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_socket.connect(("192.168.137.232", 12352))
+        client_socket.connect(("192.168.137.232", 12351))
 
     # Set image detection model
     od = ObjectDetection(model="imageRecognition/imageModels/newbest.pt", detection_mode=DetectionMode.CAMERA, capture_index=2)
+    fourcc = cv2.VideoWriter_fourcc(*"mp4v")  # or 'mp4v' for .mp4
+    #videowriter = cv2.VideoWriter("RUN.mp4", fourcc, 24, (1280,720))
     # od = ObjectDetection(model="imageRecognition/yolov8s_060625.pt", detection_mode=DetectionMode.IMAGE, image="test/NPJ4.png")
     
     # Set initial robot state. State machine can be found in robotMovement/selectRobotTarget.py
@@ -68,9 +70,11 @@ def main():
         
         frame = cv2.resize(frame, windowsize)
         cv2.imshow("YOLOv8 Live Detection", frame)
+        #videowriter.write(frame)
         while od.mode == DetectionMode.IMAGE:
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 od.close()
+                #videowriter.release()
                 exit(0)
             if cv2.waitKey(1) &  0xFF == ord('n'):
                 break
@@ -78,6 +82,7 @@ def main():
         
         if cv2.waitKey(1) & 0xFF == ord('q'):
             od.close()
+            #videowriter.release()
             break
 
 
