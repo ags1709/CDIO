@@ -3,11 +3,6 @@ import numpy as np
 MAX_LINEAR_SPEED_CM_S = 100 # cm/s is the maximum speed of the robot
 MAX_ANGULAR_SPEED_RAD_S = 14.0 # rad/s is the maximum angular speed of the robot
 
-
-MAX_LINEAR_SPEED_CM_S = 100 # cm/s is the maximum speed of the robot
-MAX_ANGULAR_SPEED_RAD_S = 14.0 # rad/s is the maximum angular speed of the robot
-
-
 def getTurnSpeed(angleToTarget, kpTurn=50, minTurn=-100, maxTurn=100):
     # turn = max(-100, min(100, angleToTarget**5*2+angleToTarget*40)) # x^(3)*40+x*50
     #turn += 2 if turn>0 else -2
@@ -103,7 +98,7 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
             #     forwardSpeed = 40
 
         distanceFromTarget, angleToTarget = PredictFuturePosition(forwardSpeed, turnSpeed, angleToTarget)
-        
+
     elif state == "TO_INTERMEDIARY":
         kp_forward = 0.15
 
@@ -272,7 +267,7 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
     
     elif state == "TO_EXACT_ROTATION":
         forwardSpeed = np.abs(getTurnSpeed(angleToTarget)/8)
-        np.clip(forwardSpeed + 2, a_min=0, a_max=100)
+        forwardSpeed = np.clip(forwardSpeed + 2, a_min=0, a_max=100)
         turnSpeed = 100 if angleToTarget > 0 else -100
         
     elif state == "BACKOFF":
