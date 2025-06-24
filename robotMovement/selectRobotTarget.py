@@ -174,7 +174,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], intermediaryPoint)
         robotAngle = add_angle(robotToObjectAngle, -robotRotation)
 
-        if robotDistance <= 15:# and -0.2 < robotAngle < 0.2:
+        if robotDistance <= 60:# and -0.2 < robotAngle < 0.2:
             print("Reached OA-intermediary point!")
             stateQueue.pop(0)
            
