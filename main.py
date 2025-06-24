@@ -15,7 +15,7 @@ import logging
 import threading
 logging.getLogger('ultralytics').setLevel(logging.ERROR)
 
-ENABLE_SOCKET = False
+ENABLE_SOCKET = True
 windowsize = (1280,720)
 
 
