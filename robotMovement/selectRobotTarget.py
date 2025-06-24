@@ -113,30 +113,32 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         # TODO: WARNING! CHECK THAT THE TARGET BALL HAS NOT MOVED TOO MUCH!!!! HERE WE ASSUME IT IS STATIONARY WHICH IS BAAAAD
         # log_state_transition(SEARCH_BALLS)
 
-        ballcount = len(detectedObjects["orangeBalls"]) + len(detectedObjects["whiteBalls"])
+        # ballcount = len(detectedObjects["orangeBalls"]) + len(detectedObjects["whiteBalls"])
         
         if targetBall == None:
             stateJson = stateVariables[0]
             if 'target' in stateJson:
                 targetBall = stateJson['target']
 
-            if ballcount <=5 and firstimer and len(detectedObjects["orangeBalls"]) == 0 :
-                firstimer = False
-                goToGoalIntermidararyPoint(detectedObjects, robotPos)
+            # if ballcount <=5 and firstimer and len(detectedObjects["orangeBalls"]) == 0 :
+            #     firstimer = False
+            #     goToGoalIntermidararyPoint(detectedObjects, robotPos)
             
-            elif ballcount <=5 and firstimer:
-                firstimer = False
-                goToGoalIntermidararyPoint(detectedObjects, robotPos)
+            # elif ballcount <=5 and firstimer:
+            #     firstimer = False
+            #     goToGoalIntermidararyPoint(detectedObjects, robotPos)
             
-            elif detectedObjects.get("orangeBalls") and len(detectedObjects["orangeBalls"]) > 0 and ballcount <= 6:
-                targetBall = min(detectedObjects["orangeBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
-                handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObjects, robotPos, frame)
 
 
-            elif detectedObjects.get("whiteBalls") and len(detectedObjects["whiteBalls"]) > 0:
+            if detectedObjects.get("whiteBalls") and len(detectedObjects["whiteBalls"]) > 0:
                 targetBall = min(detectedObjects["whiteBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
                 handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObjects, robotPos, frame)
     
+            # ? If the robot needs to go to goal 2 times this needs to be moved over the whiteballs
+            elif detectedObjects.get("orangeBalls") and len(detectedObjects["orangeBalls"]) > 0: # and ballcount <= 6
+                targetBall = min(detectedObjects["orangeBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
+                handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObjects, robotPos, frame)
+            
             elif not detectedObjects["whiteBalls"] and not detectedObjects["orangeBalls"]:
                 print("No balls")
                 goToGoalIntermidararyPoint(detectedObjects, robotPos)
