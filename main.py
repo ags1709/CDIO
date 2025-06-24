@@ -57,9 +57,10 @@ def main():
             #print(f"vomit", vomit, "disdence", distanceToTarget)
             # Calculate the engine speeds determining the robots movement based on distance and angle to target.
             robotMovement = calculateSpeedAndRotation(distanceToTarget, angleToTarget, robotState)
+            # print(f"Robot angle to target is: {angleToTarget}")
             # Send data to robot
             if ENABLE_SOCKET:
-                client_socket.sendall(f"{round(robotMovement[0])}#{round(robotMovement[1])}#{vomit}\n".encode())
+                client_socket.sendall(f"{round(robotMovement[0])}#{round(robotMovement[1])}#{vomit}#;\n".encode())
         except Exception as e:
             #continue
             print(e)
