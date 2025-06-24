@@ -261,15 +261,15 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
                 turnSpeed = -100
                 forwardSpeed = 2
                 if angleToTarget < -0.52:
-                    forwardSpeed = 5
+                    forwardSpeed = 8
             elif angleToTarget >= 0.0872665:
                 turnSpeed = 100
                 forwardSpeed = 2
                 if angleToTarget > 0.52:
-                    forwardSpeed = 5
+                    forwardSpeed = 8
             else: 
                 # turnSpeed = 0
-                turnSpeed = getTurnSpeed(angleToTarget)
+                turnSpeed = getTurnSpeed(angleToTarget * 2)
                 forwardSpeed = 10
 
         # # New approach to movement

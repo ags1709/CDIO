@@ -292,7 +292,8 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
     drobotAngle = add_angle(robotAngle, robotRotation)#(robotAngle - robotRotation + np.pi) % (2*np.pi) - np.pi
     cv2.arrowedLine(frame, tuple_toint(robotPos[0]), (int(robotPos[0][0] + math.cos(drobotAngle)*250), int(robotPos[0][1] + math.sin(drobotAngle)*250)), (255,0,0), 4, tipLength=0.2) 
 
-    #print(f"State queue: {stateQueue}")
+    print(f"State queue: {stateQueue}")
+    print(f"State variables: {stateVariables}")
     
     return robotDistance, robotAngle, state
     
@@ -309,6 +310,7 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
         exactRotationTarget = calculateAngleOfTwoPoints(intermediaryPoint, targetBall) # TODO: Suboptimal with intermediary point and not robot point used after reaching target but whatever.
         stateQueue.append((TO_EXACT_ROTATION, exactRotationTarget))
         stateQueue.append((COLLECT_BALL, {'target': targetBall}))
+        stateQueue.append((WAIT, 1))
         stateQueue.append((BACKOFF, targetBall, calculateDistance(targetBall, intermediaryPoint) * 0.6))
     
     elif crossInfo is not None and is_objectmiddle_close_circle(targetBall, crossInfo.middle_point, crossInfo.size+100):
@@ -316,8 +318,8 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
         stateQueue.pop(0)
         handleOA(robotPos, targetBall, detectedObjects)        
         stateQueue.append((COLLECT_BALL, {'target': targetBall}))
-        stateQueue.append((BACKOFF, targetBall, 80))
         stateQueue.append((WAIT, 1))
+        stateQueue.append((BACKOFF, targetBall, 80))
         
     
     if playAreaIntermediate is not None:
@@ -325,8 +327,8 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
         if not inside:
             print(f"Ball close to edge. Closest Point: {closest}")
             dist = calculateDistance(targetBall, closest)
-            if (dist < 75):
-                pushamt = 75
+            if (dist < 100):
+                pushamt = 80
                 print("Ball so close to edge trapezoid that we need to push it futher back!")
                 ang = calculateAngleOfTwoPoints(targetBall, closest)
                 closest = (closest[0] + np.cos(ang)*pushamt, closest[1] + np.sin(ang)*pushamt)
@@ -335,8 +337,8 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
             handleOA(robotPos, closest, detectedObjects)
             stateQueue.append((TO_INTERMEDIARY, closest))
             stateQueue.append((COLLECT_BALL, {'target': targetBall}))
-            stateQueue.append((BACKOFF, targetBall, max(80, calculateDistance(targetBall, closest) * 0.6)))
             stateQueue.append((WAIT, 1))
+            stateQueue.append((BACKOFF, targetBall, max(80, calculateDistance(targetBall, closest) * 0.6)))
             cv2.line(frame, tuple_toint(targetBall), tuple_toint(closest), (0, 150, 150), 2)
     
     else:
