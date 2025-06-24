@@ -297,6 +297,13 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
         inside, closest = analyze_point_with_polygon(targetBall, playAreaIntermediate)
         if not inside:
             print(f"Ball close to edge. Closest Point: {closest}")
+            dist = calculateDistance(targetBall, closest)
+            if (dist < 75):
+                pushamt = 75
+                print("Ball so close to edge trapezoid that we need to push it futher back!")
+                ang = calculateAngleOfTwoPoints(targetBall, closest)
+                closest = (closest[0] + np.cos(ang)*pushamt, closest[1] + np.sin(ang)*pushamt)
+            
             stateQueue.pop(0)
             handleOA(robotPos, closest, detectedObjects)
             stateQueue.append((TO_INTERMEDIARY, closest))
