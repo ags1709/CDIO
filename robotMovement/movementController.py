@@ -54,8 +54,8 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
 
         # Testing new faster movement. Tune constants
         if distanceFromTarget > 200:
-            kp_forward = 0.3
-            kp_turn = 50
+            kp_forward = 0.25
+            kp_turn = 30
             turnSpeed = getRotationSign(angleToTarget) * 100
             if abs(angleToTarget < 0.349):
                 turnSpeed = getTurnSpeed(angleToTarget, kp_turn)
@@ -102,8 +102,8 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
 
     # Testing new faster movement. Tune constants
     elif state == "TO_OA_INTERMEDIARY":
-        kp_forward = 0.4
-        kp_turn = 50
+        kp_forward = 0.25
+        kp_turn = 30
         turnSpeed = getRotationSign(angleToTarget) * 100
         if abs(angleToTarget < 0.349):
             turnSpeed = getTurnSpeed(angleToTarget, kp_turn)
@@ -149,7 +149,7 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
             if angleToTarget > 0.52:
                 forwardSpeed = 15
         else: 
-            turnSpeed = getTurnSpeed(angleToTarget)
+            turnSpeed = getTurnSpeed(angleToTarget*4)
             forwardSpeed = 25
             if distanceFromTarget < 110:
                 forwardSpeed = 0
@@ -168,7 +168,7 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
         turnSpeed = 100 if angleToTarget > 0 else -100
         
     elif state == "BACKOFF":
-        forwardSpeed = -50
+        forwardSpeed = -30
         turnSpeed = 0
 
     elif state == "COLLECT_BALL":

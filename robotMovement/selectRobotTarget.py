@@ -29,6 +29,7 @@ TO_EXACT_ROTATION = "TO_EXACT_ROTATION"
 BACKOFF = "BACKOFF"
 COLLECT_BALL = "COLLECT_BALL"
 VOMIT = "VOMIT"
+WAIT = "WAIT"
 
 stateQueue = [ # Format: (State,variables)
     
@@ -158,22 +159,22 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
     if state == TO_INTERMEDIARY: # 
         intermediaryPoint = stateVariables[0]
         cv2.circle(frame, tuple_toint(intermediaryPoint), 11, (50,200,50), 6) # Mark intermediary
-        robotDistance = calculateDistance(robotMiddle, intermediaryPoint)
+        robotDistance = calculateDistance(robotPos[0], intermediaryPoint)
         robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], intermediaryPoint)
         robotAngle = add_angle(robotToObjectAngle, -robotRotation)
 
-        if robotDistance <= 75:# and -0.2 < robotAngle < 0.2:
+        if robotDistance <= 15:# and -0.2 < robotAngle < 0.2:
             print("Reached intermediary point!")
             stateQueue.pop(0)
 
     elif state == TO_OA_INTERMEDIARY:
         intermediaryPoint = stateVariables[0]
         cv2.circle(frame, tuple_toint(intermediaryPoint), 11, (50,200,50), 6) # Mark intermediary
-        robotDistance = calculateDistance(robotMiddle, intermediaryPoint)
+        robotDistance = calculateDistance(robotPos[0], intermediaryPoint)
         robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], intermediaryPoint)
         robotAngle = add_angle(robotToObjectAngle, -robotRotation)
 
-        if robotDistance <= 75:# and -0.2 < robotAngle < 0.2:
+        if robotDistance <= 15:# and -0.2 < robotAngle < 0.2:
             print("Reached OA-intermediary point!")
             stateQueue.pop(0)
            
@@ -196,6 +197,12 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
             stateQueue.append((BACKOFF, robotPos[0], 100))
             stateQueue.append((SEARCH_BALLS, {}))
 
+    elif state == WAIT:
+        if (len(stateVariables) < 2):
+            stateQueue[0] = (WAIT, stateVariables[0], time.time() + stateVariables[0])
+        if (stateVariables[1] <= time.time()):
+            stateQueue.pop(0)
+
     elif state == TO_EXACT_ROTATION:
 
         exactRotationTarget = stateVariables[0]
@@ -213,7 +220,12 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         robotDistance = max(0, targetDistance - distance)
         if distance >= targetDistance:
             print("Reached BACKOFF point")
+            # Really scuffed code to keep a WAIT state if it's immediately after this BACKOFF state
+            wait_state = None
+            if (len(stateQueue) > 1 and stateQueue[1][0] == WAIT):
+                wait_state = stateQueue[1]
             stateQueue.clear()
+            if wait_state is not None: stateQueue.append(wait_state)
 
     elif state == COLLECT_BALL:
 
@@ -313,6 +325,7 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
             stateQueue.append((TO_INTERMEDIARY, closest))
             stateQueue.append((COLLECT_BALL, {'target': targetBall}))
             stateQueue.append((BACKOFF, targetBall, max(80, calculateDistance(targetBall, closest) * 0.6)))
+            stateQueue.append((WAIT, 1))
             cv2.line(frame, tuple_toint(targetBall), tuple_toint(closest), (0, 150, 150), 2)
     
     else:
