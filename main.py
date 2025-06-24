@@ -20,12 +20,14 @@ windowsize = (1280,720)
 
 
 
-def abortTimer():
-    threading.Timer(interval=420, function=setAbort).start()
+def start_abort_timer():
+    timer = threading.Timer(interval=420, function=setAbort)
+    timer.daemon = True
+    timer.start()
 
 
 def main():
-    abortTimer()
+    start_abort_timer()
     # Set connection to robot
     if ENABLE_SOCKET:
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
