@@ -28,6 +28,7 @@ TO_EXACT_ROTATION = "TO_EXACT_ROTATION"
 BACKOFF = "BACKOFF"
 COLLECT_BALL = "COLLECT_BALL"
 VOMIT = "VOMIT"
+LOST = "LOST"
 
 stateQueue = [ # Format: (State,variables)
     
@@ -91,8 +92,19 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
     if len(stateQueue) == 0:
         stateQueue.append((SEARCH_BALLS, {}))
 
+    state = stateQueue[0][0] # State
+    stateVariables = stateQueue[0][1:] # Variables for state
+
     # This is the two points used to identify the robots position. 
     robotPos = calculateRobotPositionFlexible(detectedObjects["frontLeftCorner"], detectedObjects["frontRightCorner"], detectedObjects["backLeftCorner"], detectedObjects["backRightCorner"])
+    if robotPos is None:
+        # We don't know where the robot is, use the temporary LOST state
+        if state != LOST: stateQueue.insert(0, (LOST,))
+        return robotDistance, robotAngle, LOST
+    elif state == LOST:
+        # We found the robot again, remove the LOST state
+        stateQueue.pop(0)
+        state, stateVariables = stateQueue[0][0], stateQueue[0][1:]
     robotMiddle = ((robotPos[0][0] + robotPos[1][0]) / 2, (robotPos[0][1] + robotPos[1][1]) / 2)
     robotRotation = calculateAngleOfTwoPoints(robotPos[1], robotPos[0])
     
@@ -102,10 +114,6 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
 
     
     global firstimer
-    # state = lambda: stateQueue[0][0] # State
-    # stateVariables = lambda: stateQueue[0][1:] # Variables for state
-    state = stateQueue[0][0] # State
-    stateVariables = stateQueue[0][1:] # Variables for state
     # Use state machine to dictate robots target based on its state
     if state == SEARCH_BALLS:
         # TODO: WARNING! CHECK THAT THE TARGET BALL HAS NOT MOVED TOO MUCH!!!! HERE WE ASSUME IT IS STATIONARY WHICH IS BAAAAD

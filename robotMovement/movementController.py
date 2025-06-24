@@ -125,6 +125,11 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
             turnSpeed = getTurnSpeed(angleToTarget)
             forwardSpeed = 10
 
+    elif state == "LOST":
+        # Special temporary state for when we have less than two corners detected
+        # Simply drive forwards, hoping for the corners to come back
+        forwardSpeed = 20
+
 
     return (turnSpeed, forwardSpeed)
     
