@@ -37,6 +37,7 @@ def main():
     #videowriter = cv2.VideoWriter("RUN.mp4", fourcc, 24, (1280,720))
     # od = ObjectDetection(model="imageRecognition/yolov8s_060625.pt", detection_mode=DetectionMode.IMAGE, image="test/NPJ4.png")
     
+    start = time.time()
     # Set initial robot state. State machine can be found in robotMovement/selectRobotTarget.py
     # Main loop. Runs entire competition program.
     while True:
@@ -48,7 +49,7 @@ def main():
             distanceToTarget, angleToTarget, robotState = calcDistAndAngleToTarget(detectedObjects, crossInfo, playAreaIntermediate, frame)
 
             # print(abort)
-            cv2.putText(frame, f"State: {robotState}", (20, 60), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 0), 4)
+            cv2.putText(frame, f"State: {robotState}", (20, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 4)
 
             # Determine whether to hand balls in or not
             vomit = robotState == "VOMIT"
@@ -67,7 +68,8 @@ def main():
             #pass
             
         
-
+        elapsed = round((time.time() - start)*1, 2)
+        cv2.putText(frame, f"Time: {elapsed}", (20, 60), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 4)
         
         frame = cv2.resize(frame, windowsize)
         cv2.imshow("YOLOv8 Live Detection", frame)
