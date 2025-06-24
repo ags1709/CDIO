@@ -56,10 +56,20 @@ def estimateCross(result, cap, frame, id_cross) -> CrossInfo:
         crop_frame = frame[y1_abs:y2_abs,x1_abs:x2_abs]
         #cv2.imshow("crop frame", crop_frame)
 
-        hsv = cv2.cvtColor(crop_cap, cv2.COLOR_BGR2HSV)
-        lower_red1 = np.array([0, 185, 150])
-        upper_red1 = np.array([10, 255, 255])
+        # Red pixel mask
+        hsv = cv2.cvtColor(cap, cv2.COLOR_BGR2HSV)
+        lower_red1 = np.array([1, 60, 50])
+        upper_red1 = np.array([8, 255, 255])
         red_mask = cv2.inRange(hsv, lower_red1, upper_red1)
+        
+        # Eliminate any noise (5x5)
+        kernel = np.ones((5, 5), np.uint8)
+        # Opening: erosion followed by dilation (removes small objects)
+        red_mask = cv2.morphologyEx(red_mask, cv2.MORPH_OPEN, kernel)
+        # Closing: dilation followed by erosion (closes small holes)
+        red_mask = cv2.morphologyEx(red_mask, cv2.MORPH_CLOSE, kernel)
+    
+        # GaussianBlur threshold
         red_thresh = cv2.GaussianBlur(red_mask, (5, 5), 0)
         
 
@@ -171,11 +181,18 @@ def estimatePlayArea(result, cap, frame) -> list[np.ndarray]:
 
     # Red pixel mask
     hsv = cv2.cvtColor(cap, cv2.COLOR_BGR2HSV)
-    lower_red1 = np.array([0, 185, 150])
-    upper_red1 = np.array([10, 255, 255])
+    lower_red1 = np.array([1, 60, 50])
+    upper_red1 = np.array([8, 255, 255])
     red_mask = cv2.inRange(hsv, lower_red1, upper_red1)
+    
+    # Eliminate any noise (5x5)
+    kernel = np.ones((5, 5), np.uint8)
+    # Opening: erosion followed by dilation (removes small objects)
+    red_mask = cv2.morphologyEx(red_mask, cv2.MORPH_OPEN, kernel)
+    # Closing: dilation followed by erosion (closes small holes)
+    red_mask = cv2.morphologyEx(red_mask, cv2.MORPH_CLOSE, kernel)
 
-    #cv2.imshow("Red channel", cv2.resize(red_mask, (1280, 720)))
+    cv2.imshow("Red channel", cv2.resize(red_mask, (1280, 720)))
 
     contours, _ = cv2.findContours(red_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     if not contours:
