@@ -15,7 +15,7 @@ class CrossInfo:
 def estimateGoals(playarea: list[np.ndarray], frame):
     if playarea is not None:
         leftGoal = (playarea[0] + playarea[3]) / 2
-        leftGoal[1] -= 10
+        leftGoal[1] -= 16
         # print(f"play area 0 type: {type(playarea[0])}")
         # print(f"play area 0: {playarea[0]}")
         # print(f"play area 3: {playarea[3]}")

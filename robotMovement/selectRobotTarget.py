@@ -232,12 +232,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         robotDistance = max(0, targetDistance - distance)
         if distance >= targetDistance:
             print("Reached BACKOFF point")
-            # Really scuffed code to keep a WAIT state if it's immediately after this BACKOFF state
-            wait_state = None
-            if (len(stateQueue) > 1 and stateQueue[1][0] == WAIT):
-                wait_state = stateQueue[1]
             stateQueue.clear()
-            if wait_state is not None: stateQueue.append(wait_state)
 
     elif state == COLLECT_BALL:
 
@@ -300,7 +295,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
     drobotAngle = add_angle(robotAngle, robotRotation)#(robotAngle - robotRotation + np.pi) % (2*np.pi) - np.pi
     cv2.arrowedLine(frame, tuple_toint(robotPos[0]), (int(robotPos[0][0] + math.cos(drobotAngle)*250), int(robotPos[0][1] + math.sin(drobotAngle)*250)), (255,0,0), 4, tipLength=0.2) 
 
-    #print(f"State queue: {stateQueue}")
+    print(f"State queue: {stateQueue}")
 
     return robotDistance, robotAngle, state
     
@@ -345,7 +340,7 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
             stateQueue.append((TO_INTERMEDIARY, closest))
             stateQueue.append((COLLECT_BALL, {'target': targetBall}))
             stateQueue.append((WAIT, 1))
-            stateQueue.append((BACKOFF, targetBall, max(80, calculateDistance(targetBall, closest) * 0.6)))
+            stateQueue.append((BACKOFF, targetBall, max(50, calculateDistance(targetBall, closest) * 0.6)))
             cv2.line(frame, tuple_toint(targetBall), tuple_toint(closest), (0, 150, 150), 2)
     
     else:
