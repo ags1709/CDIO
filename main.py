@@ -29,7 +29,7 @@ def main():
     # Set connection to robot
     if ENABLE_SOCKET:
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_socket.connect(("192.168.137.232", 12351))
+        client_socket.connect(("192.168.137.232", 12350))
 
     # Set image detection model
     od = ObjectDetection(model="imageRecognition/imageModels/newbest.pt", detection_mode=DetectionMode.CAMERA, capture_index=2)
@@ -56,6 +56,7 @@ def main():
             #print(f"vomit", vomit, "disdence", distanceToTarget)
             # Calculate the engine speeds determining the robots movement based on distance and angle to target.
             robotMovement = calculateSpeedAndRotation(distanceToTarget, angleToTarget, robotState)
+            # print(f"Robot angle to target is: {angleToTarget}")
             # Send data to robot
             if ENABLE_SOCKET:
                 client_socket.sendall(f"{round(robotMovement[0])}#{round(robotMovement[1])}#{vomit}\n".encode())
@@ -83,6 +84,7 @@ def main():
         if cv2.waitKey(1) & 0xFF == ord('q'):
             od.close()
             #videowriter.release()
+            exit(0)
             break
 
 
