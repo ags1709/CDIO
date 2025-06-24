@@ -165,7 +165,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], intermediaryPoint)
         robotAngle = add_angle(robotToObjectAngle, -robotRotation)
 
-        if robotDistance <= 15:# and -0.2 < robotAngle < 0.2:
+        if robotDistance <= 50:# and -0.2 < robotAngle < 0.2:
             print("Reached intermediary point!")
             stateQueue.pop(0)
 
@@ -194,7 +194,8 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
             stateQueue.append((VOMIT, time.time()))
 
     elif state == VOMIT:
-        if (stateVariables[0] + 4 <= time.time()):
+        VOMIT_TIME = 6
+        if (stateVariables[0] + VOMIT_TIME <= time.time()):
             stateQueue.clear()
             stateQueue.append((BACKOFF, robotPos[0], 100))
             stateQueue.append((SEARCH_BALLS, {}))

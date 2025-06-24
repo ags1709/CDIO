@@ -245,7 +245,7 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
         turnSpeed = 100 if angleToTarget > 0 else -100
         
     elif state == "BACKOFF":
-        forwardSpeed = -30
+        forwardSpeed = -50
         turnSpeed = 0
 
     elif state == "COLLECT_BALL":
@@ -269,28 +269,21 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
                 forwardSpeed = maxSpeed
         
         else:
-            kp_forward = 0.25
-            kp_turn = 30
-            maxSpeed = 10
-            minSpeed = 5
-            turnSpeed = getRotationSign(angleToTarget) * 100
-            # if abs(angleToTarget) < 0.0436: # 2.5 degrees 
-            #     turnSpeed = getTurnSpeed(angleToTarget)
-            #     forwardSpeed = minSpeed
-            if abs(angleToTarget) < 0.0872: # 5 degrees
-                # turnSpeed = getTurnSpeed(angleToTarget)
-                turnSpeed = 0
-                forwardSpeed = 7
-            elif abs(angleToTarget) < 0.174: # 10 degrees
-                forwardSpeed = 7
-            elif abs(angleToTarget) < 0.43: # 25 degrees
+            # New approach to movement
+            if angleToTarget < -0.0872665:
+                turnSpeed = -100
+                forwardSpeed = 2
+                if angleToTarget < -0.52:
+                    forwardSpeed = 5
+            elif angleToTarget >= 0.0872665:
+                turnSpeed = 100
+                forwardSpeed = 2
+                if angleToTarget > 0.52:
+                    forwardSpeed = 5
+            else: 
+                # turnSpeed = 0
+                turnSpeed = getTurnSpeed(angleToTarget)
                 forwardSpeed = 10
-            elif abs(angleToTarget) < 0.785: # 45 degrees
-                forwardSpeed = 10
-            elif abs(angleToTarget) < np.pi/2: # 90 degrees
-                forwardSpeed = 15
-            else:
-                forwardSpeed = maxSpeed
 
         # # New approach to movement
         # if angleToTarget < -0.0872665:
