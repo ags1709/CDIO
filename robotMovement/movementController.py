@@ -1,5 +1,9 @@
 import numpy as np
 
+MAX_LINEAR_SPEED_CM_S = 100 # cm/s is the maximum speed of the robot
+MAX_ANGULAR_SPEED_RAD_S = 14.0 # rad/s is the maximum angular speed of the robot
+
+
 def getTurnSpeed(angleToTarget: float):
     kpTurn = 50
     # turn = max(-100, min(100, angleToTarget**5*2+angleToTarget*40)) # x^(3)*40+x*50
@@ -8,9 +12,39 @@ def getTurnSpeed(angleToTarget: float):
     turn = np.clip(angleToTarget * kpTurn, a_min=-100, a_max=100)
     return turn
 
+def PredictFuturePosition(forwardSpeed, turnSpeed, angleToTarget, time=0.5):
+    v = (forwardSpeed / 100) * MAX_LINEAR_SPEED_CM_S
+    w = (turnSpeed / 100) * MAX_ANGULAR_SPEED_RAD_S
+
+    if abs(w) < 1e-5:
+        # Approximate straight-line motion
+        x_future = v * time
+        y_future = 0
+        theta_future = 0
+    else:
+        # Circular arc motion
+        R = v / w
+        x_future = R * np.sin(w * time)
+        y_future = R * (1 - np.cos(w * time))
+        theta_future = w * time
+
+    # Target is at origin (0, 0), robot is now at (x_future, y_future) with heading theta_future
+    dx = -x_future
+    dy = -y_future
+
+    distanceFromTarget = np.sqrt(dx**2 + dy**2)
+    angleToTarget = np.arctan2(dy, dx) - theta_future
+
+    # Normalize angle to [-π, π]
+    angleToTarget = (angleToTarget + np.pi) % (2 * np.pi) - np.pi
+
+    return distanceFromTarget, angleToTarget
+
+
 # PID controller
 def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
     turnSpeed=0;forwardSpeed=0
+
     #if distanceFromTarget == None or angleToTarget == None:
     #    return (0, 0)
     # Robot should drive differently depending on state.
@@ -39,6 +73,8 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
             turnSpeed = getTurnSpeed(angleToTarget)
             forwardSpeed = 40
 
+        distanceFromTarget, angleToTarget = PredictFuturePosition(forwardSpeed, turnSpeed, angleToTarget)
+
 
     elif state == "TO_INTERMEDIARY":
         kp_speed = 0.15
@@ -62,6 +98,8 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
             # turnSpeed = 0
             turnSpeed = getTurnSpeed(angleToTarget)
             forwardSpeed = 30
+        distanceFromTarget, angleToTarget = PredictFuturePosition(forwardSpeed, turnSpeed, angleToTarget)
+
 
     elif state == "TO_GOAL":
         kp_speed = 0.15
@@ -86,6 +124,8 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
                 forwardSpeed = 0
             # turnSpeed = 0
             # forwardSpeed = 10
+        distanceFromTarget, angleToTarget = PredictFuturePosition(forwardSpeed, turnSpeed, angleToTarget)
+
 
         # forwardSpeed = max(0, min(80, kp_speed * (distanceFromTarget - goalDistanceFromBall)))
         # turnSpeed = getTurnSpeed(angleToTarget) 
@@ -124,6 +164,9 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
             # turnSpeed = 0
             turnSpeed = getTurnSpeed(angleToTarget)
             forwardSpeed = 10
+        distanceFromTarget, angleToTarget = PredictFuturePosition(forwardSpeed, turnSpeed, angleToTarget)
+        
+
 
 
     return (turnSpeed, forwardSpeed)
