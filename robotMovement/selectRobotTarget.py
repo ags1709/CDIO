@@ -200,6 +200,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
     elif state == WAIT:
         if (len(stateVariables) < 2):
             stateQueue[0] = (WAIT, stateVariables[0], time.time() + stateVariables[0])
+            stateVariables = stateQueue[0][1:]
         if (stateVariables[1] <= time.time()):
             stateQueue.pop(0)
 
@@ -274,7 +275,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         # Draw what we are trying to collect
         cv2.circle(frame, tuple_toint(targetBall), 20, (0,150,150), 5)
 
-        if robotDistance <= 70:
+        if robotDistance <= 65:
             print("Ball collected!")
             stateQueue.pop(0)
             targetBall = None
@@ -313,6 +314,7 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
         handleOA(robotPos, targetBall, detectedObjects)        
         stateQueue.append((COLLECT_BALL, {'target': targetBall}))
         stateQueue.append((BACKOFF, targetBall, 80))
+        stateQueue.append((WAIT, 1))
         
     
     if playAreaIntermediate is not None:

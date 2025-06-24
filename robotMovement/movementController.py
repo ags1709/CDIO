@@ -29,15 +29,15 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
         if distanceFromTarget > 200:
             kp_forward = 0.25
             kp_turn = 30
-            maxSpeed = 60
+            maxSpeed = 45
             turnSpeed = getRotationSign(angleToTarget) * 100
-            if abs(angleToTarget < 0.349): # 20 degrees
+            if abs(angleToTarget) < 0.349: # 20 degrees
                 turnSpeed = getTurnSpeed(angleToTarget, kp_turn)
                 forwardSpeed = getForwardSpeed(distanceFromTarget, kp_forward, minSpeed=30, maxSpeed=maxSpeed)
-            elif abs(angleToTarget < 0.785): # 45 degrees
+            elif abs(angleToTarget) < 0.785: # 45 degrees
+                forwardSpeed = 25
+            elif abs(angleToTarget) < np.pi/2: # 90 degrees
                 forwardSpeed = 30
-            elif abs(angleToTarget < np.pi/2): # 90 degrees
-                forwardSpeed = 50
             else:
                 forwardSpeed = maxSpeed
 
@@ -66,15 +66,15 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
         if distanceFromTarget > 200:
             kp_forward = 0.25
             kp_turn = 30
-            maxSpeed = 60
+            maxSpeed = 45
             turnSpeed = getRotationSign(angleToTarget) * 100
-            if abs(angleToTarget < 0.349): # 20 degrees
+            if abs(angleToTarget) < 0.349: # 20 degrees
                 turnSpeed = getTurnSpeed(angleToTarget, kp_turn)
                 forwardSpeed = getForwardSpeed(distanceFromTarget, kp_forward, minSpeed=30, maxSpeed=maxSpeed)
-            elif abs(angleToTarget < 0.785): # 45 degrees
+            elif abs(angleToTarget) < 0.785: # 45 degrees
+                forwardSpeed = 25
+            elif abs(angleToTarget) < np.pi/2: # 90 degrees
                 forwardSpeed = 30
-            elif abs(angleToTarget < np.pi/2): # 90 degrees
-                forwardSpeed = 50
             else:
                 forwardSpeed = maxSpeed
         
@@ -118,12 +118,12 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
         kp_turn = 30
         maxSpeed = 60
         turnSpeed = getRotationSign(angleToTarget) * 100
-        if abs(angleToTarget < 0.349): # 20 degrees
+        if abs(angleToTarget) < 0.349: # 20 degrees
             turnSpeed = getTurnSpeed(angleToTarget, kp_turn)
             forwardSpeed = getForwardSpeed(distanceFromTarget, kp_forward, minSpeed=30, maxSpeed=maxSpeed)
-        elif abs(angleToTarget < 0.785): # 45 degrees
+        elif abs(angleToTarget) < 0.785: # 45 degrees
             forwardSpeed = 30
-        elif abs(angleToTarget < np.pi/2): # 90 degrees
+        elif abs(angleToTarget) < np.pi/2: # 90 degrees
             forwardSpeed = 50
         else:
             forwardSpeed = maxSpeed
@@ -220,11 +220,11 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
             #     # forwardSpeed = getForwardSpeed(distanceFromTarget, kp_forward, minSpeed, maxSpeed)
             # elif abs(angleToTarget < 0.174): # 10 degrees
             #     forwardSpeed = 5
-            if abs(angleToTarget < 0.43): # 25 degrees
+            if abs(angleToTarget) < 0.43: # 25 degrees
                 forwardSpeed = 20
-            elif abs(angleToTarget < 0.785): # 45 degrees
+            elif abs(angleToTarget) < 0.785: # 45 degrees
                 forwardSpeed = 30
-            elif abs(angleToTarget < np.pi/2): # 90 degrees
+            elif abs(angleToTarget) < np.pi/2: # 90 degrees
                 forwardSpeed = 40
             else:
                 forwardSpeed = getForwardSpeed(distanceFromTarget)
@@ -234,20 +234,21 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
             kp_forward = 0.25
             kp_turn = 30
             maxSpeed = 80
-            minSpeed = 10
+            minSpeed = 5
             turnSpeed = getRotationSign(angleToTarget) * 100
-            if abs(angleToTarget < 0.0436): # 2.5 degrees 
+            # if abs(angleToTarget) < 0.0436: # 2.5 degrees 
+            #     turnSpeed = getTurnSpeed(angleToTarget)
+            #     forwardSpeed = minSpeed
+            if abs(angleToTarget) < 0.0872: # 5 degrees
                 turnSpeed = getTurnSpeed(angleToTarget)
-                forwardSpeed = minSpeed
-            elif abs(angleToTarget < 0.0872): # 5 degrees
                 forwardSpeed = 2
-            elif abs(angleToTarget < 0.174): # 10 degrees
+            elif abs(angleToTarget) < 0.174: # 10 degrees
                 forwardSpeed = 5
-            elif abs(angleToTarget < 0.43): # 25 degrees
+            elif abs(angleToTarget) < 0.43: # 25 degrees
                 forwardSpeed = 10
-            elif abs(angleToTarget < 0.785): # 45 degrees
+            elif abs(angleToTarget) < 0.785: # 45 degrees
                 forwardSpeed = 20
-            elif abs(angleToTarget < np.pi/2): # 90 degrees
+            elif abs(angleToTarget) < np.pi/2: # 90 degrees
                 forwardSpeed = 40
             else:
                 forwardSpeed = maxSpeed
