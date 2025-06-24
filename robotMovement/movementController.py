@@ -1,26 +1,35 @@
 import numpy as np
 
-def getTurnSpeed(angleToTarget: float):
-    kpTurn = 50
+def getTurnSpeed(angleToTarget, kpTurn=50, minTurn=-100, maxTurn=100):
+    # kpTurn = 50
     # turn = max(-100, min(100, angleToTarget**5*2+angleToTarget*40)) # x^(3)*40+x*50
     #turn += 2 if turn>0 else -2
     #turn = np.clip(turn, -100, 100)
-    turn = np.clip(angleToTarget * kpTurn, a_min=-100, a_max=100)
+    turn = np.clip(angleToTarget * kpTurn, a_min=minTurn, a_max=maxTurn)
     return turn
 
-# PID controller
+
+def getForwardSpeed(distanceToTarget, kpForward=0.1, minSpeed=-100, maxSpeed=100):
+    return np.clip(distanceToTarget * kpForward, s_min = minSpeed, s_max=maxSpeed)
+
+
+def getRotationSign(angleToTarget):
+    if angleToTarget >= 0:
+        return 1
+    else:
+        return -1
+
+
+
 def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
     turnSpeed=0;forwardSpeed=0
-    #if distanceFromTarget == None or angleToTarget == None:
-    #    return (0, 0)
-    # Robot should drive differently depending on state.
+    
     if state == "SEARCH_BALLS":
         # Proportionality constants. Tune to change how fast speed changes
-        kp_speed = 0.15
-
-        goalDistanceFromBall = 10
+        kp_forward = 0.15
+        
         # Assuming that we use MoveSteering().on(steering, speed), the values range from -100 to 100, adjust below values accordingly
-        # forwardSpeed = max(5, min(80, kp_speed * (distanceFromTarget - goalDistanceFromBall)))
+        # forwardSpeed = max(5, min(80, kp_forward * (distanceFromTarget - goalDistanceFromBall)))
         # turnSpeed = getTurnSpeed(angleToTarget) 
 
         # New approach to movement: Turn before moving
@@ -41,32 +50,92 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
 
 
     elif state == "TO_INTERMEDIARY":
-        kp_speed = 0.15
+        kp_forward = 0.15
 
-        goalDistanceFromBall = 10
-        # forwardSpeed = max(5, min(80, kp_speed * (distanceFromTarget - goalDistanceFromBall)))
-        # turnSpeed = getTurnSpeed(angleToTarget)
-
-        # New approach to movement
-        if angleToTarget < -0.0872665:
-            turnSpeed = -100
-            forwardSpeed = 2
+        # Testing new faster movement. Tune constants
+        if distanceFromTarget > 200:
+            kp_forward = 0.3
+            kp_turn = 50
+            turnSpeed = getRotationSign(angleToTarget) * 100
+            if abs(angleToTarget < 0.349):
+                turnSpeed = getTurnSpeed(angleToTarget, kp_turn)
+                forwardSpeed = getForwardSpeed(distanceFromTarget, kp_forward, s_min=30, s_max=80)
+            elif abs(angleToTarget < 0.785):
+                forwardSpeed = 30
+            elif abs(angleToTarget < np.pi/2):
+                forwardSpeed = 50
+            else:
+                forwardSpeed = 80
+        else:
+            if angleToTarget < -0.0872665:
+                turnSpeed = -100
+                forwardSpeed = 2
             if angleToTarget < -0.52:
                 forwardSpeed = 15
-        elif angleToTarget >= 0.0872665:
-            turnSpeed = 100
-            forwardSpeed = 2
-            if angleToTarget > 0.52:
-                forwardSpeed = 15
-        else: 
-            # turnSpeed = 0
-            turnSpeed = getTurnSpeed(angleToTarget)
+            elif angleToTarget >= 0.0872665:
+                turnSpeed = 100
+                forwardSpeed = 2
+                if angleToTarget > 0.52:
+                    forwardSpeed = 15
+            else: 
+                # turnSpeed = 0
+                turnSpeed = getTurnSpeed(angleToTarget)
+                # forwardSpeed = 30
+                forwardSpeed = getForwardSpeed(distanceFromTarget, kp_forward, s_min=10, s_max=80)
+
+        # # New approach to movement
+        # if angleToTarget < -0.0872665:
+        #     turnSpeed = -100
+        #     forwardSpeed = 2
+        #     if angleToTarget < -0.52:
+        #         forwardSpeed = 15
+        # elif angleToTarget >= 0.0872665:
+        #     turnSpeed = 100
+        #     forwardSpeed = 2
+        #     if angleToTarget > 0.52:
+        #         forwardSpeed = 15
+        # else: 
+        #     # turnSpeed = 0
+        #     turnSpeed = getTurnSpeed(angleToTarget)
+        #     forwardSpeed = 30
+
+
+    # Testing new faster movement. Tune constants
+    elif state == "TO_OA_INTERMEDIARY":
+        kp_forward = 0.4
+        kp_turn = 50
+        turnSpeed = getRotationSign(angleToTarget) * 100
+        if abs(angleToTarget < 0.349):
+            turnSpeed = getTurnSpeed(angleToTarget, kp_turn)
+            forwardSpeed = getForwardSpeed(distanceFromTarget, kp_forward, s_min=30, s_max=80)
+        elif abs(angleToTarget < 0.785):
             forwardSpeed = 30
+        elif abs(angleToTarget < np.pi/2):
+            forwardSpeed = 50
+        else:
+            forwardSpeed = 80
+        
+
+        # New approach to movement
+        # if angleToTarget < -0.349: # 20 degrees
+        #     turnSpeed = -100
+        #     forwardSpeed = 2
+        #     if angleToTarget < -0.52: # 30 degrees
+        #         forwardSpeed = 15
+        # elif angleToTarget >= 0.349:
+        #     turnSpeed = 100
+        #     forwardSpeed = 2
+        #     if angleToTarget > 0.52:
+        #         forwardSpeed = 15
+        # else: 
+        #     # turnSpeed = 0
+        #     turnSpeed = getTurnSpeed(angleToTarget, kp_turn)
+        #     # forwardSpeed = 30
+        #     forwardSpeed = getForwardSpeed(distanceFromTarget, kp_forward, s_min=30, s_max=100)
+
 
     elif state == "TO_GOAL":
-        kp_speed = 0.15
-
-        goalDistanceFromBall = 130
+        kp_forward = 0.15
 
         # New approach to movement
         if angleToTarget < -0.0872665:
@@ -87,7 +156,7 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
             # turnSpeed = 0
             # forwardSpeed = 10
 
-        # forwardSpeed = max(0, min(80, kp_speed * (distanceFromTarget - goalDistanceFromBall)))
+        # forwardSpeed = max(0, min(80, kp_forward * (distanceFromTarget - goalDistanceFromBall)))
         # turnSpeed = getTurnSpeed(angleToTarget) 
         # forwardSpeed = 10
         # if distanceFromTarget < 110:
@@ -103,11 +172,7 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
         turnSpeed = 0
 
     elif state == "COLLECT_BALL":
-        kp_speed = 0.05
-
-        goalDistanceFromBall = 10
-        # forwardSpeed = max(5, min(80, kp_speed * (distanceFromTarget - goalDistanceFromBall)))
-        # turnSpeed = getTurnSpeed(angleToTarget)
+        kp_forward = 0.05
 
         # New approach to movement
         if angleToTarget < -0.0872665:
@@ -123,7 +188,7 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
         else: 
             # turnSpeed = 0
             turnSpeed = getTurnSpeed(angleToTarget)
-            forwardSpeed = 20
+            forwardSpeed = 10
 
 
     return (turnSpeed, forwardSpeed)

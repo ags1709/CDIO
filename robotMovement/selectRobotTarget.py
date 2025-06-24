@@ -23,6 +23,7 @@ def setAbort():
 # States for state machine. Can be expanded later to handle situations calling for specific behaviour like getting ball from corner/cross.
 SEARCH_BALLS = "SEARCH_BALLS"
 TO_INTERMEDIARY = "TO_INTERMEDIARY"
+TO_OA_INTERMEDIARY = "TO_OA_INTERMEDIARY"
 TO_GOAL = "TO_GOAL"
 TO_EXACT_ROTATION = "TO_EXACT_ROTATION"
 BACKOFF = "BACKOFF"
@@ -77,7 +78,7 @@ def handleOA(pos, target, objects):
     elif path != [target]:
         print("Obstacle in the way, navigating to intermediary point(s)")
         for OAIP in reversed(path[:-1]):
-            stateQueue.insert(0, (TO_INTERMEDIARY, OAIP))
+            stateQueue.insert(0, (TO_OA_INTERMEDIARY, OAIP))
 
 def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaIntermediate: list[tuple[float, float]], frame):
 
@@ -162,6 +163,17 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
 
         if robotDistance <= 75:# and -0.2 < robotAngle < 0.2:
             print("Reached intermediary point!")
+            stateQueue.pop(0)
+
+    elif state == TO_OA_INTERMEDIARY:
+        intermediaryPoint = stateVariables[0]
+        cv2.circle(frame, tuple_toint(intermediaryPoint), 11, (50,200,50), 6) # Mark intermediary
+        robotDistance = calculateDistance(robotMiddle, intermediaryPoint)
+        robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], intermediaryPoint)
+        robotAngle = add_angle(robotToObjectAngle, -robotRotation)
+
+        if robotDistance <= 75:# and -0.2 < robotAngle < 0.2:
+            print("Reached OA-intermediary point!")
             stateQueue.pop(0)
            
 
@@ -249,7 +261,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         # Draw what we are trying to collect
         cv2.circle(frame, tuple_toint(targetBall), 20, (0,150,150), 5)
 
-        if robotDistance <= 65:
+        if robotDistance <= 75:
             print("Ball collected!")
             stateQueue.pop(0)
             targetBall = None
