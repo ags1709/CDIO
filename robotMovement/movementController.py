@@ -103,10 +103,7 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
             #     forwardSpeed = 40
 
         distanceFromTarget, angleToTarget = PredictFuturePosition(forwardSpeed, turnSpeed, angleToTarget)
-
-        distanceFromTarget, angleToTarget = PredictFuturePosition(forwardSpeed, turnSpeed, angleToTarget)
-
-
+        
     elif state == "TO_INTERMEDIARY":
         kp_forward = 0.15
 
