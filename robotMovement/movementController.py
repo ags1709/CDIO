@@ -10,7 +10,7 @@ def getTurnSpeed(angleToTarget, kpTurn=50, minTurn=-100, maxTurn=100):
 
 
 def getForwardSpeed(distanceToTarget, kpForward=0.1, minSpeed=-100, maxSpeed=100):
-    return np.clip(distanceToTarget * kpForward, s_min = minSpeed, s_max=maxSpeed)
+    return np.clip(distanceToTarget * kpForward, a_min=minSpeed, a_max=maxSpeed)
 
 
 def getRotationSign(angleToTarget):
@@ -59,7 +59,7 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
             turnSpeed = getRotationSign(angleToTarget) * 100
             if abs(angleToTarget < 0.349):
                 turnSpeed = getTurnSpeed(angleToTarget, kp_turn)
-                forwardSpeed = getForwardSpeed(distanceFromTarget, kp_forward, s_min=30, s_max=80)
+                forwardSpeed = getForwardSpeed(distanceFromTarget, kp_forward, minSpeed=30, maxSpeed=80)
             elif abs(angleToTarget < 0.785):
                 forwardSpeed = 30
             elif abs(angleToTarget < np.pi/2):
@@ -81,7 +81,7 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
                 # turnSpeed = 0
                 turnSpeed = getTurnSpeed(angleToTarget)
                 # forwardSpeed = 30
-                forwardSpeed = getForwardSpeed(distanceFromTarget, kp_forward, s_min=10, s_max=80)
+                forwardSpeed = getForwardSpeed(distanceFromTarget, kp_forward, minSpeed=10, maxSpeed=80)
 
         # # New approach to movement
         # if angleToTarget < -0.0872665:
@@ -107,7 +107,7 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
         turnSpeed = getRotationSign(angleToTarget) * 100
         if abs(angleToTarget < 0.349):
             turnSpeed = getTurnSpeed(angleToTarget, kp_turn)
-            forwardSpeed = getForwardSpeed(distanceFromTarget, kp_forward, s_min=30, s_max=80)
+            forwardSpeed = getForwardSpeed(distanceFromTarget, kp_forward, minSpeed=30, maxSpeed=80)
         elif abs(angleToTarget < 0.785):
             forwardSpeed = 30
         elif abs(angleToTarget < np.pi/2):

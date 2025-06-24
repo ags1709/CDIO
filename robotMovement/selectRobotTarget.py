@@ -142,6 +142,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
 
         # Calculate distance and angle to the selected ball
         if state is SEARCH_BALLS and targetBall and robotPos[0] is not None and robotPos[1] is not None:
+            handleOA(robotPos, targetBall, detectedObjects)
             robotDistance = calculateDistance(robotPos[0], targetBall)
             robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], targetBall)
             robotAngle = add_angle(robotToObjectAngle, -robotRotation)
