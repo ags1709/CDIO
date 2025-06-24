@@ -89,7 +89,7 @@ class ObjectDetection():
         
         corners = [box.xyxy[0].cpu().numpy().astype(int) for box in boxes if 5 <= box.cls[0] <= 8]
         side_lengths = [max(coords[2] - coords[0], coords[3] - coords[1]) for coords in corners]
-        largest_corner_sidelength = max(side_lengths)
+        largest_corner_sidelength = max(side_lengths) if len(side_lengths) > 0 else 0
         
         for box in boxes:
             cls_id = int(box.cls[0])

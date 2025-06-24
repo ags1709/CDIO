@@ -300,7 +300,7 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
                 pushamt = 75
                 print("Ball so close to edge trapezoid that we need to push it futher back!")
                 ang = calculateAngleOfTwoPoints(targetBall, closest)
-                closest = (closest[0] + np.cos(ang)*pushamt, closest[1] + np.cos(ang)*pushamt)
+                closest = (closest[0] + np.cos(ang)*pushamt, closest[1] + np.sin(ang)*pushamt)
             
             stateQueue.pop(0)
             handleOA(robotPos, closest, detectedObjects)
