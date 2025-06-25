@@ -15,7 +15,7 @@ import logging
 import threading
 logging.getLogger('ultralytics').setLevel(logging.ERROR)
 
-ENABLE_SOCKET = True
+ENABLE_SOCKET = False
 windowsize = (1280,720)
 
 
@@ -31,7 +31,7 @@ def main():
     # Set connection to robot
     if ENABLE_SOCKET:
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_socket.connect(("192.168.137.232", 12350))
+        client_socket.connect(("192.168.137.100", 12350))
 
     # Set image detection model
     od = ObjectDetection(model="imageRecognition/imageModels/newbest.pt", detection_mode=DetectionMode.CAMERA, capture_index=2)
@@ -45,7 +45,7 @@ def main():
     while True:
         # use model to detect objects
 
-        # Calculate robots distance and angle to target, and set its state
+        # Calculate robots distance and angle to target, and set its stateq
         try:
             frame, detectedObjects, crossInfo, playAreaIntermediate = od.detectAll()
             distanceToTarget, angleToTarget, robotState = calcDistAndAngleToTarget(detectedObjects, crossInfo, playAreaIntermediate, frame)

@@ -47,6 +47,8 @@ targetBall = None
 def goToGoalIntermidararyPoint(detectedObjects, robotPos):
     intermediaryPoint = detectedObjects["goals"][0] + detectedObjects["goalNormals"][0] * 150
     stateQueue.clear()
+    if abort:
+        stateQueue.append(BACKOFF, robotPos[0], 100)
     handleOA(robotPos, intermediaryPoint, detectedObjects)
     stateQueue.append((TO_INTERMEDIARY, intermediaryPoint))
     stateQueue.append((TO_GOAL,)) # Comma to make it a tuple
@@ -391,7 +393,7 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
             stateQueue.append((COLLECT_BALL_BORDER, {'target': targetBall}))
             stateQueue.append((WAIT, 1))
             # stateQueue.append((BACKOFF, targetBall, calculateDistance(targetBall, closest) * 0.6))
-            stateQueue.append((BACKOFF, targetBall, 30))
+            stateQueue.append((BACKOFF, targetBall, 45))
             cv2.line(frame, tuple_toint(targetBall), tuple_toint(closest), (0, 150, 150), 2)
     
     else:

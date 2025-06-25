@@ -5,7 +5,7 @@ from imageRecognition.positionEstimator import edge_normal
 type Point = np.ndarray[tuple[int], np.dtype[np.floating]]
 
 # The heights of different things in cm
-camera_height = 165
+camera_height = 165.5
 corner_height = 17.5
 target_height = 3
 
