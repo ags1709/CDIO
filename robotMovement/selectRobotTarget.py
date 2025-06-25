@@ -379,8 +379,8 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
         if not inside:
             print(f"Ball close to edge. Closest Point: {closest}")
             dist = calculateDistance(targetBall, closest)
-            if (dist < 100):
-                pushamt = 80
+            if (dist < 75):
+                pushamt = 50
                 print("Ball so close to edge trapezoid that we need to push it futher back!")
                 ang = calculateAngleOfTwoPoints(targetBall, closest)
                 closest = (closest[0] + np.cos(ang)*pushamt, closest[1] + np.sin(ang)*pushamt)
@@ -390,7 +390,8 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
             stateQueue.append((TO_INTERMEDIARY, closest))
             stateQueue.append((COLLECT_BALL_BORDER, {'target': targetBall}))
             stateQueue.append((WAIT, 1))
-            stateQueue.append((BACKOFF, targetBall, calculateDistance(targetBall, closest) * 0.6))
+            # stateQueue.append((BACKOFF, targetBall, calculateDistance(targetBall, closest) * 0.6))
+            stateQueue.append((BACKOFF, targetBall, 30))
             cv2.line(frame, tuple_toint(targetBall), tuple_toint(closest), (0, 150, 150), 2)
     
     else:
