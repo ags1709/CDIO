@@ -31,7 +31,7 @@ def main():
     # Set connection to robot
     if ENABLE_SOCKET:
         client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client_socket.connect(("192.168.137.232", 12350))
+        client_socket.connect(("192.168.137.100", 12350))
 
     # Set image detection model
     od = ObjectDetection(model="imageRecognition/imageModels/newbest.pt", detection_mode=DetectionMode.CAMERA, capture_index=2)

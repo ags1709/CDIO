@@ -28,6 +28,7 @@ TO_GOAL = "TO_GOAL"
 TO_EXACT_ROTATION = "TO_EXACT_ROTATION"
 BACKOFF = "BACKOFF"
 COLLECT_BALL = "COLLECT_BALL"
+COLLECT_BALL_BORDER = "COLLECT_BALL_BORDER"
 VOMIT = "VOMIT"
 WAIT = "WAIT"
 LOST = "LOST"
@@ -46,6 +47,8 @@ targetBall = None
 def goToGoalIntermidararyPoint(detectedObjects, robotPos):
     intermediaryPoint = detectedObjects["goals"][0] + detectedObjects["goalNormals"][0] * 150
     stateQueue.clear()
+    if abort:
+        stateQueue.append(BACKOFF, robotPos[0], 100)
     handleOA(robotPos, intermediaryPoint, detectedObjects)
     stateQueue.append((TO_INTERMEDIARY, intermediaryPoint))
     stateQueue.append((TO_GOAL,)) # Comma to make it a tuple
@@ -92,7 +95,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
 
     # If no state has been set yet, put robot in ball searching state.
     if len(stateQueue) == 0:
-        stateQueue.append((SEARCH_BALLS, {}))
+        stateQueue.append((SEARCH_BALLS,))
 
     state = stateQueue[0][0] # State
     stateVariables = stateQueue[0][1:] # Variables for state
@@ -123,36 +126,28 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
 
         # ballcount = len(detectedObjects["orangeBalls"]) + len(detectedObjects["whiteBalls"])
         
-        if targetBall == None:
-            stateJson = stateVariables[0]
-            if 'target' in stateJson:
-                targetBall = stateJson['target']
+        # If we're explicitly given a ball to go for
+        if len(stateVariables) > 0:
+            targetBall = stateVariables[0]
 
-            # if ballcount <=5 and firstimer and len(detectedObjects["orangeBalls"]) == 0 :
-            #     firstimer = False
-            #     goToGoalIntermidararyPoint(detectedObjects, robotPos)
-            
-            # elif ballcount <=5 and firstimer:
-            #     firstimer = False
-            #     goToGoalIntermidararyPoint(detectedObjects, robotPos)
-            
-
-
-            if detectedObjects.get("whiteBalls") and len(detectedObjects["whiteBalls"]) > 0:
+        # Else, find the closest ball
+        else:
+            if len(detectedObjects["whiteBalls"]) > 0:
                 targetBall = min(detectedObjects["whiteBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
                 handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObjects, robotPos, frame)
-    
-            # ? If the robot needs to go to goal 2 times this needs to be moved over the whiteballs
-            elif detectedObjects.get("orangeBalls") and len(detectedObjects["orangeBalls"]) > 0: # and ballcount <= 6
+
+            # If the robot needs to go to goal 2 times, this needs to be moved over the white balls
+            elif len(detectedObjects["orangeBalls"]) > 0: # and ballcount <= 6
                 targetBall = min(detectedObjects["orangeBalls"], key=lambda ball: calculateDistance(robotPos[0], ball))
                 handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObjects, robotPos, frame)
-            
-            elif not detectedObjects["whiteBalls"] and not detectedObjects["orangeBalls"]:
+
+            # If no balls are present, move to intermediary point in preperation for turning in balls
+            else:
                 print("No balls")
                 goToGoalIntermidararyPoint(detectedObjects, robotPos)
 
         # Calculate distance and angle to the selected ball
-        if state is SEARCH_BALLS and targetBall and robotPos[0] is not None and robotPos[1] is not None:
+        if targetBall is not None:
             handleOA(robotPos, targetBall, detectedObjects)
             robotDistance = calculateDistance(robotPos[0], targetBall)
             robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], targetBall)
@@ -161,12 +156,10 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
                 print("Found ball")
                 stateQueue.pop(0)
                 targetBall = None # Reset target ball
-                #time.sleep(0.5)
 
-
-        # If no balls are present, move to intermediary point in preperation for turning in balls.
-
-    if state == TO_INTERMEDIARY: # 
+    if state == TO_INTERMEDIARY:
+        if stateQueue[1][0] == TO_GOAL and (len(detectedObjects["whiteBalls"]) > 0 or len(detectedObjects["orangeBalls"]) > 0):
+            stateQueue.clear()
         intermediaryPoint = stateVariables[0]
         cv2.circle(frame, tuple_toint(intermediaryPoint), 11, (50,200,50), 6) # Mark intermediary
         robotDistance = calculateDistance(robotPos[0], intermediaryPoint)
@@ -190,7 +183,8 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
 
 
     elif state == TO_GOAL:
-                
+        if len(detectedObjects["whiteBalls"]) > 0 or len(detectedObjects["orangeBalls"]) > 0:
+            stateQueue.clear()
         # If no balls are present, move to goal.
         goalPos = detectedObjects["goals"][0]
         robotDistance = calculateDistance(robotPos[0], goalPos)
@@ -206,7 +200,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         if (stateVariables[0] + VOMIT_TIME <= time.time()):
             stateQueue.clear()
             stateQueue.append((BACKOFF, robotPos[0], 100))
-            stateQueue.append((SEARCH_BALLS, {}))
+            stateQueue.append((SEARCH_BALLS,))
 
     elif state == WAIT:
         if (len(stateVariables) < 2):
@@ -232,12 +226,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
         robotDistance = max(0, targetDistance - distance)
         if distance >= targetDistance:
             print("Reached BACKOFF point")
-            # Really scuffed code to keep a WAIT state if it's immediately after this BACKOFF state
-            wait_state = None
-            if (len(stateQueue) > 1 and stateQueue[1][0] == WAIT):
-                wait_state = stateQueue[1]
             stateQueue.clear()
-            if wait_state is not None: stateQueue.append(wait_state)
 
     elif state == COLLECT_BALL:
 
@@ -253,7 +242,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
             print("No target ball and no memory — resetting")
             stateQueue.pop(0)
             targetBallMemory = None
-            stateQueue.append((SEARCH_BALLS, {}))
+            stateQueue.append((SEARCH_BALLS,))
             return robotDistance, robotAngle, state
         
         stateJson['memoryAge'] = stateJson.get('memoryAge', 0) + 1
@@ -264,7 +253,7 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
             stateQueue.pop(0)
             targetBall = None
             targetBallMemory = None
-            stateQueue.append((SEARCH_BALLS, {}))
+            stateQueue.append((SEARCH_BALLS,))
             return robotDistance, robotAngle, state
 
         nearestBall = min(allBalls, key=lambda b: calculateDistance(b, targetBall)) if allBalls else None
@@ -291,16 +280,74 @@ def calcDistAndAngleToTarget(detectedObjects, crossInfo: CrossInfo, playAreaInte
             stateQueue.pop(0)
             targetBall = None
             targetBallMemory = None
-            stateQueue.append((SEARCH_BALLS, {}))
+            stateQueue.append((SEARCH_BALLS,))
             return robotDistance, robotAngle, state
+        
+
     
+    # COPY OF COLLECT_BALL BUT WITH SPECIFIC SPEEDS FOR BORDER
+    elif state == COLLECT_BALL_BORDER:
+        allBalls = detectedObjects.get("whiteBalls", []) + detectedObjects.get("orangeBalls", [])
+        stateJson = stateVariables[0]
+        targetBall = stateJson.get('target', None)
+
+        if targetBall is None and targetBallMemory is not None:
+            targetBall = targetBallMemory
+            stateJson['target'] = targetBall
+
+        if targetBall is None:
+            print("No target ball and no memory — resetting")
+            stateQueue.pop(0)
+            targetBallMemory = None
+            stateQueue.append((SEARCH_BALLS,))
+            return robotDistance, robotAngle, state
+        
+        stateJson['memoryAge'] = stateJson.get('memoryAge', 0) + 1
+        MaxMemoryAge = 120   # How many frames to remember the target ball before resetting it.
+
+        if stateJson['memoryAge'] > MaxMemoryAge:
+            print("Memory too old — resetting")
+            stateQueue.pop(0)
+            targetBall = None
+            targetBallMemory = None
+            stateQueue.append((SEARCH_BALLS,))
+            return robotDistance, robotAngle, state
+
+        nearestBall = min(allBalls, key=lambda b: calculateDistance(b, targetBall)) if allBalls else None
+
+        if nearestBall:
+            drift = calculateDistance(nearestBall, targetBall)
+            if drift < 40:
+            # Accept updated ball
+                targetBall = nearestBall
+                targetBallMemory = nearestBall
+                stateJson['target'] = nearestBall
+                stateJson['memoryAge'] = 0  # Reset memory age
+            
+        # Calculate movement toward the ball
+        robotDistance = calculateDistance(robotPos[0], targetBall)
+        robotToObjectAngle = calculateAngleOfTwoPoints(robotPos[0], targetBall)
+        robotAngle = add_angle(robotToObjectAngle, -robotRotation)
+
+        # Draw what we are trying to collect
+        cv2.circle(frame, tuple_toint(targetBall), 20, (0,150,150), 5)
+
+        if robotDistance <= 65:
+            print("Ball collected!")
+            stateQueue.pop(0)
+            targetBall = None
+            targetBallMemory = None
+            stateQueue.append((SEARCH_BALLS,))
+            return robotDistance, robotAngle, state
+
+
             
     
     # Draw robot angle
     drobotAngle = add_angle(robotAngle, robotRotation)#(robotAngle - robotRotation + np.pi) % (2*np.pi) - np.pi
     cv2.arrowedLine(frame, tuple_toint(robotPos[0]), (int(robotPos[0][0] + math.cos(drobotAngle)*250), int(robotPos[0][1] + math.sin(drobotAngle)*250)), (255,0,0), 4, tipLength=0.2) 
 
-    #print(f"State queue: {stateQueue}")
+    print(f"State queue: {stateQueue}")
 
     return robotDistance, robotAngle, state
     
@@ -334,8 +381,8 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
         if not inside:
             print(f"Ball close to edge. Closest Point: {closest}")
             dist = calculateDistance(targetBall, closest)
-            if (dist < 100):
-                pushamt = 80
+            if (dist < 75):
+                pushamt = 50
                 print("Ball so close to edge trapezoid that we need to push it futher back!")
                 ang = calculateAngleOfTwoPoints(targetBall, closest)
                 closest = (closest[0] + np.cos(ang)*pushamt, closest[1] + np.sin(ang)*pushamt)
@@ -343,9 +390,10 @@ def handleBallTargetIntermediate(crossInfo, playAreaIntermediate, detectedObject
             stateQueue.pop(0)
             handleOA(robotPos, closest, detectedObjects)
             stateQueue.append((TO_INTERMEDIARY, closest))
-            stateQueue.append((COLLECT_BALL, {'target': targetBall}))
+            stateQueue.append((COLLECT_BALL_BORDER, {'target': targetBall}))
             stateQueue.append((WAIT, 1))
-            stateQueue.append((BACKOFF, targetBall, max(80, calculateDistance(targetBall, closest) * 0.6)))
+            # stateQueue.append((BACKOFF, targetBall, calculateDistance(targetBall, closest) * 0.6))
+            stateQueue.append((BACKOFF, targetBall, 45))
             cv2.line(frame, tuple_toint(targetBall), tuple_toint(closest), (0, 150, 150), 2)
     
     else:

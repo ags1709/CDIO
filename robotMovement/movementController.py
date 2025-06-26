@@ -17,7 +17,7 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
 
     if state == "SEARCH_BALLS":
         # Proportionality constants. Tune to change how fast speed changes    
-        if distanceFromTarget > 50:
+        if distanceFromTarget > 100:
             kp_forward = 0.2
             kp_turn = 30
             maxSpeed = 80
@@ -182,25 +182,46 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
         #     # forwardSpeed = 30
         #     forwardSpeed = getForwardSpeed(distanceFromTarget, kp_forward, s_min=30, s_max=100)
 
-
     elif state == "TO_GOAL":
-        kp_forward = 0.15
-        
-        # New to goal
-        turnSpeed = np.sign(angleToTarget) * 100
-        if abs(angleToTarget) < 0.0436: # 2.5 degrees
-            # turnSpeed = getTurnSpeed(angleToTarget, kp_turn)
-            # forwardSpeed = getForwardSpeed(distanceFromTarget, kp_forward, minSpeed=30, maxSpeed=80)
-            turnSpeed = 0
-            forwardSpeed = 5
-        elif abs(angleToTarget) < 0.0872: # 5 degrees
+        kp_speed = 0.15
+
+        goalDistanceFromBall = 130
+
+        # New approach to movement
+        if angleToTarget < -0.0872665:
+            turnSpeed = -100
             forwardSpeed = 2
-        elif abs(angleToTarget) < 0.174: # 10 degrees
-            forwardSpeed = 3
-        elif abs(angleToTarget) < np.pi/2:
-            forwardSpeed = 5
-        else:
+            if angleToTarget < -0.52:
+                forwardSpeed = 15
+        elif angleToTarget >= 0.0872665:
+            turnSpeed = 100
+            forwardSpeed = 2
+            if angleToTarget > 0.52:
+                forwardSpeed = 15
+        else: 
+            turnSpeed = getTurnSpeed(angleToTarget)
             forwardSpeed = 10
+            if distanceFromTarget < 110:
+                forwardSpeed = 0
+    # Comp Zoom Zoom
+    # elif state == "TO_GOAL":
+    #     kp_forward = 0.15
+        
+    #     # New to goal
+    #     turnSpeed = np.sign(angleToTarget) * 100
+    #     if abs(angleToTarget) < 0.0436: # 2.5 degrees
+    #         # turnSpeed = getTurnSpeed(angleToTarget, kp_turn)
+    #         # forwardSpeed = getForwardSpeed(distanceFromTarget, kp_forward, minSpeed=30, maxSpeed=80)
+    #         turnSpeed = 0
+    #         forwardSpeed = 5
+    #     elif abs(angleToTarget) < 0.0872: # 5 degrees
+    #         forwardSpeed = 2 # 2
+    #     elif abs(angleToTarget) < 0.174: # 10 degrees
+    #         forwardSpeed = 3 # 3
+    #     elif abs(angleToTarget) < np.pi/2:
+    #         forwardSpeed = 5  # 5
+    #     else:
+    #         forwardSpeed = 10
 
         # New approach to movement
         # if angleToTarget < -0.0872665:
@@ -249,9 +270,9 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
                 turnSpeed = getTurnSpeed(angleToTarget, kp_turn)
                 forwardSpeed = getForwardSpeed(distanceFromTarget, kp_forward, minSpeed=30, maxSpeed=maxSpeed)
             elif abs(angleToTarget) < 0.785: # 45 degrees
-                forwardSpeed = 15
+                forwardSpeed = 25
             elif abs(angleToTarget) < np.pi/2: # 90 degrees
-                forwardSpeed = 20
+                forwardSpeed = 30
             else:
                 forwardSpeed = maxSpeed
 
@@ -261,33 +282,105 @@ def calculateSpeedAndRotation(distanceFromTarget, angleToTarget, state):
                 turnSpeed = -100
                 forwardSpeed = 2
                 if angleToTarget < -0.52:
-                    forwardSpeed = 8
+                    forwardSpeed = 10
+                    if angleToTarget > -0.785:
+                        forwardSpeed = 15
+                        if angleToTarget > -np.pi/2:
+                            forwardSpeed = 20
             elif angleToTarget >= 0.0872665:
                 turnSpeed = 100
                 forwardSpeed = 2
                 if angleToTarget > 0.52:
-                    forwardSpeed = 8
+                    forwardSpeed = 10
+                    if angleToTarget > 0.785:
+                        forwardSpeed = 15
+                        if angleToTarget > np.pi/2:
+                            forwardSpeed = 20
             else: 
                 # turnSpeed = 0
-                turnSpeed = getTurnSpeed(angleToTarget * 2)
+                turnSpeed = getTurnSpeed(angleToTarget * 6)
                 forwardSpeed = 10
 
-        # # New approach to movement
-        # if angleToTarget < -0.0872665:
-        #     turnSpeed = -100
-        #     forwardSpeed = 2
-        #     if angleToTarget < -0.52:
-        #         forwardSpeed = 5
-        # elif angleToTarget >= 0.0872665:
-        #     turnSpeed = 100
-        #     forwardSpeed = 2
-        #     if angleToTarget > 0.52:
-        #         forwardSpeed = 5
-        # else: 
-        #     # turnSpeed = 0
-        #     turnSpeed = getTurnSpeed(angleToTarget, kp_turn)
-        #     forwardSpeed = 10
 
+
+    elif state == "COLLECT_BALL_BORDER":
+        # kp_forward = 0.05
+        # kp_turn = 100
+
+
+        # if distanceFromTarget > 100:
+        #     kp_forward = 0.2
+        #     kp_turn = 80
+        #     maxSpeed = 80
+        #     turnSpeed = np.sign(angleToTarget) * 100
+        #     if abs(angleToTarget) < 0.349: # 20 degrees
+        #         turnSpeed = getTurnSpeed(angleToTarget, kp_turn)
+        #         forwardSpeed = getForwardSpeed(distanceFromTarget, kp_forward, minSpeed=30, maxSpeed=maxSpeed)
+        #     elif abs(angleToTarget) < 0.785: # 45 degrees
+        #         forwardSpeed = 15
+        #     elif abs(angleToTarget) < np.pi/2: # 90 degrees
+        #         forwardSpeed = 20
+        #     else:
+        #         forwardSpeed = maxSpeed
+
+        # else:
+        #     kp_forward = 0.2
+        #     kp_turn = 30
+        #     maxSpeed = 25
+        #     turnSpeed = np.sign(angleToTarget) * 100
+        #     if abs(angleToTarget) < 0.0872: # 5 degrees
+        #         turnSpeed = 0
+        #         forwardSpeed = 10
+        #     elif abs(angleToTarget) < 0.52: # 30 degrees
+        #         forwardSpeed = 10
+        #     elif abs(angleToTarget) < np.pi/2: # 90 degrees
+        #         forwardSpeed = 15
+        #     else:
+        #         # turnSpeed = 0
+        #         forwardSpeed = maxSpeed
+
+        # WORKS --------------------------------------------------
+        if distanceFromTarget > 150:
+            kp_forward = 0.2
+            kp_turn = 30
+            maxSpeed = 45
+            turnSpeed = np.sign(angleToTarget) * 100
+            if abs(angleToTarget) < 0.349: # 20 degrees
+                turnSpeed = getTurnSpeed(angleToTarget, kp_turn)
+                forwardSpeed = getForwardSpeed(distanceFromTarget, kp_forward, minSpeed=30, maxSpeed=maxSpeed)
+            elif abs(angleToTarget) < 0.785: # 45 degrees
+                forwardSpeed = 25
+            elif abs(angleToTarget) < np.pi/2: # 90 degrees
+                forwardSpeed = 30
+            else:
+                forwardSpeed = maxSpeed
+
+        else:
+            # New approach to movement
+            if angleToTarget < -0.0872665:
+                turnSpeed = -100
+                forwardSpeed = 2
+                if angleToTarget < -0.52:
+                    forwardSpeed = 10
+                    if angleToTarget > -0.785:
+                        forwardSpeed = 15
+                        if angleToTarget > -np.pi/2:
+                            forwardSpeed = 20
+            elif angleToTarget >= 0.0872665:
+                turnSpeed = 100
+                forwardSpeed = 2
+                if angleToTarget > 0.52:
+                    forwardSpeed = 10
+                    if angleToTarget > 0.785:
+                        forwardSpeed = 25
+                        if angleToTarget > np.pi/2:
+                            forwardSpeed = 35
+            else: 
+                # turnSpeed = 0
+                turnSpeed = getTurnSpeed(angleToTarget * 6)
+                forwardSpeed = 20
+
+                
     elif state == "LOST":
         # Special temporary state for when we have less than two corners detected
         # Simply drive forwards, hoping for the corners to come back
