@@ -45,7 +45,7 @@ def main():
     while True:
         # use model to detect objects
 
-        # Calculate robots distance and angle to target, and set its stateq
+        # Calculate robots distance and angle to target, and set its state
         try:
             frame, detectedObjects, crossInfo, playAreaIntermediate = od.detectAll()
             distanceToTarget, angleToTarget, robotState = calcDistAndAngleToTarget(detectedObjects, crossInfo, playAreaIntermediate, frame)
